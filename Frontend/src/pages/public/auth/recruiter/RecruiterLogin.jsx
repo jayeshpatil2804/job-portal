@@ -6,9 +6,12 @@ import api from '../../../../utils/api'
 import toast from 'react-hot-toast'
 import { Mail, Lock } from 'lucide-react'
 import { supabase } from '../../../../utils/supabase'
+import { useDispatch } from 'react-redux'
+import { setUser } from '../../../../redux/slices/authSlice'
 
 const RecruiterLogin = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -27,10 +30,25 @@ const RecruiterLogin = () => {
                 password: formData.password
             };
             const response = await api.post('/recruiter/login', loginData);
+            
+            const user = response.data.user;
+            dispatch(setUser(user));
             toast.success(response.data.message || 'Login successful!');
-            navigate('/dashboard');
+            
+            if (user.isProfileCompleted) {
+                navigate('/recruiter/dashboard');
+            } else {
+                navigate('/recruiter/complete-profile/1', { 
+                    replace: true 
+                });
+            }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Login failed. Please try again.');
+            if (error.response?.data?.requiresVerification) {
+                toast.error(error.response.data.message);
+                navigate(`/recruiter/verify-otp/${formData.email}`);
+            } else {
+                toast.error(error.response?.data?.message || 'Login failed. Please try again.');
+            }
         }
     };
 

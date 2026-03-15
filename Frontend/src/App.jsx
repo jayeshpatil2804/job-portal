@@ -24,6 +24,11 @@ import DashboardPage from './pages/private/DashboardPage'
 import AppliedJobsPage from './pages/private/AppliedJobsPage'
 import CandidateInfoDetails from './pages/private/candidate/CandidateInfoDetails/CandidateInfoDetails'
 import RecruiterInfoDetails from './pages/private/recruiter/RecruiterInfoDetails/RecruiterInfoDetails'
+import RecruiterHome from './pages/private/recruiter/Dashboard/RecruiterHome'
+import PostJob from './pages/private/recruiter/PostJob/PostJob'
+import ManageJobs from './pages/private/recruiter/ManageJobs/ManageJobs'
+import Applicants from './pages/private/recruiter/Applicants/Applicants'
+import Interviews from './pages/private/recruiter/Interviews/Interviews'
 
 import CandidateProtectedRoute from './components/CandidateProtectedRoute'
 import RecruiterProtectedRoute from './components/RecruiterProtectedRoute'
@@ -51,8 +56,11 @@ function App() {
 
                 {/* Protected Recruiter Routes */}
                 <Route element={<RecruiterProtectedRoute />}>
-                    {/* Add Recruiter specific private routes here */}
-                    <Route path="/recruiter/dashboard" element={<DashboardPage />} />
+                    <Route path="/recruiter/dashboard" element={<RecruiterHome />} />
+                    <Route path="/recruiter/post-job" element={<PostJob />} />
+                    <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
+                    <Route path="/recruiter/applicants" element={<Applicants />} />
+                    <Route path="/recruiter/interviews" element={<Interviews />} />
                 </Route>
 
                 {/* Recruiter Onboarding */}

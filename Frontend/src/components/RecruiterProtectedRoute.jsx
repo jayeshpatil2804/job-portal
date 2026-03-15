@@ -20,7 +20,7 @@ const RecruiterProtectedRoute = ({ onlyAuth = false }) => {
 
     // Handle authentication check (Recruiter specific)
     if (!user || user.role !== 'RECRUITER') {
-        return <Navigate to="/candidate/login" replace />; // Adjust if there's a separate recruiter login
+        return <Navigate to="/recruiter/login" replace />; 
     }
 
     if (profileStatus === 'loading' || profileStatus === 'idle') {
@@ -35,7 +35,7 @@ const RecruiterProtectedRoute = ({ onlyAuth = false }) => {
     }
 
     if (profileStatus === 'failed' && (error === '401' || error?.includes('401'))) {
-        return <Navigate to="/candidate/login" replace />;
+        return <Navigate to="/recruiter/login" replace />;
     }
 
     if (onlyAuth) {
