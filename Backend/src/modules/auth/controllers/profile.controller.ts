@@ -39,7 +39,17 @@ export const getProfileStatus = async (req: Request, res: Response) => {
 export const completeCandidateProfile = async (req: Request, res: Response) => {
     try {
         const candidateId = (req as any).user.id
-        const { onboardingStep, isProfileCompleted, ...data } = req.body
+        const { 
+            onboardingStep, 
+            isProfileCompleted, 
+            id, 
+            candidateId: _, 
+            candidate, 
+            createdAt, 
+            updatedAt, 
+            resumeFile,
+            ...data 
+        } = req.body
 
         // Ensure skills is treated as an array if it exists
         if (data.skills && !Array.isArray(data.skills)) {
@@ -134,7 +144,15 @@ export const deleteProfile = async (req: Request, res: Response) => {
 export const updateCandidateProfile = async (req: Request, res: Response) => {
     try {
         const candidateId = (req as any).user.id
-        const { ...data } = req.body
+        const { 
+            id, 
+            candidateId: _, 
+            candidate, 
+            createdAt, 
+            updatedAt, 
+            resumeFile,
+            ...data 
+        } = req.body
 
         // Handle skills array conversion if provided
         if (data.skills && !Array.isArray(data.skills)) {

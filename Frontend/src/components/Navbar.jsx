@@ -1,15 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false)
     const location = useLocation()
+    const { user } = useSelector(state => state.auth)
 
     const navLinks = [
         { label: 'Home', path: '/' },
-        { label: 'Jobs', path: '/jobs' },
-        { label: 'Recruiter', path: '/recruiter' },
+        { label: 'Jobs', path: user ? '/jobs' : '/login' },
+        { label: 'Recruiter', path: user?.role === 'RECRUITER' ? '/recruiter/dashboard' : '/recruiter/login' },
     ]
 
     return (
@@ -39,18 +41,29 @@ const Navbar = () => {
 
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Link
-                            to="/login"
-                            className="text-sm font-medium text-gray-700 hover:text-[#1a3c8f] transition-colors"
-                        >
-                            Login
-                        </Link>
-                        <Link
-                            to="/signup"
-                            className="bg-[#1a3c8f] text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-[#162f72] transition-colors"
-                        >
-                            Sign Up
-                        </Link>
+                        {!user ? (
+                            <>
+                                <Link
+                                    to="/login"
+                                    className="text-sm font-medium text-gray-700 hover:text-[#1a3c8f] transition-colors"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    to="/signup"
+                                    className="bg-[#1a3c8f] text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-[#162f72] transition-colors"
+                                >
+                                    Sign Up
+                                </Link>
+                            </>
+                        ) : (
+                            <Link
+                                to={user.role === 'RECRUITER' ? "/recruiter/dashboard" : "/dashboard"}
+                                className="bg-[#1a3c8f] text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-[#162f72] transition-colors"
+                            >
+                                Dashboard
+                            </Link>
+                        )}
                     </div>
 
                     {/* Mobile Hamburger */}
@@ -77,20 +90,32 @@ const Navbar = () => {
                         </Link>
                     ))}
                     <div className="flex gap-3 mt-3">
-                        <Link
-                            to="/login"
-                            onClick={() => setMobileOpen(false)}
-                            className="text-sm font-medium text-gray-700 hover:text-[#1a3c8f]"
-                        >
-                            Login
-                        </Link>
-                        <Link
-                            to="/signup"
-                            onClick={() => setMobileOpen(false)}
-                            className="bg-[#1a3c8f] text-white text-sm font-semibold px-4 py-2 rounded-md hover:bg-[#162f72]"
-                        >
-                            Sign Up
-                        </Link>
+                        {!user ? (
+                            <>
+                                <Link
+                                    to="/login"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="text-sm font-medium text-gray-700 hover:text-[#1a3c8f]"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    to="/signup"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="bg-[#1a3c8f] text-white text-sm font-semibold px-4 py-2 rounded-md hover:bg-[#162f72]"
+                                >
+                                    Sign Up
+                                </Link>
+                            </>
+                        ) : (
+                            <Link
+                                to={user.role === 'RECRUITER' ? "/recruiter/dashboard" : "/dashboard"}
+                                onClick={() => setMobileOpen(false)}
+                                className="bg-[#1a3c8f] text-white text-sm font-semibold px-4 py-2 rounded-md hover:bg-[#162f72]"
+                            >
+                                Dashboard
+                            </Link>
+                        )}
                     </div>
                 </div>
             )}

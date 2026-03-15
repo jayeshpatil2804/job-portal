@@ -34,7 +34,12 @@ const CandidateLogin = () => {
                 navigate('/candidate/complete-profile');
             }
         } catch (error) {
-            toast.error(error || 'Login failed. Please try again.');
+            if (error?.requiresVerification) {
+                toast.error(error.message);
+                navigate(`/candidate/verify-otp/${formData.email}`);
+            } else {
+                toast.error(error?.message || 'Login failed. Please try again.');
+            }
         }
     };
 

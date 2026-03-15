@@ -4,6 +4,7 @@ import path from 'path'
 import { supabase } from '../../../utils/supabase'
 import prisma from '../../../config/db'
 import { generateToken } from '../../../utils/jwt'
+import bcrypt from 'bcryptjs'
 
 export const googleCallback = async (req: Request, res: Response) => {
     const logFile = path.join(__dirname, '../../../../auth_debug.log')
@@ -212,13 +213,19 @@ export const completeProfile = async (req: Request, res: Response) => {
         log(`Completing profile for user: ${id}, role: ${role}`)
 
         let user: any = null
+        
+        let hashedPassword = password;
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
 
         if (role === 'RECRUITER') {
             user = await prisma.recruiter.update({
                 where: { id },
                 data: {
                     mobile,
-                    password, // Consistent with your snippets
+                    password: hashedPassword,
                     companyName,
                     isVerified: true
                 }
@@ -228,7 +235,7 @@ export const completeProfile = async (req: Request, res: Response) => {
                 where: { id },
                 data: {
                     mobile,
-                    password,
+                    password: hashedPassword,
                     isVerified: true
                 }
             })

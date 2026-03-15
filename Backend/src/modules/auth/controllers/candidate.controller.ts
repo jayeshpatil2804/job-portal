@@ -75,10 +75,29 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid credentials' })
         }
 
-        // Optional: Require verification before login
-        // if (!candidate.isVerified) {
-        //     return res.status(401).json({ message: 'Please verify your email first' })
-        // }
+        // Require verification before login
+        if (!candidate.isVerified) {
+            // Generate OTP
+            const otp = generateOtp()
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+
+            await prisma.otpCode.create({
+                data: {
+                    email,
+                    code: otp,
+                    role: 'CANDIDATE',
+                    expiresAt
+                }
+            })
+
+            await sendOtpEmail(email, otp)
+
+            return res.status(403).json({ 
+                success: false,
+                requiresVerification: true,
+                message: 'Email not verified. A new OTP has been sent to your email.' 
+            })
+        }
 
         const token = generateToken(candidate.id, candidate.role)
 
