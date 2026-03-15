@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  CANDIDATE
+  RECRUITER
+  ADMIN
+}
+
+model Candidate {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  fullName   String
+  mobile     String
+  password   String
+  role       UserRole @default(CANDIDATE)
+  isVerified Boolean  @default(false)
+  isProfileCompleted Boolean  @default(false)
+  
+  profile    CandidateProfile?
+  files      File[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model CandidateProfile {
+  id              String    @id @default(uuid())
+  candidateId     String    @unique
+  candidate       Candidate @relation(fields: [candidateId], references: [id])
+  
+  onboardingStep  Int       @default(1)
+  // Personal Details
+  address         String?
+  city            String?
+  state           String?
+  
+  // Education
+  qualification   String?
+  college         String?
+  passingYear     String?
+  
+  // Experience
+  isExperienced   Boolean   @default(false)
+  companyName     String?
+  designation     String?
+  yearsOfExp      String?
+  
+  // Skills
+  skills          String[]
+  
+  // Resume
+  resumeUrl       String?
+  resumeFileId    String?   @unique
+  resumeFile      File?     @relation("CandidateResume", fields: [resumeFileId], references: [id])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model File {
+  id              String            @id @default(uuid())
+  fileName        String
+  fileUrl         String
+  key             String            @unique
+  mimeType        String
+  size            Int
+  
+  // Relations
+  candidateId     String?
+  candidate       Candidate?       @relation(fields: [candidateId], references: [id])
+  candidateProfile CandidateProfile? @relation("CandidateResume")
+
+  recruiterId     String?
+  recruiter       Recruiter?       @relation(fields: [recruiterId], references: [id])
+  gstProfile      CompanyProfile?  @relation("GstCertificate")
+  msmeProfile     CompanyProfile?  @relation("MsmeCertificate")
+  regProfile      CompanyProfile?  @relation("RegistrationCertificate")
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Recruiter {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  fullName    String
+  companyName String
+  mobile      String
+  password    String
+  role        UserRole @default(RECRUITER)
+  isVerified  Boolean  @default(false)
+  isProfileCompleted Boolean  @default(false)
+  
+  profile     CompanyProfile?
+  files       File[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CompanyProfile {
+  id              String    @id @default(uuid())
+  recruiterId     String    @unique
+  recruiter       Recruiter @relation(fields: [recruiterId], references: [id])
+
+  onboardingStep  Int       @default(1)
+  companyName     String?
+
+  // Company Details
+  address         String?
+  city            String?
+  state           String?
+  industry        String?
+  gstNumber       String?
+  website         String?
+
+  // Verification Documents
+  gstCertificateUrl      String?
+  gstCertificateFileId   String? @unique
+  gstCertificateFile     File?   @relation("GstCertificate", fields: [gstCertificateFileId], references: [id])
+
+  msmeCertificateUrl      String?
+  msmeCertificateFileId   String? @unique
+  msmeCertificateFile     File?   @relation("MsmeCertificate", fields: [msmeCertificateFileId], references: [id])
+
+  registrationCertificateUrl    String?
+  registrationCertificateFileId String? @unique
+  registrationCertificateFile   File?   @relation("RegistrationCertificate", fields: [registrationCertificateFileId], references: [id])
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  role      UserRole
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
