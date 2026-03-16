@@ -27,6 +27,8 @@ import RecruiterInfoDetails from './pages/private/recruiter/RecruiterInfoDetails
 import RecruiterHome from './pages/private/recruiter/Dashboard/RecruiterHome'
 import PostJob from './pages/private/recruiter/PostJob/PostJob'
 import ManageJobs from './pages/private/recruiter/ManageJobs/ManageJobs'
+import EditJob from './pages/private/recruiter/EditJob/EditJob'
+import ViewJob from './pages/private/recruiter/ViewJob/ViewJob'
 import Applicants from './pages/private/recruiter/Applicants/Applicants'
 import Interviews from './pages/private/recruiter/Interviews/Interviews'
 
@@ -59,6 +61,8 @@ function App() {
                     <Route path="/recruiter/dashboard" element={<RecruiterHome />} />
                     <Route path="/recruiter/post-job" element={<PostJob />} />
                     <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
+                    <Route path="/recruiter/view-job/:id" element={<ViewJob />} />
+                    <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
                     <Route path="/recruiter/applicants" element={<Applicants />} />
                     <Route path="/recruiter/interviews" element={<Interviews />} />
                 </Route>
