@@ -5,20 +5,34 @@ import prisma from '../../../config/db'
 export const createJob = async (req: Request, res: Response) => {
     try {
         const recruiterId = (req as any).user.id
-        const { title, department, experience, salaryMin, salaryMax, location, vacancies, description } = req.body
+        const { 
+            title, department, jobType, experience, 
+            salaryMin, salaryMax, location, vacancies, 
+            description, responsibilities, requirements, 
+            skills, benefits, deadline, isFeatured, isRemote,
+            status 
+        } = req.body
 
         const job = await prisma.job.create({
             data: {
                 recruiterId,
                 title,
                 department,
+                jobType,
                 experience,
                 salaryMin: salaryMin ? parseInt(salaryMin) : null,
                 salaryMax: salaryMax ? parseInt(salaryMax) : null,
                 location,
                 vacancies: vacancies ? parseInt(vacancies) : 1,
                 description,
-                status: 'OPEN'
+                responsibilities,
+                requirements,
+                skills,
+                benefits,
+                deadline: deadline ? new Date(deadline) : null,
+                isFeatured: isFeatured === true || isFeatured === 'true',
+                isRemote: isRemote === true || isRemote === 'true',
+                status: status || 'OPEN'
             }
         })
 
@@ -79,7 +93,12 @@ export const editJob = async (req: Request, res: Response) => {
     try {
         const recruiterId = (req as any).user.id
         const id = req.params.id as string
-        const { title, department, experience, salaryMin, salaryMax, location, vacancies, description } = req.body
+        const { 
+            title, department, jobType, experience, 
+            salaryMin, salaryMax, location, vacancies, 
+            description, responsibilities, requirements, 
+            skills, benefits, deadline, isFeatured, isRemote 
+        } = req.body
 
         // Ensure the job belongs to this recruiter
         const existing = await prisma.job.findUnique({ where: { id } })
@@ -96,12 +115,20 @@ export const editJob = async (req: Request, res: Response) => {
             data: {
                 title,
                 department,
+                jobType,
                 experience,
                 salaryMin: salaryMin ? parseInt(salaryMin) : null,
                 salaryMax: salaryMax ? parseInt(salaryMax) : null,
                 location,
                 vacancies: vacancies ? parseInt(vacancies) : undefined,
-                description
+                description,
+                responsibilities,
+                requirements,
+                skills,
+                benefits,
+                deadline: deadline ? new Date(deadline) : null,
+                isFeatured: isFeatured === true || isFeatured === 'true',
+                isRemote: isRemote === true || isRemote === 'true'
             }
         })
 
@@ -141,6 +168,39 @@ export const closeJob = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('[closeJob]', error)
         return res.status(500).json({ message: 'Server error while closing job' })
+    }
+}
+
+// PATCH /api/jobs/:id/status - Update job status
+export const updateJobStatus = async (req: Request, res: Response) => {
+    try {
+        const recruiterId = (req as any).user.id
+        const id = req.params.id as string
+        const { status } = req.body
+
+        if (!['OPEN', 'CLOSED', 'DRAFT'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status' })
+        }
+
+        const existing = await prisma.job.findUnique({ where: { id } })
+        if (!existing) return res.status(404).json({ message: 'Job not found' })
+        if (existing.recruiterId !== recruiterId) {
+            return res.status(403).json({ message: 'You are not allowed to update this job' })
+        }
+
+        const job = await prisma.job.update({
+            where: { id },
+            data: { status }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: `Job status updated to ${status}`,
+            job
+        })
+    } catch (error) {
+        console.error('[updateJobStatus]', error)
+        return res.status(500).json({ message: 'Server error while updating job status' })
     }
 }
 

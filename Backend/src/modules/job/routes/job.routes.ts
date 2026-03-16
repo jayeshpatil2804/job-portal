@@ -7,6 +7,7 @@ import {
     getJobById,
     editJob,
     closeJob,
+    updateJobStatus,
     deleteJob,
     getAllOpenJobs
 } from '../controllers/job.controller'
@@ -28,6 +29,7 @@ router.post('/', validateJob, createJob)              // POST   /api/jobs
 router.get('/recruiter/my-jobs', getMyJobs)           // GET    /api/jobs/recruiter/my-jobs
 router.put('/:id', validateJob, editJob)              // PUT    /api/jobs/:id
 router.patch('/:id/close', closeJob)                  // PATCH  /api/jobs/:id/close
+router.patch('/:id/status', updateJobStatus)          // PATCH  /api/jobs/:id/status
 router.delete('/:id', deleteJob)                      // DELETE /api/jobs/:id
 
 export default router
