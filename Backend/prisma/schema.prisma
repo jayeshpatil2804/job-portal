@@ -101,6 +101,7 @@ model Recruiter {
   
   profile     CompanyProfile?
   files       File[]
+  jobs        Job[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -148,4 +149,33 @@ model OtpCode {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  recruiterId String
+  recruiter   Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  title       String
+  department  String
+  experience  String   // e.g. "0-1 years", "2-3 years", "5+ years"
+  salaryMin   Int?
+  salaryMax   Int?
+  location    String
+  vacancies   Int      @default(1)
+  description String   @db.Text
+
+  status      JobStatus @default(OPEN)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([recruiterId])
+  @@index([status])
 }
