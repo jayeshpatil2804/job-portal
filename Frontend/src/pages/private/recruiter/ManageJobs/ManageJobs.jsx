@@ -219,7 +219,11 @@ const ManageJobs = () => {
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{job.department}</td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{job.location}</td>
-                                            <td className="px-6 py-4 text-center text-sm font-bold text-blue-600">{job._count?.applications || 0}</td>
+                                            <td className="px-6 py-4 text-center text-sm font-bold text-blue-600">
+                                                <Link to={`/recruiter/applicants/${job.id}`} className="hover:underline">
+                                                    {job._count?.applications || 0}
+                                                </Link>
+                                            </td>
                                             <td className="px-6 py-4 text-sm text-gray-500">
                                                 {new Date(job.createdAt).toLocaleDateString()}
                                             </td>

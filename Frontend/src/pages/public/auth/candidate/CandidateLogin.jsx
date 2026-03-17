@@ -99,7 +99,7 @@ const CandidateLogin = () => {
                     </div>
 
                     <div className="text-sm">
-                        <Link to="/candidate/forgot-password" class="font-medium text-[#1a3c8f] hover:text-[#162f72]">
+                        <Link to="/candidate/forgot-password" className="font-medium text-[#1a3c8f] hover:text-[#162f72]">
                             Forgot your password?
                         </Link>
                     </div>

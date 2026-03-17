@@ -74,10 +74,14 @@ const CandidateInfoDetails = () => {
         return;
       }
 
+      const parsedSkills = savedData.skills 
+        ? (Array.isArray(savedData.skills) ? savedData.skills : savedData.skills.split(',').map(s => s.trim()).filter(Boolean))
+        : [];
+
       setFormData(prev => ({
         ...prev,
         ...savedData,
-        skills: savedData.skills || []
+        skills: parsedSkills
       }));
 
       // Sync step from URL or Redux

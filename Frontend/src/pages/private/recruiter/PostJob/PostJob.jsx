@@ -123,9 +123,10 @@ const PostJob = () => {
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Job Type</label>
                                 <select name="jobType" value={formData.jobType} onChange={handleChange} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                                     <option value="">Select Job Type</option>
-                                    <option value="Full-time">Full-time</option>
-                                    <option value="Part-time">Part-time</option>
-                                    <option value="Contract">Contract</option>
+                                    <option value="FULL_TIME">Full-time</option>
+                                    <option value="PART_TIME">Part-time</option>
+                                    <option value="CONTRACT">Contract</option>
+                                    <option value="INTERNSHIP">Internship</option>
                                 </select>
                             </div>
 

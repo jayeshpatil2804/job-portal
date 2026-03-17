@@ -40,3 +40,82 @@ export const sendOtpEmail = async (email: string, otp: string) => {
         return process.env.NODE_ENV !== 'production'
     }
 }
+
+export const sendInterviewEmail = async (email: string, details: {
+    jobTitle: string,
+    company: string,
+    date: string,
+    time: string,
+    mode: string,
+    location: string,
+    notes?: string
+}) => {
+    try {
+        console.log(`[INTERVIEW EMAIL DEBUG] To: ${email} | Job: ${details.jobTitle}`)
+
+        const msg = {
+            to: email,
+            from: SENDER_EMAIL,
+            subject: `Interview Scheduled: ${details.jobTitle} at ${details.company}`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1a3c8f; margin: 0; font-size: 24px;">Interview Invitation</h1>
+                        <p style="color: #64748b; margin-top: 5px;">Congratulations! Your application has been shortlisted.</p>
+                    </div>
+                    
+                    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Interview Details</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b; font-size: 14px; width: 100px;">Job Role:</td>
+                                <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold;">${details.jobTitle}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Company:</td>
+                                <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold;">${details.company}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Date:</td>
+                                <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold;">${details.date}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Time:</td>
+                                <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold;">${details.time}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Mode:</td>
+                                <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold; text-transform: uppercase;">${details.mode}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${details.mode === 'ONLINE' ? 'Link:' : 'Location:'}</td>
+                                <td style="padding: 8px 0; color: #1a3c8f; font-size: 14px; font-weight: bold;">
+                                    ${details.mode === 'ONLINE' ? `<a href="${details.location}" style="color: #1a3c8f;">Join Meeting</a>` : details.location}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    ${details.notes ? `
+                    <div style="margin-bottom: 30px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0f172a;">Additional Notes:</h4>
+                        <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.6;">${details.notes}</p>
+                    </div>
+                    ` : ''}
+
+                    <p style="font-size: 14px; color: #64748b; text-align: center; margin-top: 40px;">
+                        Good luck with your interview!<br/>
+                        <b>Team Losodhan</b>
+                    </p>
+                </div>
+            `,
+        }
+
+        await sgMail.send(msg)
+        console.log(`[INTERVIEW EMAIL SENT] To: ${email}`)
+        return true
+    } catch (error: any) {
+        console.error('SendGrid Interview Email error:', error.response?.body || error)
+        return process.env.NODE_ENV !== 'production'
+    }
+}

@@ -1,7 +1,8 @@
-import { Link, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { Menu, X } from 'lucide-react'
+import logo from '../assets/logo.png'
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false)
@@ -19,8 +20,8 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <Link to="/" className="text-[#1a3c8f] font-extrabold text-xl tracking-tight">
-                        LOSODHAN
+                    <Link to="/" className="flex items-center -ml-2">
+                        <img src={logo} alt="LOSODHAN" className="h-12 w-auto object-contain hover:scale-105 transition-transform" />
                     </Link>
 
                     {/* Desktop Nav Links */}

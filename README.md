@@ -39,8 +39,10 @@ Follow the instructions in the [Frontend README](./Frontend/README.md).
 
 ## ✨ Key Features
 
-- **Dual-Role Auth**: Separate flows for Candidates and Recruiters.
+- **Dual-Role Auth**: Separate flows for Candidates and Recruiters with secure JWT handling.
+- **Applicant Tracking**: Full lifecycle management from application to interview scheduling.
 - **Google Sign-In**: Integrated with role-smart synchronization.
 - **OTP Verification**: Email-based OTP for secure signup.
 - **Onboarding**: Multi-step profile setup for candidates and business verification for recruiters.
+- **Premium UI**: Modern React dashboard with specialized sidebars and refined branding.
 - **Security**: JWT-based auth with HttpOnly cookies and global 401 interceptors.

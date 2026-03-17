@@ -1,14 +1,8 @@
-import { useNavigate, Link, useLocation } from 'react-router-dom'
-import { 
-    LayoutDashboard, 
-    PlusCircle, 
-    Briefcase, 
-    Users, 
-    Calendar, 
-    LogOut 
-} from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { LayoutDashboard, PlusCircle, Briefcase, Users, Calendar, LogOut } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import api from '../utils/api'
-import toast from 'react-hot-toast'
+import logo from '../assets/logo.png'
 
 const RecruiterSidebar = () => {
     const location = useLocation()
@@ -34,9 +28,9 @@ const RecruiterSidebar = () => {
 
     return (
         <aside className="w-64 h-screen bg-[#1a3c8f] text-white flex flex-col fixed left-0 top-0 overflow-y-auto">
-            <div className="p-6">
-                <Link to="/" className="text-2xl font-extrabold tracking-wide">
-                    LOSODHAN
+            <div className="p-8 flex justify-center border-b border-blue-800/50">
+                <Link to="/" className="flex items-center">
+                    <img src={logo} alt="LOSODHAN" className="h-16 w-auto object-contain brightness-0 invert" />
                 </Link>
             </div>
 

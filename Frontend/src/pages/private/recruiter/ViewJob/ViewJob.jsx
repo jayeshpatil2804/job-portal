@@ -194,7 +194,10 @@ const ViewJob = () => {
                                 <Edit2 size={18} />
                                 Edit Job
                             </button>
-                            <button className="flex-1 md:flex-none px-8 py-3 bg-[#1a3c8f] text-white rounded-2xl font-bold shadow-xl shadow-blue-900/20 hover:bg-blue-800 transition-all active:scale-95 uppercase text-sm tracking-wider">
+                            <button 
+                                onClick={() => navigate(`/recruiter/applicants/${id}`)}
+                                className="flex-1 md:flex-none px-8 py-3 bg-[#1a3c8f] text-white rounded-2xl font-bold shadow-xl shadow-blue-900/20 hover:bg-blue-800 transition-all active:scale-95 uppercase text-sm tracking-wider"
+                            >
                                 View Applicants
                             </button>
                         </div>

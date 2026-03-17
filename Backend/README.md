@@ -2,14 +2,16 @@
 
 The robust API powering the Losodhan Job Portal.
 
-## 🚀 Key Features
+## ✨ Key Features
 
-- **Modular Architecture**: Organized by domains (Auth, File, etc.).
+- **Modular Architecture**: Organized by domains (Auth, Job, Application, Interview, etc.).
+- **Applicant Management**: Comprehensive endpoints for job applications and status tracking.
+- **Interview Scheduling**: Integrated logic for managing candidate interviews.
 - **Role-Smart Google Sync**: Handles Google Sign-In while respecting existing account roles.
 - **RBAC Middleware**: Strict role-based access control (`restrictTo`).
-- **Prisma & PostgreSQL**: Efficient data management with typesafety.
+- **Prisma & PostgreSQL**: Efficient data management with typesafety and relations.
 - **Supabase Storage**: Secure handling of PDF resumes and business documents.
-- **Email Service**: OTP delivery via SendGrid/Nodemailer.
+- **Email Service**: OTP and notification delivery via SendGrid.
 
 ## ⚙️ Prerequisites
 

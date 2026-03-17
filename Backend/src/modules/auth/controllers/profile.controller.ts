@@ -51,9 +51,13 @@ export const completeCandidateProfile = async (req: Request, res: Response) => {
             ...data 
         } = req.body
 
-        // Ensure skills is treated as an array if it exists
-        if (data.skills && !Array.isArray(data.skills)) {
-            data.skills = typeof data.skills === 'string' ? data.skills.split(',').map((s: string) => s.trim()) : [data.skills]
+        // Ensure skills is treated as a comma-separated string
+        if (data.skills) {
+            if (Array.isArray(data.skills)) {
+                data.skills = data.skills.join(',')
+            } else if (typeof data.skills !== 'string') {
+                data.skills = String(data.skills)
+            }
         }
 
         const profile = await (prisma as any).candidateProfile.upsert({
@@ -154,11 +158,13 @@ export const updateCandidateProfile = async (req: Request, res: Response) => {
             ...data 
         } = req.body
 
-        // Handle skills array conversion if provided
-        if (data.skills && !Array.isArray(data.skills)) {
-            data.skills = typeof data.skills === 'string'
-                ? data.skills.split(',').map((s: string) => s.trim())
-                : [data.skills]
+        // Ensure skills is treated as a comma-separated string
+        if (data.skills) {
+            if (Array.isArray(data.skills)) {
+                data.skills = data.skills.join(',')
+            } else if (typeof data.skills !== 'string') {
+                data.skills = String(data.skills)
+            }
         }
 
         const profile = await (prisma as any).candidateProfile.update({

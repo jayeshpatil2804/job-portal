@@ -54,6 +54,11 @@ export const getMyJobs = async (req: Request, res: Response) => {
 
         const jobs = await prisma.job.findMany({
             where: { recruiterId },
+            include: {
+                _count: {
+                    select: { applications: true }
+                }
+            },
             orderBy: { createdAt: 'desc' }
         })
 
@@ -74,7 +79,12 @@ export const getJobById = async (req: Request, res: Response) => {
 
         const job = await prisma.job.findUnique({
             where: { id },
-            include: { recruiter: { select: { fullName: true, companyName: true, email: true } } }
+            include: { 
+                recruiter: { select: { fullName: true, companyName: true, email: true } },
+                _count: {
+                    select: { applications: true }
+                }
+            }
         })
 
         if (!job) {
