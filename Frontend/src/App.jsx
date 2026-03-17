@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 // Public Pages
 import HomePage from './pages/public/HomePage'
 import JobsPage from './pages/public/JobsPage'
+import JobDetailPage from './pages/public/JobDetailPage'
 import SelectAccountPage from './pages/public/auth/SelectAccountPage'
 import CandidateLogin from './pages/public/auth/candidate/CandidateLogin'
 import CandidateSignup from './pages/public/auth/candidate/CandidateSignup'
@@ -43,6 +44,7 @@ function App() {
                 {/* Main App Routes */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/jobs" element={<JobsPage />} />
+                <Route path="/job/:id" element={<JobDetailPage />} />
 
                 {/* Protected Candidate Routes */}
                 <Route element={<CandidateProtectedRoute />}>
@@ -63,7 +65,7 @@ function App() {
                     <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
                     <Route path="/recruiter/view-job/:id" element={<ViewJob />} />
                     <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
-                    <Route path="/recruiter/applicants" element={<Applicants />} />
+                    <Route path="/recruiter/applicants/:jobId?" element={<Applicants />} />
                     <Route path="/recruiter/interviews" element={<Interviews />} />
                 </Route>
 

@@ -1,9 +1,19 @@
 import { Request, Response, NextFunction } from 'express'
 
 export const validateJob = (req: Request, res: Response, next: NextFunction) => {
-    const { title, department, experience, location, vacancies, description } = req.body
+    // Normalize jobType for flexibility (e.g., "Part-time" -> "PART_TIME")
+    if (req.body.jobType) {
+        req.body.jobType = req.body.jobType.toUpperCase().replace(/[-\s]/g, '_')
+    }
+    const { title, department, experience, location, vacancies, description, jobType } = req.body
+    
+    const validJobTypes = ['FULL_TIME', 'PART_TIME', 'INTERNSHIP', 'CONTRACT']
 
     const errors: string[] = []
+
+    if (jobType && !validJobTypes.includes(jobType)) {
+        errors.push('Invalid job type')
+    }
 
     if (!title || title.trim() === '') errors.push('Job title is required')
     if (!department || department.trim() === '') errors.push('Department is required')

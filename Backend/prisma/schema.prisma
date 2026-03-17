@@ -26,6 +26,7 @@ model Candidate {
   
   profile    CandidateProfile?
   files      File[]
+  applications Application[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -54,7 +55,7 @@ model CandidateProfile {
   yearsOfExp      String?
   
   // Skills
-  skills          String[]
+  skills          String?
   
   // Resume
   resumeUrl       String?
@@ -83,6 +84,8 @@ model File {
   gstProfile      CompanyProfile?  @relation("GstCertificate")
   msmeProfile     CompanyProfile?  @relation("MsmeCertificate")
   regProfile      CompanyProfile?  @relation("RegistrationCertificate")
+
+  applicationResumes Application[] @relation("ApplicationResume")
 
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -151,6 +154,13 @@ model OtpCode {
   @@index([email])
 }
 
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+}
+
 enum JobStatus {
   DRAFT
   OPEN
@@ -164,7 +174,7 @@ model Job {
 
   title            String
   department       String
-  jobType          String?
+  jobType          JobType?
   experience       String   // e.g. "0-1 years", "2-3 years", "5+ years"
   salaryMin        Int?
   salaryMax        Int?
@@ -180,10 +190,73 @@ model Job {
   isRemote         Boolean  @default(false)
 
   status           JobStatus @default(OPEN)
+  applications     Application[]
 
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
   @@index([recruiterId])
   @@index([status])
+  @@index([location])
+  @@index([department])
+}
+
+
+
+enum ApplicationStatus {
+  APPLIED
+  VIEWED
+  SHORTLISTED
+  INTERVIEW_SCHEDULED
+  HIRED
+  REJECTED
+}
+
+model Application {
+  id           String            @id @default(uuid())
+  jobId        String
+  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId  String
+  candidate    Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  
+  status       ApplicationStatus @default(APPLIED)
+  
+  resumeFileId String?
+  resumeFile   File?             @relation("ApplicationResume", fields: [resumeFileId], references: [id])
+  
+  interview    Interview?
+  
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([jobId, candidateId]) // Prevent duplicate applications
+  @@index([jobId])
+  @@index([candidateId])
+}
+
+enum InterviewMode {
+  ONLINE
+  OFFLINE
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model Interview {
+  id            String          @id @default(uuid())
+  applicationId String          @unique
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  date          DateTime
+  duration      Int?            // in minutes
+  mode          InterviewMode   @default(ONLINE)
+  location      String?         // Meeting link or physical address
+  notes         String?
+  status        InterviewStatus @default(SCHEDULED)
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }

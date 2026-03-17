@@ -5,8 +5,9 @@ A premium, high-performance dashboard UI for the Losodhan Job Portal.
 ## ✨ Highlights
 
 - **Vite Power**: Lightning-fast development and build.
-- **Premium UI**: Dark mode support, Glassmorphism, and smooth Framer Motion animations.
-- **State Management**: Robust state handling with Redux Toolkit.
+- **Premium UI**: Glassmorphism, smooth Framer Motion animations, and refined company branding.
+- **Applicant Dashboard**: Specialized views for recruiters to manage candidates and interviews.
+- **State Management**: Robust state handling with Redux Toolkit across auth, jobs, and applications.
 - **Protected Routes**: Custom guards for Candidates and Recruiters.
 - **Global API Layer**: Axios interceptors for error handling and session management.
 

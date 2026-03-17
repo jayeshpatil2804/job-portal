@@ -6,6 +6,8 @@ import recruiterAuthRoutes from './modules/auth/routes/recruiter.routes'
 import googleAuthRoutes from './modules/auth/routes/google.routes'
 import fileRoutes from './modules/file/routes/file.routes'
 import jobRoutes from './modules/job/routes/job.routes'
+import applicationRoutes from './modules/job/routes/application.routes'
+import interviewRoutes from './modules/job/routes/interview.routes'
 import path from 'path'
 
 import cookieParser from 'cookie-parser'
@@ -43,6 +45,8 @@ app.use('/api/recruiter', recruiterAuthRoutes)
 app.use('/api/users', googleAuthRoutes) // For Frontend API
 app.use('/api/file', fileRoutes)
 app.use('/api/jobs', jobRoutes)
+app.use('/api/applications', applicationRoutes)
+app.use('/api/interviews', interviewRoutes)
 app.use('/users', googleAuthRoutes)     // For Google Console Redirect
 
 // Test route
