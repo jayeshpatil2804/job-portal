@@ -42,6 +42,9 @@ model CandidateProfile {
   address         String?
   city            String?
   state           String?
+  pinCode         String?
+  dob             String?
+  gender          String?
   
   // Education
   qualification   String?

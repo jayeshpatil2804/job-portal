@@ -42,6 +42,10 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             onboardingStep, 
             isProfileCompleted, 
             companyName,
+            fullName,
+            email,
+            workEmail, // sometimes used in frontend instead of email
+            mobile,
             industry,
             website,
             address,
@@ -56,9 +60,24 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             registrationCertificateFileId
         } = req.body
 
+        // 1. Update Recruiter basic info if provided
+        const recruiterUpdateData: any = {}
+        if (fullName) recruiterUpdateData.fullName = fullName
+        if (email || workEmail) recruiterUpdateData.email = email || workEmail
+        if (mobile) recruiterUpdateData.mobile = mobile
+        if (companyName) recruiterUpdateData.companyName = companyName
+        if (isProfileCompleted) recruiterUpdateData.isProfileCompleted = true
+
+        if (Object.keys(recruiterUpdateData).length > 0) {
+            await (prisma as any).recruiter.update({
+                where: { id: recruiterId },
+                data: recruiterUpdateData
+            })
+        }
+
         const profileData = {
             onboardingStep: onboardingStep || undefined,
-            companyName, // Added to schema now
+            companyName,
             industry,
             website,
             address,
@@ -73,6 +92,7 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             registrationCertificateFileId
         }
 
+        // 2. Upsert Profile data
         const profile = await (prisma as any).companyProfile.upsert({
             where: { recruiterId },
             update: profileData,
@@ -82,18 +102,6 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
                 onboardingStep: onboardingStep || 1
             }
         })
-
-        // Also update the Recruiter's main companyName if provided
-        const recruiterUpdateData: any = {}
-        if (companyName) recruiterUpdateData.companyName = companyName
-        if (isProfileCompleted) recruiterUpdateData.isProfileCompleted = true
-
-        if (Object.keys(recruiterUpdateData).length > 0) {
-            await (prisma as any).recruiter.update({
-                where: { id: recruiterId },
-                data: recruiterUpdateData
-            })
-        }
 
         const updatedRecruiter = await (prisma as any).recruiter.findUnique({
             where: { id: recruiterId }
@@ -107,8 +115,19 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             profile
         })
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal server error' })
+        console.error('Update Company Profile Error:', error)
+        
+        if ((error as any).code === 'P2002') {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Email, mobile number, or GST number already in use.'
+            })
+        }
+
+        res.status(500).json({ 
+            status: 'error',
+            message: (error as any).message || 'Internal server error while updating company profile' 
+        })
     }
 }
 

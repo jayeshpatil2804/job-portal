@@ -151,38 +151,71 @@ export const updateCandidateProfile = async (req: Request, res: Response) => {
         const { 
             id, 
             candidateId: _, 
-            candidate, 
+            candidate, // Nested candidate object if provided
+            fullName,
+            email,
+            mobile,
             createdAt, 
             updatedAt, 
             resumeFile,
-            ...data 
+            ...profileData 
         } = req.body
 
-        // Ensure skills is treated as a comma-separated string
-        if (data.skills) {
-            if (Array.isArray(data.skills)) {
-                data.skills = data.skills.join(',')
-            } else if (typeof data.skills !== 'string') {
-                data.skills = String(data.skills)
+        // 1. Update Candidate basic info if provided
+        const candidateUpdateData: any = {}
+        if (fullName) candidateUpdateData.fullName = fullName
+        if (email) candidateUpdateData.email = email
+        if (mobile) candidateUpdateData.mobile = mobile
+
+        if (Object.keys(candidateUpdateData).length > 0) {
+            await (prisma as any).candidate.update({
+                where: { id: candidateId },
+                data: candidateUpdateData
+            })
+        }
+
+        // 2. Ensure skills is treated as a comma-separated string
+        if (profileData.skills) {
+            if (Array.isArray(profileData.skills)) {
+                profileData.skills = profileData.skills.join(',')
+            } else if (typeof profileData.skills !== 'string') {
+                profileData.skills = String(profileData.skills)
             }
         }
 
+        // 3. Update Profile data
         const profile = await (prisma as any).candidateProfile.update({
             where: { candidateId },
-            data
+            data: profileData
         })
 
         res.json({
+            status: 'success',
             message: 'Profile updated successfully',
             profile,
             isProfileCompleted: true
         })
     } catch (error) {
-        console.error(error)
-        // If profile doesn't exist, prisma.update will fail
+        console.error('Update Profile Error:', error)
+        
+        // Specific error handling for Prisma
         if ((error as any).code === 'P2025') {
-            return res.status(404).json({ message: 'Profile not found' })
+            return res.status(404).json({ 
+                status: 'error',
+                message: 'Profile not found. Please complete your profile setup first.' 
+            })
         }
-        res.status(500).json({ message: 'Internal server error' })
+
+        if ((error as any).code === 'P2002') {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Email or mobile number already in use.'
+            })
+        }
+
+        res.status(500).json({ 
+            status: 'error',
+            message: (error as any).message || 'Internal server error while updating profile' 
+        })
     }
 }

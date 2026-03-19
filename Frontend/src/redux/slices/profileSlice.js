@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchProfileStatus, updateProfile } from '../actions/profileActions';
+import { fetchProfileStatus, updateProfile, fetchProfile, updateCandidateProfile } from '../actions/profileActions';
 
 const initialState = {
   data: {},
@@ -55,6 +55,29 @@ export const profileSlice = createSlice({
         }
       })
       .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchProfile.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+        state.status = 'succeeded';
+      })
+      .addCase(fetchProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateCandidateProfile.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateCandidateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = { ...state.data, ...action.payload.profile };
+      })
+      .addCase(updateCandidateProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

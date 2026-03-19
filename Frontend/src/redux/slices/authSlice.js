@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { loginCandidate, logoutCandidate } from '../actions/authActions';
+import { loginCandidate, logoutCandidate, checkAuth } from '../actions/authActions';
 
 const initialState = {
   user: null,
   isAuthenticated: false,
   loading: false,
   error: null,
+  isCheckingAuth: true,
 };
 
 export const authSlice = createSlice({
@@ -37,6 +38,19 @@ export const authSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(logoutCandidate.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(checkAuth.pending, (state) => {
+        state.isCheckingAuth = true;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.isCheckingAuth = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(checkAuth.rejected, (state) => {
+        state.isCheckingAuth = false;
         state.user = null;
         state.isAuthenticated = false;
       });

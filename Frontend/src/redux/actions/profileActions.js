@@ -13,6 +13,30 @@ export const fetchProfileStatus = createAsyncThunk(
   }
 );
 
+export const fetchProfile = createAsyncThunk(
+  'profile/fetchProfile',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/candidate/profile');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
+    }
+  }
+);
+
+export const updateCandidateProfile = createAsyncThunk(
+  'profile/updateCandidate',
+  async (profileData, { rejectWithValue }) => {
+    try {
+      const response = await api.put('/candidate/profile', profileData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
+    }
+  }
+);
+
 export const updateProfile = createAsyncThunk(
   'profile/update',
   async (profileData, { rejectWithValue }) => {
