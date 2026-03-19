@@ -5,6 +5,7 @@ import recruiterProfileReducer from './slices/recruiterProfileSlice';
 import jobReducer from './slices/jobSlice';
 import applicationReducer from './slices/applicationSlice';
 import interviewReducer from './slices/interviewSlice';
+import dashboardReducer from './slices/dashboardSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,5 +15,6 @@ export const store = configureStore({
     job: jobReducer,
     application: applicationReducer,
     interview: interviewReducer,
+    dashboard: dashboardReducer,
   },
 });

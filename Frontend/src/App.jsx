@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 
@@ -32,11 +34,29 @@ import EditJob from './pages/private/recruiter/EditJob/EditJob'
 import ViewJob from './pages/private/recruiter/ViewJob/ViewJob'
 import Applicants from './pages/private/recruiter/Applicants/Applicants'
 import Interviews from './pages/private/recruiter/Interviews/Interviews'
+import RecruiterProfile from './pages/private/recruiter/RecruiterProfile/RecruiterProfile'
 
 import CandidateProtectedRoute from './components/CandidateProtectedRoute'
 import RecruiterProtectedRoute from './components/RecruiterProtectedRoute'
+import { checkAuth } from './redux/actions/authActions'
 
 function App() {
+    const dispatch = useDispatch()
+    const { isCheckingAuth } = useSelector((state) => state.auth)
+
+    useEffect(() => {
+        dispatch(checkAuth())
+    }, [dispatch])
+
+    if (isCheckingAuth) {
+        return (
+            <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-50">
+                <div className="w-12 h-12 border-4 border-[#1a3c8f] border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-[#1a3c8f] font-black uppercase tracking-widest text-xs">Verifying Session...</p>
+            </div>
+        )
+    }
+
     return (
         <BrowserRouter>
             <Toaster position="top-center" reverseOrder={false} />
@@ -67,6 +87,7 @@ function App() {
                     <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
                     <Route path="/recruiter/applicants/:jobId?" element={<Applicants />} />
                     <Route path="/recruiter/interviews" element={<Interviews />} />
+                    <Route path="/recruiter/profile" element={<RecruiterProfile />} />
                 </Route>
 
                 {/* Recruiter Onboarding */}

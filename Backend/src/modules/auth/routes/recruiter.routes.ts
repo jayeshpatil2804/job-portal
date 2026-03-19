@@ -13,6 +13,7 @@ import {
     updateCompanyProfile,
     getCompanyProfile
 } from '../controllers/recruiterProfile.controller'
+import { getRecruiterStats } from '../controllers/dashboard.controller'
 import { protect, restrictTo } from '../middleware/auth.middleware'
 import { validate } from '../middleware/validation.middleware'
 import {
@@ -38,5 +39,7 @@ router.post('/resend-otp', validate(resendOtpSchema), resendOtp as any)
 router.get('/profile-status', protect, restrictTo('RECRUITER'), getProfileStatus as any)
 router.post('/complete-profile', protect, restrictTo('RECRUITER'), updateCompanyProfile as any)
 router.get('/company-profile', protect, restrictTo('RECRUITER'), getCompanyProfile as any)
+router.get('/stats', protect, restrictTo('RECRUITER'), getRecruiterStats as any)
+router.get('/me', protect, (req: any, res: any) => res.status(200).json({ status: 'success', user: req.user }));
 
 export default router

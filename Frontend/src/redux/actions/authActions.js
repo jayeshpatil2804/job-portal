@@ -24,3 +24,22 @@ export const logoutCandidate = createAsyncThunk(
     }
   }
 );
+
+export const checkAuth = createAsyncThunk(
+  'auth/checkAuth',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Try candidate first
+      try {
+        const response = await api.get('/candidate/me');
+        return response.data.user;
+      } catch (e) {
+        // Then try recruiter
+        const response = await api.get('/recruiter/me');
+        return response.data.user;
+      }
+    } catch (error) {
+      return rejectWithValue('Not authenticated');
+    }
+  }
+);

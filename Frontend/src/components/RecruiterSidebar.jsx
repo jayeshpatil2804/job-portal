@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, PlusCircle, Briefcase, Users, Calendar, LogOut } from 'lucide-react'
+import { LayoutDashboard, PlusCircle, Briefcase, Users, Calendar, LogOut, User } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../utils/api'
 import logo from '../assets/logo.png'
@@ -14,6 +14,7 @@ const RecruiterSidebar = () => {
         { path: '/recruiter/manage-jobs', label: 'Manage Jobs', icon: <Briefcase size={20} /> },
         { path: '/recruiter/applicants', label: 'Applicants', icon: <Users size={20} /> },
         { path: '/recruiter/interviews', label: 'Interviews', icon: <Calendar size={20} /> },
+        { path: '/recruiter/profile', label: 'Profile', icon: <User size={20} /> },
     ]
 
     const handleLogout = async () => {

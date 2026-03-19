@@ -8,6 +8,7 @@ import {
     deleteProfile,
     updateCandidateProfile 
 } from '../controllers/profile.controller';
+import { getCandidateStats } from '../controllers/dashboard.controller';
 import { validate } from '../middleware/validation.middleware';
 import { 
     candidateSignupSchema, 
@@ -34,5 +35,7 @@ router.post('/complete-profile', protect, restrictTo('CANDIDATE'), completeCandi
 router.get('/profile', protect, restrictTo('CANDIDATE'), getProfile);
 router.put('/profile', protect, restrictTo('CANDIDATE'), updateCandidateProfile);
 router.delete('/profile', protect, restrictTo('CANDIDATE'), deleteProfile);
+router.get('/stats', protect, restrictTo('CANDIDATE'), getCandidateStats);
+router.get('/me', protect, (req: any, res: any) => res.status(200).json({ status: 'success', user: req.user }));
 
 export default router;

@@ -11,8 +11,11 @@ const InterviewCard = ({ interview, isRecruiter }) => {
     const interviewDate = new Date(date)
     
     // For recruiters, show candidate name. For candidates, show company name.
-    const displayName = isRecruiter ? application.candidate.fullName : application.job.recruiter.companyName
-    const displayInfo = isRecruiter ? application.job.title : application.job.title
+    const displayName = isRecruiter 
+        ? (application?.candidate?.fullName || 'Unknown Candidate') 
+        : (application?.job?.recruiter?.companyName || 'Unknown Company')
+        
+    const displayInfo = application?.job?.title || 'Unknown Position'
     const Icon = isRecruiter ? User : Building
 
     return (
