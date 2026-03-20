@@ -8,6 +8,9 @@ export const fetchProfileStatus = createAsyncThunk(
       const response = await api.get('/candidate/profile-status');
       return response.data;
     } catch (error) {
+      if (error.response?.status === 401) {
+        return rejectWithValue('401');
+      }
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch status');
     }
   }
@@ -20,6 +23,9 @@ export const fetchProfile = createAsyncThunk(
       const response = await api.get('/candidate/profile');
       return response.data;
     } catch (error) {
+      if (error.response?.status === 401) {
+        return rejectWithValue('401');
+      }
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
     }
   }

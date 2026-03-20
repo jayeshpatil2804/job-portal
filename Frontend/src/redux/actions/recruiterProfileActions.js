@@ -8,6 +8,9 @@ export const fetchRecruiterProfileStatus = createAsyncThunk(
       const response = await api.get('/recruiter/profile-status');
       return response.data;
     } catch (error) {
+      if (error.response?.status === 401) {
+        return rejectWithValue('401');
+      }
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch status');
     }
   }
