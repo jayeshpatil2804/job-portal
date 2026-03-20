@@ -12,12 +12,9 @@ const api = axios.create({
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            // Check if we are already on the login page to avoid loops
-            if (!window.location.pathname.includes('/login')) {
-                window.location.href = '/candidate/login';
-            }
-        }
+        // We removed the automatic redirect to /candidate/login here
+        // to allow public pages to render and let route guards handle
+        // redirection when necessary.
         return Promise.reject(error);
     }
 );
