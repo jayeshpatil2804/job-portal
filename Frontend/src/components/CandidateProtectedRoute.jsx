@@ -7,6 +7,7 @@ const CandidateProtectedRoute = ({ onlyAuth = false }) => {
     const dispatch = useDispatch();
     const { 
         isProfileCompleted, 
+        isPaid,
         status: profileStatus,
         error 
     } = useSelector(state => state.profile);
@@ -41,6 +42,11 @@ const CandidateProtectedRoute = ({ onlyAuth = false }) => {
     // If profile is not completed, they must complete it
     if (!isProfileCompleted) {
         return <Navigate to="/candidate/complete-profile" replace />;
+    }
+
+    // If profile is completed but NOT paid, redirect to payment step (onboarding step 4)
+    if (!isPaid) {
+        return <Navigate to="/candidate/complete-profile/4" replace />;
     }
 
     return <Outlet />;

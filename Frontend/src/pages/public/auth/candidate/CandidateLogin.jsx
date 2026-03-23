@@ -29,7 +29,11 @@ const CandidateLogin = () => {
             toast.success('Login successful!');
             
             if (result.user.isProfileCompleted) {
-                navigate('/dashboard');
+                if (result.user.isPaid) {
+                    navigate('/dashboard');
+                } else {
+                    navigate('/candidate/complete-profile/4');
+                }
             } else {
                 navigate('/candidate/complete-profile');
             }

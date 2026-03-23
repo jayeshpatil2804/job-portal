@@ -24,7 +24,14 @@ const CandidateSignup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/candidate/signup', formData);
+            // Remove confirmPassword and sanitize mobile
+            const { confirmPassword, ...submitData } = formData;
+            const sanitizedData = {
+                ...submitData,
+                mobile: submitData.mobile.replace(/\D/g, '') // Keep only digits
+            };
+            
+            const response = await api.post('/candidate/signup', sanitizedData);
             toast.success(response.data.message || 'Signup successful!');
             navigate(`/candidate/verify-otp/${formData.email}`);
         } catch (error) {

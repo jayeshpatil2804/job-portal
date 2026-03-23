@@ -13,6 +13,19 @@ export const createJob = async (req: Request, res: Response) => {
             status 
         } = req.body
 
+        // Check if recruiter has paid
+        const recruiter = await prisma.recruiter.findUnique({
+            where: { id: recruiterId },
+            select: { isPaid: true }
+        })
+
+        if (!recruiter?.isPaid) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Payment required to post jobs. Please complete your payment.' 
+            })
+        }
+
         const job = await prisma.job.create({
             data: {
                 recruiterId,

@@ -7,6 +7,7 @@ export const validate = (schema: Schema) => {
         
         if (error) {
             const errorMessage = error.details.map((detail) => detail.message).join(', ');
+            console.error('Validation Error:', errorMessage, 'Body:', req.body);
             return res.status(400).json({ 
                 success: false, 
                 message: errorMessage 

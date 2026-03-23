@@ -26,7 +26,7 @@ export const signup = async (req: Request, res: Response) => {
                 companyName,
                 mobile,
                 password: hashedPassword,
-                isVerified: false
+                verificationStatus: 'PENDING'
             }
         })
 
@@ -81,7 +81,7 @@ export const login = async (req: Request, res: Response) => {
         }
 
         // Require verification before login
-        if (!recruiter.isVerified) {
+        if (recruiter.verificationStatus !== 'APPROVED') {
             // Generate OTP
             const otp = generateOtp()
             const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
@@ -183,7 +183,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
         // Mark user verified
         const recruiter = await prisma.recruiter.update({
             where: { email: workEmail },
-            data: { isVerified: true }
+            data: { verificationStatus: 'APPROVED' }
         })
 
         const token = generateToken(recruiter.id, recruiter.role)

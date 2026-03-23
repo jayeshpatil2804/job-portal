@@ -11,7 +11,7 @@ const Navbar = () => {
 
     const navLinks = [
         { label: 'Home', path: '/' },
-        { label: 'Jobs', path: user ? '/jobs' : '/login' },
+        { label: 'Jobs', path: user ? '/jobs' : '/candidate/login' },
         { label: 'Recruiter', path: user?.role === 'RECRUITER' ? '/recruiter/dashboard' : '/recruiter/login' },
     ]
 
