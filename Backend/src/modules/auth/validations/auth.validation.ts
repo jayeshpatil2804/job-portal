@@ -25,25 +25,35 @@ export const recruiterLoginSchema = Joi.object({
     password: Joi.string().required()
 });
 
+export const adminLoginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+});
+
 export const forgotPasswordSchema = Joi.object({
     email: Joi.string().email(),
-    workEmail: Joi.string().email()
-}).xor('email', 'workEmail');
+    workEmail: Joi.string().email(),
+    adminEmail: Joi.string().email()
+}).xor('email', 'workEmail', 'adminEmail');
 
 export const verifyOtpSchema = Joi.object({
     email: Joi.string().email(),
     workEmail: Joi.string().email(),
+    adminEmail: Joi.string().email(),
     otp: Joi.string().length(6).required()
-}).xor('email', 'workEmail');
+}).xor('email', 'workEmail', 'adminEmail');
 
 export const resetPasswordSchema = Joi.object({
     email: Joi.string().email(),
     workEmail: Joi.string().email(),
+    adminEmail: Joi.string().email(),
     otp: Joi.string().length(6).required(),
     newPassword: Joi.string().required().min(6)
-}).xor('email', 'workEmail');
+}).xor('email', 'workEmail', 'adminEmail');
 
 export const resendOtpSchema = Joi.object({
     email: Joi.string().email(),
-    workEmail: Joi.string().email()
-}).xor('email', 'workEmail');
+    workEmail: Joi.string().email(),
+    adminEmail: Joi.string().email()
+}).xor('email', 'workEmail', 'adminEmail');
+

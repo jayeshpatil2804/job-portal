@@ -1,45 +1,109 @@
-# Losodhan Frontend
+# 🎨 LOSODHAN – Frontend
 
-A premium, high-performance dashboard UI for the Losodhan Job Portal.
+React 18 frontend for the LOSODHAN Job Portal.
 
-## ✨ Highlights
+---
 
-- **Vite Power**: Lightning-fast development and build.
-- **Premium UI**: Glassmorphism, smooth Framer Motion animations, and refined company branding.
-- **Applicant Dashboard**: Specialized views for recruiters to manage candidates and interviews.
-- **State Management**: Robust state handling with Redux Toolkit across auth, jobs, and applications.
-- **Protected Routes**: Custom guards for Candidates and Recruiters.
-- **Global API Layer**: Axios interceptors for error handling and session management.
+## 📦 Tech Stack
 
-## 🛠️ Getting Started
+- **Framework**: React 18 + Vite
+- **State Management**: Redux Toolkit
+- **Routing**: React Router v6
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Charts**: Recharts (lazy-loaded)
+- **Payments**: Razorpay Checkout (JS SDK)
+- **Toasts**: react-hot-toast
 
-### 1. Install Dependencies
-```bash
-npm install
+---
+
+## ✨ Key Features
+
+### 🧑 Candidate Flow
+1. Sign up with email OTP verification
+2. 4-step profile onboarding (Personal → Education → Experience → Resume)
+3. Razorpay payment gate before dashboard access
+4. Browse jobs, apply with resume, track application status
+
+### 🏢 Recruiter Flow
+1. Sign up with email OTP verification
+2. 4-step business onboarding (Company → Address → GST → Documents)
+3. Razorpay payment gate before dashboard access
+4. Post jobs, manage applicants, schedule interviews
+
+### 🧑‍💼 Admin Panel
+- **Dashboard**: Live stats + Charts (lazy-loaded via Suspense)
+- **Recruiter Approval**: Approve / Reject / Reset pending recruiters
+- **Job Moderation**: Flag / Unflag / Remove / Restore job listings
+- **Candidate Management**: View and manage all candidates
+- **Sub-Admin Management**: Assign permissions per feature module
+- **Reports**: Download CSV exports per data category
+
+---
+
+## 🗂️ Project Structure
+
+```
+src/
+├── components/
+│   ├── common/
+│   │   └── PaymentProcess.jsx   # Razorpay checkout wrapper
+│   ├── AdminProtectedRoute.jsx
+│   └── CandidateProtectedRoute.jsx
+├── pages/
+│   ├── public/auth/             # Login, Signup, OTP, ForgotPassword
+│   └── private/
+│       ├── admin/               # All admin panel pages (lazy-loaded)
+│       ├── candidate/           # Candidate dashboard & onboarding
+│       └── recruiter/           # Recruiter dashboard & onboarding
+├── redux/
+│   ├── actions/                 # Async thunks
+│   └── slices/                  # State slices
+└── utils/
+    └── api.js                   # Axios instance with base URL & interceptors
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file in the root:
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env` file:
+
 ```env
 VITE_BACKEND_URL=http://localhost:5000/api
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-VITE_GOOGLE_CLIENT_ID=
+VITE_RAZORPAY_KEY_ID=rzp_test_...
 ```
 
-### 3. Run Development Server
+---
+
+## 🚀 Getting Started
+
 ```bash
+# Install dependencies
+npm install
+
+# Start dev server
 npm run dev
+
+# Build for production
+npm run build
 ```
 
-## 📁 Key Directories
+---
 
-- `src/pages/public`: Publicly accessible pages (Home, Login).
-- `src/pages/private`: Protected dashboards and profile setup.
-- `src/redux/slices`: Redux state logic.
-- `src/components`: Reusable premium UI components.
+## 💳 Razorpay Integration
 
-## 🎨 Styling
+- The Razorpay Checkout script is loaded globally from `index.html`
+- The `PaymentProcess` component handles order creation, the modal, and verification
+- On success, users are redirected to their respective dashboards
+- Payment status and transaction IDs are stored on the backend
 
-- **Tailwind CSS**: Utility-first styling with a custom professional color palette.
-- **Lucide React**: Clean and consistent iconography.
+---
+
+## 🚀 Performance Optimizations
+
+- All Admin pages are **lazy-loaded** via `React.lazy` + `Suspense`
+- The heavy `recharts` library is **code-split** into a separate `DashboardCharts` chunk
+- API calls are **de-duplicated** using `useRef` to prevent double-fetching on mount
+- Backend queries use Prisma `select` to minimize payload size

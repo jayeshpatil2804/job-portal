@@ -5,6 +5,7 @@ const initialState = {
   data: {},
   currentStep: 1,
   isProfileCompleted: false,
+  isPaid: false,
   loading: false,
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
@@ -32,6 +33,7 @@ export const profileSlice = createSlice({
         state.loading = false;
         state.currentStep = action.payload.currentStep;
         state.isProfileCompleted = action.payload.isProfileCompleted;
+        state.isPaid = action.payload.isPaid;
         state.data = action.payload.data;
       })
       .addCase(fetchProfileStatus.rejected, (state, action) => {
@@ -52,6 +54,10 @@ export const profileSlice = createSlice({
         
         if (action.payload.isProfileCompleted !== undefined) {
           state.isProfileCompleted = action.payload.isProfileCompleted;
+        }
+
+        if (action.payload.isPaid !== undefined) {
+          state.isPaid = action.payload.isPaid;
         }
       })
       .addCase(updateProfile.rejected, (state, action) => {

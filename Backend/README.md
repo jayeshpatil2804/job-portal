@@ -1,60 +1,114 @@
-# Losodhan Backend
+# 🔧 LOSODHAN – Backend
 
-The robust API powering the Losodhan Job Portal.
+Express.js + TypeScript backend for the LOSODHAN Job Portal.
 
-## ✨ Key Features
+---
 
-- **Modular Architecture**: Organized by domains (Auth, Job, Application, Interview, etc.).
-- **Applicant Management**: Comprehensive endpoints for job applications and status tracking.
-- **Interview Scheduling**: Integrated logic for managing candidate interviews.
-- **Role-Smart Google Sync**: Handles Google Sign-In while respecting existing account roles.
-- **RBAC Middleware**: Strict role-based access control (`restrictTo`).
-- **Prisma & PostgreSQL**: Efficient data management with typesafety and relations.
-- **Supabase Storage**: Secure handling of PDF resumes and business documents.
-- **Email Service**: OTP and notification delivery via SendGrid.
+## 📦 Tech Stack
 
-## ⚙️ Prerequisites
+- **Runtime**: Node.js + TypeScript
+- **Framework**: Express.js
+- **ORM**: Prisma (PostgreSQL via Supabase)
+- **Auth**: JWT (HttpOnly Cookies) + Google OAuth
+- **Payments**: Razorpay
+- **Email**: SendGrid
+- **Storage**: Supabase Storage
 
-- Node.js (v18+)
-- PostgreSQL Database (Supabase recommended)
-- Supabase account for file storage
+---
 
-## 🛠️ Getting Started
+## 🗄️ Database Models
 
-### 1. Install Dependencies
-```bash
-npm install
-```
+| Model | Description |
+|---|---|
+| `Candidate` | Job seeker with `isPaid`, `isVerified` fields |
+| `Recruiter` | Hiring company with `isPaid`, `verificationStatus` |
+| `Admin` | Super admin and sub-admins with `permissions[]` |
+| `Payment` | Razorpay transaction records (orderId, paymentId, status) |
+| `Job` | Job listings with moderation flags |
+| `Application` | ATS tracking from APPLIED → HIRED |
+| `Interview` | Scheduled interviews linked to applications |
+| `CandidateProfile` | Multi-step onboarding data |
+| `CompanyProfile` | Recruiter business verification data |
+| `File` | Supabase-backed file references (resumes, GST docs) |
+| `OtpCode` | Time-limited OTP codes |
 
-### 2. Configure Environment Variables
-Create a `.env` file based on the keys below:
+---
+
+## 🌐 API Routes
+
+| Prefix | Description |
+|---|---|
+| `POST /api/candidate/*` | Candidate auth, profile, stats |
+| `POST /api/recruiter/*` | Recruiter auth, profile |
+| `POST /api/auth/admin/*` | Admin login, OTP, password reset |
+| `GET/POST /api/admin/*` | Admin management (approval, moderation, reports) |
+| `POST /api/payment/*` | Razorpay order creation & verification |
+| `GET/POST /api/jobs/*` | Job CRUD |
+| `GET/POST /api/applications/*` | Application management |
+| `GET/POST /api/interviews/*` | Interview scheduling |
+| `POST /api/file/*` | File upload (Supabase) |
+| `GET /api/users/*` | Google OAuth |
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env` file from the following template:
+
 ```env
-PORT=5000
-DATABASE_URL=
-DIRECT_URL=
-JWT_SECRET=
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-FRONTEND_URL=http://localhost:5173
-SENDGRID_API_KEY=
-SENDER_EMAIL=
+# Database
+DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://...
+
+# Supabase
+SUPABASE_URL=https://...
+SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+
+# JWT
+JWT_SECRET=your_jwt_secret
+
+# Google OAuth
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+
+# SendGrid
+SENDGRID_API_KEY=...
+SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+
+# Razorpay
+RAZORPAY_KEY_ID=rzp_test_...
+RAZORPAY_KEY_SECRET=...
 ```
 
-### 3. Database Migration
+---
+
+## 🚀 Getting Started
+
 ```bash
-npx prisma generate
+# Install dependencies
+npm install
+
+# Push schema to DB
 npx prisma db push
-```
 
-### 4. Run Development Server
-```bash
+# Generate Prisma client
+npx prisma generate
+
+# Seed super admin
+npx ts-node src/scripts/seedAdmin.ts
+
+# Start dev server
 npm run dev
 ```
 
-## 📡 API Endpoints
+---
 
-- `POST /api/candidate/signup` - Candidate registration
-- `POST /api/recruiter/signup` - Recruiter registration
-- `POST /api/users/sync-google` - Google account synchronization
-- `PUT /api/candidate/complete-profile` - Step-wise onboarding
-- `POST /api/file/upload` - Secure file upload
+## 💳 Razorpay Payment Flow
+
+1. Frontend calls `POST /api/payment/create-order` (protected)
+2. Backend creates a Razorpay order and saves it to `Payment` table with `PENDING`
+3. Frontend opens Razorpay Checkout
+4. On success, frontend calls `POST /api/payment/verify-payment` with signature
+5. Backend verifies HMAC signature, updates `Payment` → `COMPLETED`
+6. Sets `isPaid = true` and `isVerified = true` on Candidate/Recruiter

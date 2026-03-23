@@ -15,22 +15,35 @@ import {
 } from '../../../../redux/actions/profileActions';
 import { uploadResume } from '../../../../redux/actions/fileActions';
 import { setStep } from '../../../../redux/slices/profileSlice';
+import PaymentProcess from '../../../../components/common/PaymentProcess';
 
 const CandidateInfoDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { step } = useParams();
   
-  // Redux state
+  const [showPayment, setShowPayment] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
+
+  const handlePaymentSuccess = async () => {
+    try {
+      await dispatch(fetchProfileStatus()).unwrap();
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Payment refresh error:', err);
+      navigate('/dashboard', { replace: true });
+    }
+  };
+  
   const { 
     data: savedData, 
     currentStep: reduxStep, 
     isProfileCompleted, 
+    isPaid,
     loading: reduxLoading,
     status: profileStatus 
   } = useSelector(state => state.profile);
 
-  const [localLoading, setLocalLoading] = useState(false);
   const [formData, setFormData] = useState({
     // Personal Details
     address: '',
@@ -59,19 +72,17 @@ const CandidateInfoDetails = () => {
     { title: 'Resume', icon: FileText }
   ];
 
-  // Fetch initial profile status
-  useEffect(() => {
-    if (profileStatus === 'idle') {
-      dispatch(fetchProfileStatus());
-    }
-  }, [dispatch, profileStatus]);
-
   // Sync saved data to local form when fetch succeeds
   useEffect(() => {
     if (profileStatus === 'succeeded' && savedData) {
-      if (isProfileCompleted) {
-        navigate('/dashboard');
+      if (isProfileCompleted && isPaid) {
+        navigate('/dashboard', { replace: true });
         return;
+      }
+      
+      // If profile is done but NOT paid, auto-show payment
+      if (isProfileCompleted && !isPaid) {
+        setShowPayment(true);
       }
 
       const parsedSkills = savedData.skills 
@@ -205,9 +216,8 @@ const CandidateInfoDetails = () => {
         onboardingStep: 4
       })).unwrap();
       
-      toast.success('Profile completed successfully!');
-      // State transition will be handled by the updateProfile.fulfilled slice logic
-      navigate('/dashboard', { replace: true });
+      toast.success('Profile saved! Finalizing verification...');
+      setShowPayment(true);
     } catch (error) {
       toast.error(error || 'Failed to update profile');
     } finally {
@@ -551,46 +561,62 @@ const CandidateInfoDetails = () => {
 
         {/* Form Content */}
         <div className="min-h-[300px]">
-          <AnimatePresence mode="wait">
-            {renderStep()}
-          </AnimatePresence>
+          {showPayment ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="py-10"
+            >
+              <PaymentProcess 
+                amount={1} 
+                userType="CANDIDATE"
+                onSuccess={handlePaymentSuccess}
+              />
+            </motion.div>
+          ) : (
+            <AnimatePresence mode="wait">
+              {renderStep()}
+            </AnimatePresence>
+          )}
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
-          <button
-            type="button"
-            onClick={prevStep}
-            disabled={reduxStep === 1 || isGlobalLoading}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all ${
-              reduxStep === 1 
-                ? 'text-slate-300 cursor-not-allowed' 
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <ChevronLeft className="w-5 h-5" /> Previous
-          </button>
+        {!showPayment && (
+          <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
+            <button
+              type="button"
+              onClick={prevStep}
+              disabled={reduxStep === 1 || isGlobalLoading}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all ${
+                reduxStep === 1 
+                  ? 'text-slate-300 cursor-not-allowed' 
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <ChevronLeft className="w-5 h-5" /> Previous
+            </button>
 
-          {reduxStep < 4 ? (
-            <button
-              type="button"
-              onClick={nextStep}
-              disabled={isGlobalLoading}
-              className="flex items-center gap-2 px-8 py-2.5 bg-[#1a3c8f] text-white rounded-xl font-medium hover:bg-[#162f72] transition-all shadow-md active:scale-95 disabled:opacity-50"
-            >
-              {isGlobalLoading ? 'Saving...' : <>Next Step <ChevronRight className="w-5 h-5" /></>}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isGlobalLoading}
-              className="flex items-center gap-2 px-8 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-all shadow-md active:scale-95 disabled:opacity-50"
-            >
-              {isGlobalLoading ? 'Completing...' : <>Complete Profile <CheckCircle2 className="w-5 h-5" /></>}
-            </button>
-          )}
-        </div>
+            {reduxStep < 4 ? (
+              <button
+                type="button"
+                onClick={nextStep}
+                disabled={isGlobalLoading}
+                className="flex items-center gap-2 px-8 py-2.5 bg-[#1a3c8f] text-white rounded-xl font-medium hover:bg-[#162f72] transition-all shadow-md active:scale-95 disabled:opacity-50"
+              >
+                {isGlobalLoading ? 'Saving...' : <>Next Step <ChevronRight className="w-5 h-5" /></>}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isGlobalLoading}
+                className="flex items-center gap-2 px-8 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-all shadow-md active:scale-95 disabled:opacity-50"
+              >
+                {isGlobalLoading ? 'Completing...' : <>Complete Profile <CheckCircle2 className="w-5 h-5" /></>}
+              </button>
+            )}
+          </div>
+        )}
         </div>
       </div>
     </div>

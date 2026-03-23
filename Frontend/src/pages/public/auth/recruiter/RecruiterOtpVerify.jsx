@@ -5,7 +5,7 @@ import api from '../../../../utils/api'
 import toast from 'react-hot-toast'
 import { KeyRound } from 'lucide-react'
 import { useDispatch } from 'react-redux'
-import { setUser } from '../../../../redux/slices/authSlice'
+import { verifyRecruiterOtp } from '../../../../redux/actions/authActions'
 
 const RecruiterOtpVerify = () => {
     const [otp, setOtp] = useState(['', '', '', '', '', ''])
@@ -61,16 +61,17 @@ const RecruiterOtpVerify = () => {
         }
 
         try {
-            const response = await api.post('/recruiter/verify-otp', { workEmail, otp: otpCode })
-            toast.success(response.data.message || 'OTP Verified!')
-            
-            // Critical Fix: Update Redux state so ProtectedRoutes don't reject the navigation
-            if (response.data.user) {
-                dispatch(setUser(response.data.user))
-            }
+            const result = await dispatch(verifyRecruiterOtp({ workEmail, otp: otpCode })).unwrap();
+            toast.success(result.message || 'OTP Verified!')
             
             if (location.state?.purpose === 'reset-password') {
                 navigate('/recruiter/reset-password', { state: { email: workEmail, otp: otpCode } })
+            } else if (result.user?.isProfileCompleted) {
+                if (result.user?.isPaid) {
+                    navigate('/recruiter/dashboard')
+                } else {
+                    navigate('/recruiter/complete-profile/4')
+                }
             } else {
                 // Redirect directly to the 4-step recruiter onboarding
                 navigate('/recruiter/complete-profile/1', { 
@@ -78,7 +79,7 @@ const RecruiterOtpVerify = () => {
                 })
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Verification failed')
+            toast.error(error.message || 'Verification failed')
         }
     }
 

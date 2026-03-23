@@ -1,7 +1,15 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+
+// UI Components
+const PageLoader = () => (
+    <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-50">
+        <div className="w-12 h-12 border-4 border-[#1a3c8f] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-[#1a3c8f] font-black uppercase tracking-widest text-xs animate-pulse">Loading...</p>
+    </div>
+)
 
 // Public Pages
 import HomePage from './pages/public/HomePage'
@@ -21,6 +29,12 @@ import RecruiterResetPassword from './pages/public/auth/recruiter/RecruiterReset
 import GoogleCallback from './pages/public/auth/GoogleCallback'
 import CompleteProfile from './pages/public/auth/CompleteProfile'
 
+// Admin Auth Pages
+import AdminLogin from './pages/public/auth/admin/AdminLogin'
+import AdminForgotPassword from './pages/public/auth/admin/AdminForgotPassword'
+import AdminOtpVerify from './pages/public/auth/admin/AdminOtpVerify'
+import AdminResetPassword from './pages/public/auth/admin/AdminResetPassword'
+
 // Private Pages
 import ProfilePage from './pages/private/ProfilePage'
 import DashboardPage from './pages/private/DashboardPage'
@@ -36,8 +50,18 @@ import Applicants from './pages/private/recruiter/Applicants/Applicants'
 import Interviews from './pages/private/recruiter/Interviews/Interviews'
 import RecruiterProfile from './pages/private/recruiter/RecruiterProfile/RecruiterProfile'
 
+// Lazy loaded Admin Pages
+const AdminDashboard = lazy(() => import('./pages/private/admin/AdminDashboard'))
+const RecruiterApproval = lazy(() => import('./pages/private/admin/RecruiterApproval'))
+const CandidateManagement = lazy(() => import('./pages/private/admin/CandidateManagement'))
+const JobModeration = lazy(() => import('./pages/private/admin/JobModeration'))
+const SubAdminManagement = lazy(() => import('./pages/private/admin/SubAdminManagement'))
+const ReportsSection = lazy(() => import('./pages/private/admin/ReportsSection'))
+
+// Auth Wrappers
 import CandidateProtectedRoute from './components/CandidateProtectedRoute'
 import RecruiterProtectedRoute from './components/RecruiterProtectedRoute'
+import AdminProtectedRoute from './components/AdminProtectedRoute'
 import { checkAuth } from './redux/actions/authActions'
 
 function App() {
@@ -65,7 +89,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/jobs" element={<JobsPage />} />
                 <Route path="/job/:id" element={<JobDetailPage />} />
-
+                
                 {/* Protected Candidate Routes */}
                 <Route element={<CandidateProtectedRoute />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
@@ -117,9 +141,48 @@ function App() {
                 <Route path="/google-callback" element={<GoogleCallback />} />
                 <Route path="/auth/complete-profile" element={<CompleteProfile />} />
 
+                {/* Admin Routes (Protected & Lazy Loaded) */}
+                <Route element={<AdminProtectedRoute />}>
+                    <Route path="/admin/dashboard" element={
+                        <Suspense fallback={<PageLoader />}>
+                            <AdminDashboard />
+                        </Suspense>
+                    } />
+                    <Route path="/admin/recruiters" element={
+                        <Suspense fallback={<PageLoader />}>
+                            <RecruiterApproval />
+                        </Suspense>
+                    } />
+                    <Route path="/admin/candidates" element={
+                        <Suspense fallback={<PageLoader />}>
+                            <CandidateManagement />
+                        </Suspense>
+                    } />
+                    <Route path="/admin/jobs" element={
+                        <Suspense fallback={<PageLoader />}>
+                            <JobModeration />
+                        </Suspense>
+                    } />
+                    <Route path="/admin/sub-admins" element={
+                        <Suspense fallback={<PageLoader />}>
+                            <SubAdminManagement />
+                        </Suspense>
+                    } />
+                    <Route path="/admin/reports" element={
+                        <Suspense fallback={<PageLoader />}>
+                            <ReportsSection />
+                        </Suspense>
+                    } />
+                </Route>
+
+                {/* Admin Auth Routes (Secure) */}
+                <Route path="/auth/admin/secure/login" element={<AdminLogin />} />
+                <Route path="/auth/admin/secure/forgot-password" element={<AdminForgotPassword />} />
+                <Route path="/auth/admin/secure/verify-otp/:email" element={<AdminOtpVerify />} />
+                <Route path="/auth/admin/secure/reset-password" element={<AdminResetPassword />} />
             </Routes>
         </BrowserRouter>
     )
 }
 
-export default App
+export default App 

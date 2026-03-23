@@ -13,6 +13,54 @@ export const loginCandidate = createAsyncThunk(
   }
 );
 
+export const loginRecruiter = createAsyncThunk(
+  'auth/loginRecruiter',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/recruiter/login', credentials);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: 'Recruiter login failed' });
+    }
+  }
+);
+
+export const loginAdmin = createAsyncThunk(
+  'auth/loginAdmin',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/auth/admin/login', credentials);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: 'Admin login failed' });
+    }
+  }
+);
+
+export const verifyCandidateOtp = createAsyncThunk(
+  'auth/verifyCandidateOtp',
+  async ({ email, otp }, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/candidate/verify-otp', { email, otp });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: 'Verification failed' });
+    }
+  }
+);
+
+export const verifyRecruiterOtp = createAsyncThunk(
+  'auth/verifyRecruiterOtp',
+  async ({ workEmail, otp }, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/recruiter/verify-otp', { workEmail, otp });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: 'Verification failed' });
+    }
+  }
+);
+
 export const logoutCandidate = createAsyncThunk(
   'auth/logoutCandidate',
   async (_, { rejectWithValue }) => {
@@ -21,6 +69,18 @@ export const logoutCandidate = createAsyncThunk(
       return true;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Logout failed');
+    }
+  }
+);
+
+export const logoutAdmin = createAsyncThunk(
+  'auth/logoutAdmin',
+  async (_, { rejectWithValue }) => {
+    try {
+      await api.post('/auth/admin/logout');
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Admin logout failed');
     }
   }
 );
@@ -35,11 +95,18 @@ export const checkAuth = createAsyncThunk(
         return response.data.user;
       } catch (e) {
         // Then try recruiter
-        const response = await api.get('/recruiter/me');
-        return response.data.user;
+        try {
+          const response = await api.get('/recruiter/me');
+          return response.data.user;
+        } catch (e2) {
+          // Finally try admin
+          const response = await api.get('/auth/admin/me');
+          return response.data.user;
+        }
       }
     } catch (error) {
       return rejectWithValue('Not authenticated');
     }
   }
 );
+

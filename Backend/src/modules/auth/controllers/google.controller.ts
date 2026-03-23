@@ -58,7 +58,7 @@ export const googleCallback = async (req: Request, res: Response) => {
                         mobile: "Not Provided",
                         password: "",
                         role: "RECRUITER",
-                        isVerified: true
+                        verificationStatus: 'APPROVED'
                     }
                 })
             } else {
@@ -129,7 +129,7 @@ export const syncGoogleUser = async (req: Request, res: Response) => {
                         mobile: "Not Provided",
                         password: "",
                         role: "RECRUITER",
-                        isVerified: true
+                        verificationStatus: 'APPROVED'
                     }
                 })
             } else {
@@ -198,7 +198,7 @@ export const completeProfile = async (req: Request, res: Response) => {
                     mobile,
                     password: hashedPassword,
                     companyName,
-                    isVerified: true
+                    verificationStatus: 'APPROVED'
                 }
             })
         } else {

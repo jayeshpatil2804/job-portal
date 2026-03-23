@@ -1,5 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { loginCandidate, logoutCandidate, checkAuth } from '../actions/authActions';
+import { 
+  loginCandidate, 
+  loginRecruiter, 
+  loginAdmin, 
+  logoutCandidate, 
+  logoutAdmin, 
+  checkAuth,
+  verifyCandidateOtp,
+  verifyRecruiterOtp 
+} from '../actions/authActions';
 
 const initialState = {
   user: null,
@@ -24,6 +33,7 @@ export const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Candidate Login
       .addCase(loginCandidate.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -37,17 +47,79 @@ export const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // Recruiter Login
+      .addCase(loginRecruiter.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginRecruiter.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(loginRecruiter.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Admin Login
+      .addCase(loginAdmin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(loginAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // OTP Verification (Candidate)
+      .addCase(verifyCandidateOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyCandidateOtp.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(verifyCandidateOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // OTP Verification (Recruiter)
+      .addCase(verifyRecruiterOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyRecruiterOtp.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(verifyRecruiterOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Logout
       .addCase(logoutCandidate.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
       })
+      .addCase(logoutAdmin.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      // Check Auth
       .addCase(checkAuth.pending, (state) => {
         state.isCheckingAuth = true;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.isCheckingAuth = false;
         state.user = action.payload;
-        state.isAuthenticated = true;
+        state.isAuthenticated = !!action.payload;
       })
       .addCase(checkAuth.rejected, (state) => {
         state.isCheckingAuth = false;
@@ -56,6 +128,7 @@ export const authSlice = createSlice({
       });
   },
 });
+
 
 export const { setUser, logout } = authSlice.actions;
 export default authSlice.reducer;

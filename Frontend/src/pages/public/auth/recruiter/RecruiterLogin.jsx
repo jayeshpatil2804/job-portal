@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import AuthLayout from '../../../../components/AuthLayout'
 import FormInput from '../../../../components/FormInput'
-import api from '../../../../utils/api'
 import toast from 'react-hot-toast'
 import { Mail, Lock } from 'lucide-react'
 import { supabase } from '../../../../utils/supabase'
-import { useDispatch } from 'react-redux'
-import { setUser } from '../../../../redux/slices/authSlice'
+import { loginRecruiter } from '../../../../redux/actions/authActions'
 
 const RecruiterLogin = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { loading } = useSelector(state => state.auth);
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -29,25 +29,26 @@ const RecruiterLogin = () => {
                 workEmail: formData.email,
                 password: formData.password
             };
-            const response = await api.post('/recruiter/login', loginData);
+            const result = await dispatch(loginRecruiter(loginData)).unwrap();
+            toast.success('Login successful!');
             
-            const user = response.data.user;
-            dispatch(setUser(user));
-            toast.success(response.data.message || 'Login successful!');
-            
-            if (user.isProfileCompleted) {
-                navigate('/recruiter/dashboard');
+            if (result.user.isProfileCompleted) {
+                if (result.user.isPaid) {
+                    navigate('/recruiter/dashboard');
+                } else {
+                    navigate('/recruiter/complete-profile/4');
+                }
             } else {
                 navigate('/recruiter/complete-profile/1', { 
                     replace: true 
                 });
             }
         } catch (error) {
-            if (error.response?.data?.requiresVerification) {
-                toast.error(error.response.data.message);
+            if (error?.requiresVerification) {
+                toast.error(error.message);
                 navigate(`/recruiter/verify-otp/${formData.email}`);
             } else {
-                toast.error(error.response?.data?.message || 'Login failed. Please try again.');
+                toast.error(error?.message || 'Login failed. Please try again.');
             }
         }
     };
@@ -117,9 +118,10 @@ const RecruiterLogin = () => {
                 <div>
                     <button
                         type="submit"
-                        className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#f97316] hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f97316] transition-colors"
+                        disabled={loading}
+                        className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#f97316] hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f97316] transition-colors disabled:opacity-50"
                     >
-                        Sign in
+                        {loading ? 'Signing in...' : 'Sign in'}
                     </button>
                 </div>
             </form>

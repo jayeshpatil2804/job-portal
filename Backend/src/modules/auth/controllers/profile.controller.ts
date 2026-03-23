@@ -11,7 +11,8 @@ export const getProfileStatus = async (req: Request, res: Response) => {
             include: {
                 candidate: {
                     select: {
-                        isProfileCompleted: true
+                        isProfileCompleted: true,
+                        isPaid: true
                     }
                 }
             }
@@ -28,6 +29,7 @@ export const getProfileStatus = async (req: Request, res: Response) => {
         return res.json({
             currentStep: profile.onboardingStep,
             isProfileCompleted: profile.candidate.isProfileCompleted,
+            isPaid: profile.candidate.isPaid,
             data: profile
         })
     } catch (error) {

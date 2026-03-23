@@ -1,15 +1,18 @@
 import React, { useState } from 'react'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import AuthLayout from '../../../../components/AuthLayout'
 import api from '../../../../utils/api'
 import toast from 'react-hot-toast'
 import { KeyRound } from 'lucide-react'
+import { verifyCandidateOtp } from '../../../../redux/actions/authActions'
 
 const CandidateOtpVerify = () => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']) 
     const { email } = useParams()
     const navigate = useNavigate()
     const location = useLocation()
+    const dispatch = useDispatch()
 
     const handleChange = (element, index) => {
         if (isNaN(element.value)) return false
@@ -59,18 +62,22 @@ const CandidateOtpVerify = () => {
         }
 
         try {
-            const response = await api.post('/candidate/verify-otp', { email, otp: otpCode })
-            toast.success(response.data.message || 'OTP Verified!')
+            const result = await dispatch(verifyCandidateOtp({ email, otp: otpCode })).unwrap();
+            toast.success(result.message || 'OTP Verified!')
             
             if (location.state?.purpose === 'reset-password') {
                 navigate('/candidate/reset-password', { state: { email, otp: otpCode } })
-            } else if (response.data.user?.isProfileCompleted) {
-                navigate('/dashboard')
+            } else if (result.user?.isProfileCompleted) {
+                if (result.user?.isPaid) {
+                    navigate('/dashboard')
+                } else {
+                    navigate('/candidate/complete-profile/4')
+                }
             } else {
-                navigate('/candidate/complete-profile')
+                navigate('/candidate/complete-profile/1')
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Verification failed')
+            toast.error(error.message || 'Verification failed')
         }
     }
 

@@ -14,6 +14,14 @@ enum UserRole {
   ADMIN
 }
 
+enum Permission {
+  RECRUITER_APPROVAL
+  JOB_MODERATION
+  CANDIDATE_MANAGEMENT
+  SUB_ADMIN_MANAGEMENT
+  REPORTS
+}
+
 model Candidate {
   id         String   @id @default(uuid())
   email      String   @unique
@@ -22,14 +30,35 @@ model Candidate {
   password   String
   role       UserRole @default(CANDIDATE)
   isVerified Boolean  @default(false)
+  isPaid     Boolean  @default(false)
   isProfileCompleted Boolean  @default(false)
   
   profile    CandidateProfile?
   files      File[]
   applications Application[]
+  payments   Payment[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Admin {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  fullName    String
+  password    String
+  role        UserRole     @default(ADMIN)
+  isVerified  Boolean      @default(true)
+  isSuperAdmin Boolean     @default(false)
+  
+  permissions Permission[] // Optional permissions for sub-admins
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([email])
 }
 
 model CandidateProfile {
@@ -94,6 +123,12 @@ model File {
   updatedAt       DateTime          @updatedAt
 }
 
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Recruiter {
   id          String   @id @default(uuid())
   email       String   @unique
@@ -102,15 +137,20 @@ model Recruiter {
   mobile      String
   password    String
   role        UserRole @default(RECRUITER)
-  isVerified  Boolean  @default(false)
+  verificationStatus VerificationStatus @default(PENDING)
+  isPaid     Boolean  @default(false)
   isProfileCompleted Boolean  @default(false)
   
   profile     CompanyProfile?
   files       File[]
   jobs        Job[]
+  payments    Payment[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([email])
+  @@index([verificationStatus])
 }
 
 model CompanyProfile {
@@ -191,6 +231,8 @@ model Job {
   deadline         DateTime?
   isFeatured       Boolean  @default(false)
   isRemote         Boolean  @default(false)
+  isFlagged        Boolean  @default(false)
+  isRemoved        Boolean  @default(false)
 
   status           JobStatus @default(OPEN)
   applications     Application[]
@@ -202,6 +244,8 @@ model Job {
   @@index([status])
   @@index([location])
   @@index([department])
+  @@index([isFlagged])
+  @@index([isRemoved])
 }
 
 
@@ -235,6 +279,7 @@ model Application {
   @@unique([jobId, candidateId]) // Prevent duplicate applications
   @@index([jobId])
   @@index([candidateId])
+  @@index([status])
 }
 
 enum InterviewMode {
@@ -262,4 +307,22 @@ model Interview {
   
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  orderId         String   @unique
+  paymentId       String?  @unique
+  signature       String?
+  amount          Int
+  currency        String   @default("INR")
+  status          String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  
+  candidateId     String?
+  candidate       Candidate? @relation(fields: [candidateId], references: [id])
+  recruiterId     String?
+  recruiter       Recruiter? @relation(fields: [recruiterId], references: [id])
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

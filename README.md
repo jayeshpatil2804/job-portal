@@ -1,27 +1,55 @@
-# Losodhan Job Portal
+# 🧵 LOSODHAN – Job Portal for Textile Industry
 
-A modern, full-stack Job Portal featuring secure authentication, role-based access control, and a professional multi-step onboarding process for both Candidates and Recruiters.
+A full-stack, production-ready **Job Portal** built for the Textile industry featuring Razorpay payments, Admin Panel, and a powerful onboarding system for Candidates and Recruiters.
+
+---
 
 ## 🚀 Project Overview
 
-This project is divided into two main parts:
-- **Frontend**: A premium React application built with Vite, Redux Toolkit, and Tailwind CSS.
-- **Backend**: A robust TypeScript & Express server using Prisma ORM and Supabase for storage.
+LOSODHAN connects job seekers with hiring companies in the textile sector. It features:
+- OTP-verified sign-up flows for Candidates & Recruiters
+- Razorpay-powered account verification fee
+- A comprehensive Admin Panel with sub-admin RBAC
+- Applicant Tracking System (ATS) with interview scheduling
+
+---
 
 ## 📁 Project Structure
 
-```text
-.
-├── Backend/          # Express Server with TypeScript & Prisma
-└── Frontend/         # React Application with Vite & Tailwind
 ```
+.
+├── Backend/      # Express + TypeScript + Prisma + Razorpay
+└── Frontend/     # React 18 + Vite + Redux Toolkit + Tailwind
+```
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 18, Vite, Redux Toolkit, Framer Motion, Lucide Icons, Tailwind CSS.
-- **Backend**: Node.js, Express, TypeScript, Prisma, PostgreSQL (Supabase), SendGrid/Nodemailer.
-- **Database**: PostgreSQL (via Supabase).
-- **Storage**: Supabase Storage (for Resumes and Business Documents).
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite, Redux Toolkit, Framer Motion, Tailwind CSS, Recharts |
+| Backend | Node.js, Express, TypeScript, Prisma ORM, JWT |
+| Database | PostgreSQL (Supabase) |
+| Storage | Supabase Storage |
+| Payments | Razorpay |
+| Email | SendGrid |
+| Auth | JWT (HttpOnly Cookies), Google OAuth |
+
+---
+
+## ✨ Key Features
+
+- **Razorpay Payments** – One-time verification fee for Candidates & Recruiters. Payments saved to DB with full transaction history.
+- **Dual-Role Auth** – Separate JWT flows for Candidates, Recruiters, and Admins.
+- **OTP Verification** – Email-based OTP for signup and admin password recovery.
+- **Google Sign-In** – OAuth 2.0 with role-smart account matching.
+- **Multi-Step Onboarding** – 4-step profile builder for Candidates; 4-step business verification for Recruiters.
+- **Admin Panel** – Dashboard stats, Recruiter Approval, Job Moderation, Candidate Management, Sub-Admin RBAC, Reports export.
+- **ATS** – Track applications from APPLIED → HIRED with interview scheduling.
+- **Performance Optimized** – Lazy-loaded routes & charts, DB indexing, de-duplicated API calls.
+
+---
 
 ## 🚦 Quick Start
 
@@ -32,17 +60,12 @@ cd losodhan-job-portal
 ```
 
 ### 2. Setup Backend
-Follow the instructions in the [Backend README](./Backend/README.md).
+See [Backend/README.md](./Backend/README.md)
 
 ### 3. Setup Frontend
-Follow the instructions in the [Frontend README](./Frontend/README.md).
+See [Frontend/README.md](./Frontend/README.md)
 
-## ✨ Key Features
+---
 
-- **Dual-Role Auth**: Separate flows for Candidates and Recruiters with secure JWT handling.
-- **Applicant Tracking**: Full lifecycle management from application to interview scheduling.
-- **Google Sign-In**: Integrated with role-smart synchronization.
-- **OTP Verification**: Email-based OTP for secure signup.
-- **Onboarding**: Multi-step profile setup for candidates and business verification for recruiters.
-- **Premium UI**: Modern React dashboard with specialized sidebars and refined branding.
-- **Security**: JWT-based auth with HttpOnly cookies and global 401 interceptors.
+## 📜 License
+MIT
