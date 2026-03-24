@@ -6,6 +6,7 @@ const initialState = {
   currentStep: 1,
   isProfileCompleted: false,
   isPaid: false,
+  isActive: false,
   loading: false,
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
@@ -34,6 +35,7 @@ export const profileSlice = createSlice({
         state.currentStep = action.payload.currentStep;
         state.isProfileCompleted = action.payload.isProfileCompleted;
         state.isPaid = action.payload.isPaid;
+        state.isActive = action.payload.isActive;
         state.data = action.payload.data;
       })
       .addCase(fetchProfileStatus.rejected, (state, action) => {
@@ -58,6 +60,10 @@ export const profileSlice = createSlice({
 
         if (action.payload.isPaid !== undefined) {
           state.isPaid = action.payload.isPaid;
+        }
+
+        if (action.payload.isActive !== undefined) {
+          state.isActive = action.payload.isActive;
         }
       })
       .addCase(updateProfile.rejected, (state, action) => {
@@ -87,10 +93,20 @@ export const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase('auth/verifyCandidateOtp/fulfilled', (state, action) => {
+        state.status = 'succeeded';
+        state.data = action.payload.user || {};
+        state.isProfileCompleted = action.payload.user?.isProfileCompleted || false;
+        state.isPaid = action.payload.user?.isPaid || false;
+        state.isActive = action.payload.user?.isActive || false;
+        state.currentStep = action.payload.user?.onboardingStep || 1;
+      })
       .addCase('auth/logoutCandidate/fulfilled', (state) => {
         state.data = {};
         state.currentStep = 1;
         state.isProfileCompleted = false;
+        state.isPaid = false;
+        state.isActive = false;
         state.status = 'idle';
         state.error = null;
       });

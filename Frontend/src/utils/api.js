@@ -8,13 +8,34 @@ const api = axios.create({
     }
 });
 
-// Add a response interceptor to handle 401 errors globally
+// Add a request interceptor to track start time
+api.interceptors.request.use((config) => {
+    config.metadata = { startTime: new Date() };
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+// Add a response interceptor to handle 401 errors globally and log performance
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        const startTime = response.config.metadata.startTime;
+        const endTime = new Date();
+        const duration = endTime - startTime;
+        
+        if (duration > 1000) {
+            console.warn(`[API PERF WARNING] ${response.config.method.toUpperCase()} ${response.config.url} took ${duration}ms`);
+        } else {
+            console.log(`[API PERF] ${response.config.method.toUpperCase()} ${response.config.url} - ${duration}ms`);
+        }
+        
+        return response;
+    },
     (error) => {
-        // We removed the automatic redirect to /candidate/login here
-        // to allow public pages to render and let route guards handle
-        // redirection when necessary.
+        if (error.config?.metadata?.startTime) {
+            const duration = new Date() - error.config.metadata.startTime;
+            console.error(`[API ERROR] ${error.config.method.toUpperCase()} ${error.config.url} failed after ${duration}ms`);
+        }
         return Promise.reject(error);
     }
 );

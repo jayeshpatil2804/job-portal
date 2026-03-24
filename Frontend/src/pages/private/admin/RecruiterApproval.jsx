@@ -44,6 +44,16 @@ const RecruiterApproval = () => {
         setSelected(null)
     }
 
+    const handleActivationToggle = async (id, currentStatus) => {
+        try {
+            await api.patch(`/admin/recruiters/${id}/activate`, { isActive: !currentStatus })
+            setRecruiters(prev => prev.map(r => r.id === id ? { ...r, isActive: !currentStatus } : r))
+            toast.success(`Recruiter account ${!currentStatus ? 'activated' : 'deactivated'}`)
+        } catch (error) {
+            toast.error('Failed to toggle activation status')
+        }
+    }
+
     const filtered = recruiters.filter(r => {
         const matchSearch = r.company.toLowerCase().includes(search.toLowerCase()) || r.email.toLowerCase().includes(search.toLowerCase())
         const matchFilter = filter === 'ALL' || r.status === filter
@@ -155,15 +165,26 @@ const RecruiterApproval = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {r.isPaid ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700">
-                                                    Paid
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-400">
-                                                    Unpaid
-                                                </span>
-                                            )}
+                                            <div className="flex flex-col gap-1.5">
+                                                {r.isPaid ? (
+                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 w-fit w-[64px]">
+                                                        Paid
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-500 w-fit w-[64px]">
+                                                        Unpaid
+                                                    </span>
+                                                )}
+                                                {r.isActive ? (
+                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 w-fit w-[64px]">
+                                                        Active
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-700 w-fit w-[64px]">
+                                                        Inactive
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
@@ -191,6 +212,12 @@ const RecruiterApproval = () => {
                                                         Reset
                                                     </button>
                                                 )}
+                                                <button
+                                                    onClick={() => handleActivationToggle(r.id, r.isActive)}
+                                                    className={`px-3 py-1.5 text-white text-xs font-bold rounded-lg transition-colors flex items-center ${r.isActive ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                                >
+                                                    {r.isActive ? 'Deactivate' : 'Activate'}
+                                                </button>
                                             </div>
                                         </td>
                                     </motion.tr>

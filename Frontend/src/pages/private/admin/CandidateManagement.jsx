@@ -27,6 +27,16 @@ const CandidateManagement = () => {
         fetchCandidates()
     }, [])
 
+    const handleActivationToggle = async (id, currentStatus) => {
+        try {
+            await api.patch(`/admin/candidates/${id}/activate`, { isActive: !currentStatus })
+            setCandidates(prev => prev.map(c => c.id === id ? { ...c, isActive: !currentStatus } : c))
+            toast.success(`Candidate account ${!currentStatus ? 'activated' : 'deactivated'}`)
+        } catch (error) {
+            toast.error('Failed to toggle activation status')
+        }
+    }
+
     const filtered = candidates.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.role.toLowerCase().includes(search.toLowerCase()) ||
@@ -82,9 +92,14 @@ const CandidateManagement = () => {
                                         <MapPin size={11} />
                                         <span className="text-xs">{c.location}</span>
                                     </div>
-                                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${c.isPaid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                                        {c.isPaid ? 'Paid' : 'Unpaid'}
-                                    </span>
+                                    <div className="flex gap-2">
+                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${c.isPaid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+                                            {c.isPaid ? 'Paid' : 'Unpaid'}
+                                        </span>
+                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${c.isActive ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                                            {c.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -101,12 +116,20 @@ const CandidateManagement = () => {
                             ))}
                         </div>
 
-                        <button
-                            onClick={() => setProfileOpen(c)}
-                            className="mt-4 w-full flex items-center justify-center gap-2 py-2 border border-[#1a3c8f] text-[#1a3c8f] text-xs font-bold rounded-xl hover:bg-[#1a3c8f] hover:text-white transition-all duration-200"
-                        >
-                            <Eye size={14} /> View Profile
-                        </button>
+                        <div className="mt-4 flex gap-2">
+                            <button
+                                onClick={() => handleActivationToggle(c.id, c.isActive)}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-white text-xs font-bold rounded-xl transition-all duration-200 ${c.isActive ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                            >
+                                {c.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button
+                                onClick={() => setProfileOpen(c)}
+                                className="flex-[0.8] flex items-center justify-center gap-1.5 py-2 border border-[#1a3c8f] text-[#1a3c8f] text-xs font-bold rounded-xl hover:bg-[#1a3c8f] hover:text-white transition-all duration-200"
+                            >
+                                <Eye size={14} /> Profile
+                            </button>
+                        </div>
                     </motion.div>
                 ))}
             </div>
@@ -133,9 +156,14 @@ const CandidateManagement = () => {
                                 <p className="font-extrabold text-gray-900">{profileOpen.name}</p>
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-[#1a3c8f] font-semibold">{profileOpen.role}</p>
-                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-widest ${profileOpen.isPaid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                                        {profileOpen.isPaid ? 'Paid' : 'Unpaid'}
-                                    </span>
+                                    <div className="flex gap-2">
+                                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-widest ${profileOpen.isPaid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+                                            {profileOpen.isPaid ? 'Paid' : 'Unpaid'}
+                                        </span>
+                                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-widest ${profileOpen.isActive ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                                            {profileOpen.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

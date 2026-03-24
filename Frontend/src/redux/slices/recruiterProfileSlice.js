@@ -6,6 +6,7 @@ const initialState = {
   currentStep: 1,
   isProfileCompleted: false,
   isPaid: false,
+  isActive: false,
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   loading: false,
   error: null,
@@ -35,6 +36,7 @@ const recruiterProfileSlice = createSlice({
         state.currentStep = action.payload.currentStep;
         state.isProfileCompleted = action.payload.isProfileCompleted;
         state.isPaid = action.payload.isPaid;
+        state.isActive = action.payload.isActive;
         state.data = action.payload.data;
       })
       .addCase(fetchRecruiterProfileStatus.rejected, (state, action) => {
@@ -51,11 +53,20 @@ const recruiterProfileSlice = createSlice({
         state.currentStep = action.payload.currentStep;
         state.isProfileCompleted = action.payload.isProfileCompleted;
         state.isPaid = action.payload.isPaid;
+        state.isActive = action.payload.isActive;
         state.data = action.payload.profile;
       })
       .addCase(updateRecruiterProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase('auth/verifyRecruiterOtp/fulfilled', (state, action) => {
+        state.status = 'succeeded';
+        state.data = action.payload.user || {};
+        state.isProfileCompleted = action.payload.user?.isProfileCompleted || false;
+        state.isPaid = action.payload.user?.isPaid || false;
+        state.isActive = action.payload.user?.isActive || false;
+        state.currentStep = action.payload.user?.onboardingStep || 1;
       });
   },
 });

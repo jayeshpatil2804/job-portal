@@ -1,6 +1,12 @@
 import { Router } from 'express'
 import { getDashboardStats, getRecentActivity } from '../controllers/dashboard.controller'
-import { getAllRecruiters, updateRecruiterStatus, getAllCandidates } from '../controllers/management.controller'
+import { 
+    getAllRecruiters, 
+    updateRecruiterStatus, 
+    getAllCandidates,
+    toggleRecruiterActivation,
+    toggleCandidateActivation
+} from '../controllers/management.controller'
 import { getAllJobs, toggleJobFlag, toggleJobRemove } from '../controllers/jobs.controller'
 import { getSubAdmins, createSubAdmin, updateSubAdmin, deleteSubAdmin } from '../controllers/subadmin.controller'
 import { downloadReport, getReportsMetadata } from '../controllers/reports.controller'
@@ -18,7 +24,10 @@ router.get('/activity', getRecentActivity)
 // Users
 router.get('/recruiters', getAllRecruiters)
 router.patch('/recruiters/:id/status', updateRecruiterStatus)
+router.patch('/recruiters/:id/activate', toggleRecruiterActivation)
+
 router.get('/candidates', getAllCandidates)
+router.patch('/candidates/:id/activate', toggleCandidateActivation)
 
 // Jobs Moderation
 router.get('/jobs', getAllJobs)

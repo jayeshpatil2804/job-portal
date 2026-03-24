@@ -47,11 +47,7 @@ const RecruiterProtectedRoute = ({ onlyAuth = false }) => {
         return <Navigate to="/recruiter/complete-profile" replace />;
     }
 
-    // If profile is completed but NOT paid, redirect to payment step (onboarding step 4)
-    if (!isPaid) {
-        return <Navigate to="/recruiter/complete-profile/4" replace />;
-    }
-
+    // If profile is completed, allow access (ActivationDialog will handle payment state on dashboard)
     return <Outlet />;
 };
 

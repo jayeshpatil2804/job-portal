@@ -6,6 +6,7 @@ import recruiterAuthRoutes from './modules/auth/routes/recruiter.routes'
 import adminAuthRoutes from './modules/auth/routes/admin.routes'
 import adminManagementRoutes from './modules/admin/routes/admin.management.routes'
 import googleAuthRoutes from './modules/auth/routes/google.routes'
+import authRoutes from './modules/auth/routes/auth.routes'
 import fileRoutes from './modules/file/routes/file.routes'
 import jobRoutes from './modules/job/routes/job.routes'
 import applicationRoutes from './modules/job/routes/application.routes'
@@ -33,10 +34,30 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
+// Performance Logger Middleware
+app.use((req, res, next) => {
+    const startTime = Date.now();
+    const timestamp = new Date().toISOString();
+    
+    res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        const method = req.method.padEnd(7);
+        const url = req.originalUrl;
+        
+        if (duration > 500) {
+            console.warn(`\x1b[33m[SLOW REQUEST] ${timestamp} | ${method} | ${url} | ${duration}ms\x1b[0m`);
+        } else {
+            console.log(`\x1b[32m[PERF] ${timestamp} | ${method} | ${url} | ${duration}ms\x1b[0m`);
+        }
+    });
+    next();
+});
+
 // Routes
 app.use('/api/candidate', candidateAuthRoutes)
 app.use('/api/recruiter', recruiterAuthRoutes)
 app.use('/api/auth/admin', adminAuthRoutes)
+app.use('/api/auth', authRoutes)
 app.use('/api/admin', adminManagementRoutes)
 app.use('/api/users', googleAuthRoutes) // For Frontend API
 app.use('/api/file', fileRoutes)

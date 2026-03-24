@@ -31,6 +31,7 @@ model Candidate {
   role       UserRole @default(CANDIDATE)
   isVerified Boolean  @default(false)
   isPaid     Boolean  @default(false)
+  isActive   Boolean  @default(false)
   isProfileCompleted Boolean  @default(false)
   
   profile    CandidateProfile?
@@ -139,6 +140,7 @@ model Recruiter {
   role        UserRole @default(RECRUITER)
   verificationStatus VerificationStatus @default(PENDING)
   isPaid     Boolean  @default(false)
+  isActive   Boolean  @default(false)
   isProfileCompleted Boolean  @default(false)
   
   profile     CompanyProfile?

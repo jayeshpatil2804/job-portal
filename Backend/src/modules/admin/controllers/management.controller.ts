@@ -16,9 +16,9 @@ export const getAllRecruiters = async (req: Request, res: Response) => {
                 id: r.id,
                 company: r.companyName,
                 contact: r.fullName,
-                email: r.email,
                 status: r.verificationStatus,
                 isPaid: r.isPaid,
+                isActive: (r as any).isActive,
                 appliedOn: r.createdAt.toLocaleDateString(),
                 mobile: r.mobile
             }))
@@ -67,14 +67,52 @@ export const getAllCandidates = async (req: Request, res: Response) => {
                 location: c.profile?.city || 'N/A',
                 role: c.profile?.designation || 'Candidate',
                 experience: c.profile?.yearsOfExp || '0',
-                education: c.profile?.qualification || 'N/A',
                 skills: (c.profile?.skills ? c.profile.skills.split(',') : []) as string[],
                 applied: c.applications.length,
                 isPaid: c.isPaid,
+                isActive: (c as any).isActive,
                 avatar: (c.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'NA') as string
             }))
         })
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to fetch candidates' })
+    }
+}
+
+export const toggleRecruiterActivation = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string
+        const { isActive } = req.body
+
+        await prisma.recruiter.update({
+            where: { id },
+            data: { isActive: Boolean(isActive) } as any
+        })
+
+        res.json({
+            success: true,
+            message: `Recruiter activation status set to ${isActive}`
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update recruiter activation status' })
+    }
+}
+
+export const toggleCandidateActivation = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string
+        const { isActive } = req.body
+
+        await prisma.candidate.update({
+            where: { id },
+            data: { isActive: Boolean(isActive) } as any
+        })
+
+        res.json({
+            success: true,
+            message: `Candidate activation status set to ${isActive}`
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update candidate activation status' })
     }
 }

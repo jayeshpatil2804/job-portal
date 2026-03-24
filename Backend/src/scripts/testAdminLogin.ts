@@ -8,7 +8,11 @@ async function testAdminLogin() {
         });
         console.log('Login Test Successful:', response.data);
     } catch (error) {
-        console.error('Login Test Failed:', error.response?.status, error.response?.data);
+        if (axios.isAxiosError(error)) {
+            console.error('Login Test Failed:', error.response?.status, error.response?.data);
+        } else {
+            console.error('Login Test Failed:', error);
+        }
     }
 }
 

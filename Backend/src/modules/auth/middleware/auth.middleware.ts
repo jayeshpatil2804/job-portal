@@ -3,11 +3,9 @@ import { verifyToken } from '../../../utils/jwt'
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        console.log('[AuthMiddleware] Cookies:', req.cookies);
         const token = req.cookies.token
 
         if (!token) {
-            console.log('[AuthMiddleware] No token found in cookies');
             return res.status(401).json({ message: 'Not authorized, no token' })
         }
 
