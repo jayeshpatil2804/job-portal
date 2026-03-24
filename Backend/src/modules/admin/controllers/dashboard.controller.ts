@@ -1,49 +1,58 @@
 import { Request, Response } from 'express'
 import prisma from '../../../config/db'
 
+let statsCache: { data: any, timestamp: number } | null = null;
+const CACHE_DURATION = 60 * 1000; // 60 seconds
+
 export const getDashboardStats = async (req: Request, res: Response) => {
     try {
+        // Check cache
+        if (statsCache && (Date.now() - statsCache.timestamp) < CACHE_DURATION) {
+            return res.json({
+                success: true,
+                stats: statsCache.data.stats,
+                monthlyData: statsCache.data.monthlyData,
+                cached: true
+            });
+        }
+
         const [
             totalCandidates,
-            totalRecruiters,
+            appGroupCounts,
+            recGroupCounts,
             activeJobs,
-            totalApplications,
-            pendingRecruiters
+            totalApplications
         ] = await Promise.all([
             prisma.candidate.count(),
-            prisma.recruiter.count(),
+            prisma.application.groupBy({
+                by: ['status'],
+                _count: { _all: true }
+            }),
+            prisma.recruiter.groupBy({
+                by: ['verificationStatus'],
+                _count: { _all: true }
+            }),
             prisma.job.count({ where: { status: 'OPEN' } }),
-            prisma.application.count(),
-            prisma.recruiter.count({ where: { verificationStatus: 'PENDING' } })
+            prisma.application.count()
         ])
 
-        // Mock revenue for now as there's no payment model yet
-        const revenue = '₹0' 
+        // Extract pending recruiters
+        const pendingRecruiters = recGroupCounts.find(r => r.verificationStatus === 'PENDING')?._count._all || 0;
+        const totalRecruiters = recGroupCounts.reduce((acc, r) => acc + r._count._all, 0);
 
-        // Application Breakdown
-        const [
-            applied,
-            shortlisted,
-            interviewed,
-            hired,
-            rejected
-        ] = await Promise.all([
-            prisma.application.count({ where: { status: 'APPLIED' } }),
-            prisma.application.count({ where: { status: 'SHORTLISTED' } }),
-            prisma.application.count({ where: { status: 'INTERVIEW_SCHEDULED' } }),
-            prisma.application.count({ where: { status: 'HIRED' } }),
-            prisma.application.count({ where: { status: 'REJECTED' } })
-        ])
-
+        // Map application breakdown
+        const getCount = (status: string) => appGroupCounts.find(a => a.status === status)?._count._all || 0;
+        
         const applicationBreakdown = [
-            { name: 'Applied', value: applied, color: '#3b82f6' },
-            { name: 'Shortlisted', value: shortlisted, color: '#a855f7' },
-            { name: 'Interviews', value: interviewed, color: '#f97316' },
-            { name: 'Hired', value: hired, color: '#22c55e' },
-            { name: 'Rejected', value: rejected, color: '#ef4444' },
+            { name: 'Applied', value: getCount('APPLIED'), color: '#3b82f6' },
+            { name: 'Shortlisted', value: getCount('SHORTLISTED'), color: '#a855f7' },
+            { name: 'Interviews', value: getCount('INTERVIEW_SCHEDULED'), color: '#f97316' },
+            { name: 'Hired', value: getCount('HIRED'), color: '#22c55e' },
+            { name: 'Rejected', value: getCount('REJECTED'), color: '#ef4444' },
         ]
 
-        // Get growth data (last 6 months) - simplified for now
+        const revenue = '₹0' 
+
         const monthlyData = [
             { month: 'Oct', candidates: 0, jobs: 0 },
             { month: 'Nov', candidates: 0, jobs: 0 },
@@ -53,8 +62,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
             { month: 'Mar', candidates: totalCandidates, jobs: activeJobs },
         ]
 
-        res.json({
-            success: true,
+        const responseData = {
             stats: {
                 totalCandidates,
                 totalRecruiters,
@@ -65,6 +73,17 @@ export const getDashboardStats = async (req: Request, res: Response) => {
                 applicationBreakdown
             },
             monthlyData
+        };
+
+        // Update cache
+        statsCache = {
+            data: responseData,
+            timestamp: Date.now()
+        };
+
+        res.json({
+            success: true,
+            ...responseData
         })
     } catch (error) {
         console.error('Admin stats error:', error)

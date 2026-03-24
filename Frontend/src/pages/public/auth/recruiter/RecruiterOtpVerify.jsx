@@ -67,11 +67,7 @@ const RecruiterOtpVerify = () => {
             if (location.state?.purpose === 'reset-password') {
                 navigate('/recruiter/reset-password', { state: { email: workEmail, otp: otpCode } })
             } else if (result.user?.isProfileCompleted) {
-                if (result.user?.isPaid) {
-                    navigate('/recruiter/dashboard')
-                } else {
-                    navigate('/recruiter/complete-profile/4')
-                }
+                navigate('/recruiter/dashboard')
             } else {
                 // Redirect directly to the 4-step recruiter onboarding
                 navigate('/recruiter/complete-profile/1', { 

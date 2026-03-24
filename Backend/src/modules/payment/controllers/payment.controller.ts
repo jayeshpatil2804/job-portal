@@ -3,9 +3,9 @@ import razorpay from '../../../config/razorpay'
 import prisma from '../../../config/db'
 import crypto from 'crypto'
 
-// Fixed Amounts (in INR) - Can be moved to env or DB settings
-const CANDIDATE_VERIFICATION_FEE = 1 // ₹1 (Test)
-const RECRUITER_VERIFICATION_FEE = 1 // ₹1 (Test)
+// Fixed Amounts (in INR) - Annual subscription fee
+const CANDIDATE_VERIFICATION_FEE = 299 // ₹299/year
+const RECRUITER_VERIFICATION_FEE = 1199 // ₹1199/year
 
 export const createOrder = async (req: Request, res: Response) => {
     try {
@@ -78,16 +78,16 @@ export const verifyPayment = async (req: Request, res: Response) => {
             }
         })
 
-        // Update User status
+        // Update User status (Only mark as paid, admin will set isActive=true)
         if (role === 'CANDIDATE') {
             await prisma.candidate.update({
                 where: { id: userId },
-                data: { isPaid: true, isVerified: true }
+                data: { isPaid: true } 
             })
         } else if (role === 'RECRUITER') {
             await prisma.recruiter.update({
                 where: { id: userId },
-                data: { isPaid: true, verificationStatus: 'APPROVED' } // Auto-approve on payment as per request?
+                data: { isPaid: true } 
             })
         }
 

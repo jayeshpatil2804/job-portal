@@ -117,7 +117,8 @@ export const login = async (req: Request, res: Response) => {
                 fullName: candidate.fullName,
                 mobile: candidate.mobile,
                 role: candidate.role,
-                isProfileCompleted: candidate.isProfileCompleted
+                isProfileCompleted: candidate.isProfileCompleted,
+                isActive: (candidate as any).isActive
             }
         })
     } catch (error) {
@@ -197,7 +198,8 @@ export const verifyOtp = async (req: Request, res: Response) => {
                 id: candidate.id,
                 email: candidate.email,
                 role: candidate.role,
-                isProfileCompleted: candidate.isProfileCompleted
+                isProfileCompleted: candidate.isProfileCompleted,
+                isActive: (candidate as any).isActive
             }
         })
     } catch (error) {

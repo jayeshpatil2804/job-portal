@@ -7,8 +7,10 @@ import toast from 'react-hot-toast'
 import { Mail, Lock } from 'lucide-react'
 import { supabase } from '../../../../utils/supabase'
 import { loginRecruiter } from '../../../../redux/actions/authActions'
+import { useMountTimer } from '../../../../hooks/useMountTimer'
 
 const RecruiterLogin = () => {
+    useMountTimer('RecruiterLogin')
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { loading } = useSelector(state => state.auth);
@@ -33,11 +35,7 @@ const RecruiterLogin = () => {
             toast.success('Login successful!');
             
             if (result.user.isProfileCompleted) {
-                if (result.user.isPaid) {
-                    navigate('/recruiter/dashboard');
-                } else {
-                    navigate('/recruiter/complete-profile/4');
-                }
+                navigate('/recruiter/dashboard');
             } else {
                 navigate('/recruiter/complete-profile/1', { 
                     replace: true 

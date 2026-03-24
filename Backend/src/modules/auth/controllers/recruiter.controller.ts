@@ -122,7 +122,9 @@ export const login = async (req: Request, res: Response) => {
                 fullName: recruiter.fullName,
                 companyName: recruiter.companyName,
                 mobile: recruiter.mobile,
-                role: recruiter.role
+                role: recruiter.role,
+                isProfileCompleted: (recruiter as any).isProfileCompleted,
+                isActive: (recruiter as any).isActive
             }
         })
     } catch (error) {
@@ -202,7 +204,8 @@ export const verifyOtp = async (req: Request, res: Response) => {
                 id: recruiter.id,
                 email: recruiter.email,
                 role: recruiter.role,
-                isProfileCompleted: (recruiter as any).isProfileCompleted
+                isProfileCompleted: (recruiter as any).isProfileCompleted,
+                isActive: (recruiter as any).isActive
             }
         })
     } catch (error) {

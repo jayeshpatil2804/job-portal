@@ -68,11 +68,7 @@ const CandidateOtpVerify = () => {
             if (location.state?.purpose === 'reset-password') {
                 navigate('/candidate/reset-password', { state: { email, otp: otpCode } })
             } else if (result.user?.isProfileCompleted) {
-                if (result.user?.isPaid) {
-                    navigate('/dashboard')
-                } else {
-                    navigate('/candidate/complete-profile/4')
-                }
+                navigate('/dashboard')
             } else {
                 navigate('/candidate/complete-profile/1')
             }
