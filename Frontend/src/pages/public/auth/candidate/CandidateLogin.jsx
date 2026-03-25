@@ -13,8 +13,19 @@ const CandidateLogin = () => {
     useMountTimer('CandidateLogin')
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { loading } = useSelector(state => state.auth);
+    const { loading, isAuthenticated, user } = useSelector(state => state.auth);
     
+    // Redirect if already authenticated
+    React.useEffect(() => {
+        if (isAuthenticated && user?.role === 'CANDIDATE') {
+            if (user.isProfileCompleted) {
+                navigate('/dashboard');
+            } else {
+                navigate('/candidate/complete-profile');
+            }
+        }
+    }, [isAuthenticated, user, navigate]);
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''

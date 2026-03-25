@@ -34,8 +34,12 @@ const DashboardPage = () => {
     const { user } = useSelector((state) => state.auth)
     const { stats, recentApplications } = candidateStats
 
+    const fetchStatus = React.useRef(false)
     useEffect(() => {
-        dispatch(fetchCandidateStats())
+        if (!fetchStatus.current) {
+            dispatch(fetchCandidateStats())
+            fetchStatus.current = true
+        }
     }, [dispatch])
 
     const statCards = [

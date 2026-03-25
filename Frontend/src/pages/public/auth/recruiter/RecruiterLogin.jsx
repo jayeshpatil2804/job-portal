@@ -13,7 +13,19 @@ const RecruiterLogin = () => {
     useMountTimer('RecruiterLogin')
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { loading } = useSelector(state => state.auth);
+    const { loading, isAuthenticated, user } = useSelector(state => state.auth);
+    
+    // Redirect if already authenticated
+    React.useEffect(() => {
+        if (isAuthenticated && user?.role === 'RECRUITER') {
+            if (user.isProfileCompleted) {
+                navigate('/recruiter/dashboard');
+            } else {
+                navigate('/recruiter/complete-profile');
+            }
+        }
+    }, [isAuthenticated, user, navigate]);
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -37,9 +49,7 @@ const RecruiterLogin = () => {
             if (result.user.isProfileCompleted) {
                 navigate('/recruiter/dashboard');
             } else {
-                navigate('/recruiter/complete-profile/1', { 
-                    replace: true 
-                });
+                navigate('/recruiter/complete-profile');
             }
         } catch (error) {
             if (error?.requiresVerification) {

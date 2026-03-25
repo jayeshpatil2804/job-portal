@@ -52,6 +52,14 @@ export const completeCandidateProfile = async (req: Request, res: Response) => {
             createdAt, 
             updatedAt, 
             resumeFile,
+            // Exclude Candidate-model fields that don't belong in CandidateProfile
+            email,
+            role,
+            isActive,
+            isVerified,
+            isPaid,
+            mobile,
+            fullName,
             ...data 
         } = req.body
 

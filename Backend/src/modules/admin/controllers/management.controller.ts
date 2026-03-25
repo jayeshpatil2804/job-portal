@@ -89,6 +89,10 @@ export const toggleRecruiterActivation = async (req: Request, res: Response) => 
             data: { isActive: Boolean(isActive) } as any
         })
 
+        if ((req as any).io) {
+            (req as any).io.to(id).emit('accountStatusChanged', { isActive: Boolean(isActive) })
+        }
+
         res.json({
             success: true,
             message: `Recruiter activation status set to ${isActive}`
@@ -107,6 +111,10 @@ export const toggleCandidateActivation = async (req: Request, res: Response) => 
             where: { id },
             data: { isActive: Boolean(isActive) } as any
         })
+
+        if ((req as any).io) {
+            (req as any).io.to(id).emit('accountStatusChanged', { isActive: Boolean(isActive) })
+        }
 
         res.json({
             success: true,

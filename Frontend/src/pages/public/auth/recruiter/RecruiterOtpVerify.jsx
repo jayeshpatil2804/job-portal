@@ -70,7 +70,7 @@ const RecruiterOtpVerify = () => {
                 navigate('/recruiter/dashboard')
             } else {
                 // Redirect directly to the 4-step recruiter onboarding
-                navigate('/recruiter/complete-profile/1', { 
+                navigate('/recruiter/complete-profile', { 
                     replace: true 
                 })
             }

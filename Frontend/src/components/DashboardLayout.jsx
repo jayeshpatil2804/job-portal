@@ -1,19 +1,38 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
 import { Menu } from 'lucide-react'
 import { useSelector, useDispatch } from 'react-redux'
 import ActivationDialog from './common/ActivationDialog'
 import { fetchProfileStatus } from '../redux/actions/profileActions'
 import logo from '../assets/logo.png'
+import socket from '../utils/socket'
 
 const DashboardLayout = ({ children }) => {
     const dispatch = useDispatch()
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const { isActive, isPaid } = useSelector(state => state.profile)
+    const { user } = useSelector(state => state.auth)
 
     const handlePaymentSuccess = () => {
         dispatch(fetchProfileStatus())
     }
+
+    // Real-time activation via Socket.IO
+    useEffect(() => {
+        if (!user?.id) return
+
+        socket.connect()
+        socket.emit('joinRoom', user.id)
+
+        socket.on('accountStatusChanged', ({ isActive }) => {
+            dispatch(fetchProfileStatus())
+        })
+
+        return () => {
+            socket.off('accountStatusChanged')
+            socket.disconnect()
+        }
+    }, [user?.id, dispatch])
 
     return (
         <div className="flex min-h-screen bg-gray-50 font-sans antialiased text-slate-900">
