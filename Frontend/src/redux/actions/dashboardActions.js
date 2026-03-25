@@ -10,6 +10,12 @@ export const fetchCandidateStats = createAsyncThunk(
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch candidate stats');
         }
+    },
+    {
+        condition: (_, { getState }) => {
+            const { loading } = getState().dashboard;
+            if (loading) return false;
+        }
     }
 );
 
@@ -21,6 +27,12 @@ export const fetchRecruiterStats = createAsyncThunk(
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch recruiter stats');
+        }
+    },
+    {
+        condition: (_, { getState }) => {
+            const { loading } = getState().dashboard;
+            if (loading) return false;
         }
     }
 );

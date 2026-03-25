@@ -13,12 +13,45 @@ import applicationRoutes from './modules/job/routes/application.routes'
 import interviewRoutes from './modules/job/routes/interview.routes'
 import paymentRoutes from './modules/payment/routes/payment.routes'
 import path from 'path'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 
 import cookieParser from 'cookie-parser'
 
 dotenv.config()
 
 const app = express()
+const httpServer = createServer(app)
+const io = new Server(httpServer, {
+    cors: {
+        origin: (origin, callback) => {
+            callback(null, true) // Allow all origins
+        },
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
+})
+
+// Attach io to requests
+app.use((req, res, next) => {
+    (req as any).io = io
+    next()
+})
+
+// Socket.io connections
+io.on('connection', (socket) => {
+    console.log('Socket client connected:', socket.id)
+    
+    socket.on('joinRoom', (userId) => {
+        socket.join(userId)
+        console.log(`User ${userId} joined socket room`)
+    })
+
+    socket.on('disconnect', () => {
+        console.log('Socket client disconnected:', socket.id)
+    })
+})
 
 // Middleware
 app.use(cors({
@@ -82,6 +115,6 @@ app.get('/api/debug-auth', (req, res) => {
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+httpServer.listen(PORT, () => {
+    console.log(`Server and Socket.IO running on port ${PORT}`)
 })

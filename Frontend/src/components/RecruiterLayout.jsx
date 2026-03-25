@@ -1,19 +1,38 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import RecruiterSidebar from './RecruiterSidebar'
 import { Menu } from 'lucide-react'
 import { useSelector, useDispatch } from 'react-redux'
 import ActivationDialog from './common/ActivationDialog'
 import { fetchRecruiterProfileStatus } from '../redux/actions/recruiterProfileActions'
 import logo from '../assets/logo.png'
+import socket from '../utils/socket'
 
 const RecruiterLayout = ({ children }) => {
     const dispatch = useDispatch()
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const { isActive, isPaid } = useSelector(state => state.recruiterProfile)
+    const { user } = useSelector(state => state.auth)
 
     const handlePaymentSuccess = () => {
         dispatch(fetchRecruiterProfileStatus())
     }
+
+    // Real-time activation via Socket.IO
+    useEffect(() => {
+        if (!user?.id) return
+
+        socket.connect()
+        socket.emit('joinRoom', user.id)
+
+        socket.on('accountStatusChanged', () => {
+            dispatch(fetchRecruiterProfileStatus())
+        })
+
+        return () => {
+            socket.off('accountStatusChanged')
+            socket.disconnect()
+        }
+    }, [user?.id, dispatch])
 
     return (
         <div className="flex min-h-screen bg-gray-50 font-sans antialiased text-slate-900 overflow-x-hidden">

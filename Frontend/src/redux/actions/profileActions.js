@@ -13,6 +13,12 @@ export const fetchProfileStatus = createAsyncThunk(
       }
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch status');
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const { status, loading } = getState().profile;
+      if (status === 'loading' || loading) return false;
+    }
   }
 );
 
@@ -27,6 +33,12 @@ export const fetchProfile = createAsyncThunk(
         return rejectWithValue('401');
       }
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const { loading } = getState().profile;
+      if (loading) return false;
     }
   }
 );

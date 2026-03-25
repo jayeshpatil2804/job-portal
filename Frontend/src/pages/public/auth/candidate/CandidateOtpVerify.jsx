@@ -70,7 +70,7 @@ const CandidateOtpVerify = () => {
             } else if (result.user?.isProfileCompleted) {
                 navigate('/dashboard')
             } else {
-                navigate('/candidate/complete-profile/1')
+                navigate('/candidate/complete-profile')
             }
         } catch (error) {
             toast.error(error.message || 'Verification failed')
