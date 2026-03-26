@@ -21,7 +21,10 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid admin credentials' })
         }
 
-        const token = generateToken(admin.id, admin.role)
+        const token = generateToken(admin.id, admin.role, { 
+            isSuperAdmin: admin.isSuperAdmin,
+            permissions: admin.permissions
+        })
 
         res.cookie('token', token, {
             httpOnly: true,

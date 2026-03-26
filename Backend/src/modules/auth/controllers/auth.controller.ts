@@ -41,6 +41,7 @@ export const getMe = async (req: Request, res: Response) => {
                     fullName: true,
                     role: true,
                     isSuperAdmin: true,
+                    permissions: true,
                 }
             })
         }
