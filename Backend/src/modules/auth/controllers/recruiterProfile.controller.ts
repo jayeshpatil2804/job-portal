@@ -116,7 +116,8 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             message: 'Profile updated successfully',
             currentStep: profile.onboardingStep,
             isProfileCompleted: updatedRecruiter.isProfileCompleted,
-            profile
+            profile,
+            user: updatedRecruiter
         })
     } catch (error) {
         console.error('Update Company Profile Error:', error)

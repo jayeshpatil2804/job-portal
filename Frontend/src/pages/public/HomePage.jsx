@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffect, useState } from 'react'
 import {
     Search,
     MapPin,
@@ -22,8 +24,10 @@ import {
     Award
 } from 'lucide-react'
 import Navbar from '../../components/Navbar'
+import jobsImg from '../../assets/jobs.jfif'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
+import { getAllOpenJobs } from '../../redux/actions/jobActions'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -125,6 +129,41 @@ const testimonials = [
 
 const HomePage = () => {
     useMountTimer('HomePage')
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
+    const [keyword, setKeyword] = useState('')
+    const [loc, setLoc] = useState('')
+
+    const { jobs } = useSelector(state => state.job)
+    const { isAuthenticated } = useSelector(state => state.auth)
+
+    useEffect(() => {
+        dispatch(getAllOpenJobs())
+    }, [dispatch])
+
+    const handleBrowseJobs = () => {
+        if (isAuthenticated) {
+            navigate('/jobs')
+        } else {
+            navigate('/candidate/login')
+        }
+    }
+
+    const handleSearch = () => {
+        const params = new URLSearchParams()
+        if (keyword) params.append('keyword', keyword)
+        if (loc) params.append('location', loc)
+        
+        if (isAuthenticated) {
+            navigate(`/jobs?${params.toString()}`)
+        } else {
+            navigate('/candidate/login')
+        }
+    }
+
+    // Get the 3 most recent jobs
+    const displayJobs = jobs?.slice(0, 3) || []
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -141,7 +180,13 @@ const HomePage = () => {
             <Navbar />
 
             {/* ── Hero Section ── */}
-            <section className="relative bg-[#1a3c8f] py-24 md:py-32 px-4 overflow-hidden">
+            <section 
+                className="relative py-24 md:py-32 px-4 overflow-hidden bg-[#1a3c8f] bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url(${jobsImg})` }}
+            >
+                {/* Overlay to ensure text readability */}
+                <div className="absolute inset-0 bg-[#1a3c8f]/80" />
+                
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full -mr-64 -mt-64 blur-3xl animate-pulse" />
                 <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-400/10 rounded-full -ml-32 -mb-32 blur-3xl" />
                 
@@ -169,6 +214,8 @@ const HomePage = () => {
                             <input
                                 type="text"
                                 placeholder="Job Title or Keywords"
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
                                 className="flex-1 outline-none text-sm font-bold text-gray-900 placeholder-gray-400 bg-transparent"
                             />
                         </div>
@@ -177,10 +224,15 @@ const HomePage = () => {
                             <input
                                 type="text"
                                 placeholder="Preferred Location"
+                                value={loc}
+                                onChange={(e) => setLoc(e.target.value)}
                                 className="flex-1 outline-none text-sm font-bold text-gray-900 placeholder-gray-400 bg-transparent"
                             />
                         </div>
-                        <button className="bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] px-12 py-5 rounded-[1.8rem] hover:bg-black transition-all w-full md:w-auto shadow-xl active:scale-95">
+                        <button 
+                            onClick={handleSearch}
+                            className="bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] px-12 py-5 rounded-[1.8rem] hover:bg-black transition-all w-full md:w-auto shadow-xl active:scale-95"
+                        >
                             Search Roles
                         </button>
                     </div>
@@ -253,7 +305,7 @@ const HomePage = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {featuredJobs.map((job, i) => (
+                        {displayJobs.map((job, i) => (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 whileInView={{ opacity: 1, scale: 1 }}
@@ -262,17 +314,17 @@ const HomePage = () => {
                                 className="bg-white rounded-[3rem] p-8 shadow-xl shadow-blue-900/5 hover:shadow-2xl hover:shadow-blue-900/10 transition-all flex flex-col gap-6 relative group border border-gray-50"
                             >
                                 <div className="flex justify-between items-start">
-                                    <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-[#1a3c8f] font-black text-2xl border border-blue-100">
-                                        {job.company.charAt(0)}
+                                    <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-[#1a3c8f] font-black text-2xl border border-blue-100 uppercase">
+                                        {job.recruiter?.companyName?.charAt(0) || job.title.charAt(0)}
                                     </div>
                                     <span className="bg-orange-50 text-orange-600 text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-orange-100">
-                                        {job.type}
+                                        {job.jobType?.replace('_', ' ') || 'Part Time'}
                                     </span>
                                 </div>
                                 
                                 <div className="space-y-2">
-                                    <h3 className="font-black text-gray-900 text-xl tracking-tight leading-none group-hover:text-[#1a3c8f] transition-colors">{job.title}</h3>
-                                    <p className="text-gray-400 font-bold text-sm">{job.company}</p>
+                                    <h3 className="font-black text-gray-900 text-xl tracking-tight leading-none group-hover:text-[#1a3c8f] transition-colors line-clamp-1">{job.title}</h3>
+                                    <p className="text-gray-400 font-bold text-sm line-clamp-1">{job.recruiter?.companyName || 'Elite Textiles'}</p>
                                 </div>
                                 
                                 <div className="flex items-center justify-between pt-6 border-t border-gray-50 mt-auto">
@@ -280,7 +332,7 @@ const HomePage = () => {
                                         <MapPin size={12} className="text-blue-600" />
                                         {job.location.split(',')[0]}
                                     </div>
-                                    <p className="text-[#1a3c8f] font-black text-xs">{job.salary}</p>
+                                    <p className="text-[#1a3c8f] font-black text-xs">₹{job.salaryMin}-{job.salaryMax} LPA</p>
                                 </div>
 
                                 <Link
@@ -294,9 +346,12 @@ const HomePage = () => {
                     </div>
                     
                     <div className="mt-16 text-center">
-                        <Link to="/jobs" className="inline-flex items-center gap-3 px-10 py-5 bg-[#1a3c8f] text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-blue-900/30 hover:bg-blue-800 transition-all active:scale-95">
+                        <button 
+                            onClick={handleBrowseJobs}
+                            className="inline-flex items-center gap-3 px-10 py-5 bg-[#1a3c8f] text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-blue-900/30 hover:bg-blue-800 transition-all active:scale-95"
+                        >
                             Browse All Jobs <ArrowRight size={18} />
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </section>

@@ -86,7 +86,7 @@ const ProfilePage = () => {
             await dispatch(updateCandidateProfile(submitData)).unwrap()
             toast.success('Profile updated successfully!')
         } catch (error) {
-            toast.error(error || 'Failed to update profile')
+            toast.error(error?.message || error || 'Failed to update profile')
         }
     }
 

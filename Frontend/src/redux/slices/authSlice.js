@@ -9,6 +9,8 @@ import {
   verifyCandidateOtp,
   verifyRecruiterOtp 
 } from '../actions/authActions';
+import { updateCandidateProfile } from '../actions/profileActions';
+import { updateRecruiterProfile } from '../actions/recruiterProfileActions';
 
 const initialState = {
   user: null,
@@ -125,6 +127,18 @@ export const authSlice = createSlice({
         state.isCheckingAuth = false;
         state.user = null;
         state.isAuthenticated = false;
+      })
+      // Update Candidate Profile (Sync with Auth)
+      .addCase(updateCandidateProfile.fulfilled, (state, action) => {
+        if (action.payload.user) {
+          state.user = { ...state.user, ...action.payload.user };
+        }
+      })
+      // Update Recruiter Profile (Sync with Auth)
+      .addCase(updateRecruiterProfile.fulfilled, (state, action) => {
+        if (action.payload.user) {
+          state.user = { ...state.user, ...action.payload.user };
+        }
       });
   },
 });
