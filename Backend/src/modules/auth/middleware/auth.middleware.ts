@@ -9,7 +9,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
             return res.status(401).json({ message: 'Not authorized, no token' })
         }
 
-        const decoded = verifyToken(token) as { id: string, role: string }
+        const decoded = verifyToken(token) as any
         if (!decoded) {
             return res.status(401).json({ message: 'Not authorized, invalid token' })
         }
@@ -31,5 +31,29 @@ export const restrictTo = (...roles: string[]) => {
             });
         }
         next();
+    };
+};
+
+export const checkPermission = (permission: string) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const user = (req as any).user;
+        
+        if (!user || user.role !== 'ADMIN') {
+            return res.status(403).json({ message: 'Admin access required' });
+        }
+
+        // Super Admin bypasses all permission checks
+        if (user.isSuperAdmin) {
+            return next();
+        }
+
+        // Check assigned permissions
+        if (user.permissions && Array.isArray(user.permissions) && user.permissions.includes(permission)) {
+            return next();
+        }
+
+        return res.status(403).json({ 
+            message: `Access denied: You do not have the ${permission.replace(/_/g, ' ').toLowerCase()} permission` 
+        });
     };
 };

@@ -19,7 +19,7 @@ const SubAdminManagement = () => {
     const [admins, setAdmins] = useState([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
-    const [form, setForm] = useState({ name: '', email: '', permissions: [] })
+    const [form, setForm] = useState({ name: '', email: '', permissions: [], password: '' })
     const [editId, setEditId] = useState(null)
 
     useEffect(() => {
@@ -59,7 +59,7 @@ const SubAdminManagement = () => {
                 fetchAdmins() // Refresh list since the server creates ID
                 toast.success('Sub-admin created successfully')
             }
-            setForm({ name: '', email: '', permissions: [] })
+            setForm({ name: '', email: '', permissions: [], password: '' })
             setShowForm(false)
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to save sub-admin')
@@ -138,6 +138,21 @@ const SubAdminManagement = () => {
                                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1a3c8f] focus:ring-2 focus:ring-blue-100 transition"
                             />
                         </div>
+                        {!editId && (
+                            <div>
+                                <label className="block text-xs font-bold text-gray-600 mb-1.5 flex items-center justify-between">
+                                    Password
+                                    <span className="text-[10px] text-gray-400 font-normal italic">Default: Admin@123</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Set custom password"
+                                    value={form.password}
+                                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1a3c8f] focus:ring-2 focus:ring-blue-100 transition bg-blue-50/30"
+                                />
+                            </div>
+                        )}
                     </div>
                     <div className="mb-5">
                         <label className="block text-xs font-bold text-gray-600 mb-2">Permissions</label>

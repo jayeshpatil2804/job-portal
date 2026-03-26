@@ -195,16 +195,26 @@ export const updateCandidateProfile = async (req: Request, res: Response) => {
             }
         }
 
-        // 3. Update Profile data
-        const profile = await (prisma as any).candidateProfile.update({
+        // 3. Update Profile data (using upsert in case it doesn't exist yet)
+        const profile = await (prisma as any).candidateProfile.upsert({
             where: { candidateId },
-            data: profileData
+            update: profileData,
+            create: {
+                candidateId,
+                ...profileData,
+                onboardingStep: 1 // Default to step 1 if creating new
+            }
+        })
+
+        const updatedCandidate = await (prisma as any).candidate.findUnique({
+            where: { id: candidateId }
         })
 
         res.json({
             status: 'success',
             message: 'Profile updated successfully',
             profile,
+            user: updatedCandidate,
             isProfileCompleted: true
         })
     } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout'
 import { Search, MapPin, Briefcase, Bookmark, ChevronDown, DollarSign, Filter, RefreshCcw, X, ArrowRight, Zap } from 'lucide-react'
 import { getAllOpenJobs } from '../../redux/actions/jobActions'
@@ -89,21 +89,37 @@ const JobsPage = () => {
     useMountTimer('JobsPage')
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    
+    const initialKeyword = searchParams.get('keyword') || ''
+    const initialLocation = searchParams.get('location') || ''
+
     const { jobs = [], loading = false } = useSelector(state => state.job || {})
     
     const [filters, setFilters] = useState({
-        location: '',
+        location: initialLocation,
         experience: '',
         department: '',
         salaryRange: '',
-        search: ''
+        search: initialKeyword
     })
 
     const [activeFilters, setActiveFilters] = useState({})
 
     useEffect(() => {
-        dispatch(getAllOpenJobs())
-    }, [dispatch])
+        const query = {}
+        if (initialLocation) query.location = initialLocation
+        if (initialKeyword) query.search = initialKeyword
+        
+        dispatch(getAllOpenJobs(query))
+        
+        if (initialLocation || initialKeyword) {
+            setActiveFilters({
+                location: initialLocation,
+                search: initialKeyword
+            })
+        }
+    }, [dispatch, initialKeyword, initialLocation])
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target

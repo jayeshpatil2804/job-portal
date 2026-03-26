@@ -14,6 +14,7 @@ React 18 frontend for the LOSODHAN Job Portal.
 - **Icons**: Lucide React
 - **Charts**: Recharts (lazy-loaded)
 - **Payments**: Razorpay Checkout (JS SDK)
+- **Real-time**: Socket.io-client
 - **Toasts**: react-hot-toast
 
 ---
@@ -35,10 +36,10 @@ React 18 frontend for the LOSODHAN Job Portal.
 ### 🧑‍💼 Admin Panel
 - **Dashboard**: Live stats + Charts (lazy-loaded via Suspense)
 - **Recruiter Approval**: Approve / Reject / Reset pending recruiters
-- **Job Moderation**: Flag / Unflag / Remove / Restore job listings
-- **Candidate Management**: View and manage all candidates
-- **Sub-Admin Management**: Assign permissions per feature module
-- **Reports**: Download CSV exports per data category
+- **Candidates & Jobs**: View and manage candidates and job listings (Flag / Unflag / Remove).
+- **Sub-Admin Management**: Granular RBAC permissions with custom passwords (`Admin@123` default).
+- **Real-Time Security**: Sidebar navigation and module access dynamically update in real-time via Socket.io when permissions change.
+- **Reports**: Download CSV exports per data category.
 
 ---
 

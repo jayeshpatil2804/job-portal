@@ -33,6 +33,7 @@ LOSODHAN connects job seekers with hiring companies in the textile sector. It fe
 | Database | PostgreSQL (Supabase) |
 | Storage | Supabase Storage |
 | Payments | Razorpay |
+| Real-time | Socket.io |
 | Email | SendGrid |
 | Auth | JWT (HttpOnly Cookies), Google OAuth |
 
@@ -45,9 +46,10 @@ LOSODHAN connects job seekers with hiring companies in the textile sector. It fe
 - **OTP Verification** – Email-based OTP for signup and admin password recovery.
 - **Google Sign-In** – OAuth 2.0 with role-smart account matching.
 - **Multi-Step Onboarding** – 4-step profile builder for Candidates; 4-step business verification for Recruiters.
-- **Admin Panel** – Dashboard stats, Recruiter Approval, Job Moderation, Candidate Management, Sub-Admin RBAC, Reports export.
+- **Admin Panel & RBAC** – Dashboard stats, Recruiter Approval, Job Moderation, Candidate Management, Sub-Admin RBAC with **strict granular permissions**.
+- **Real-Time Sync** – Socket.io integration instantly synchronizes sub-admin permission changes and live dashboard updates without page reloads.
 - **ATS** – Track applications from APPLIED → HIRED with interview scheduling.
-- **Performance Optimized** – Lazy-loaded routes & charts, DB indexing, de-duplicated API calls.
+- **Performance Optimized** – Lazy-loaded routes & charts, DB indexing, deep parallelization (`Promise.all`), API de-duplication, and pagination.
 
 ---
 

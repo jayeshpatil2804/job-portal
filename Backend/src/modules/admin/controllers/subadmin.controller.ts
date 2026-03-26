@@ -25,7 +25,8 @@ export const getSubAdmins = async (req: Request, res: Response) => {
 
 export const createSubAdmin = async (req: Request, res: Response) => {
     try {
-        const { name, email, permissions } = req.body
+        const { name, email, permissions, password } = req.body
+        const passwordToHash = password || 'Admin@123'
 
         const exists = await prisma.admin.findUnique({ where: { email } })
         if (exists) {
@@ -33,7 +34,7 @@ export const createSubAdmin = async (req: Request, res: Response) => {
              return;
         }
 
-        const hashedPassword = await bcrypt.hash('Admin@123', 10) // Default password
+        const hashedPassword = await bcrypt.hash(passwordToHash, 10)
 
         await prisma.admin.create({
             data: {
@@ -61,6 +62,12 @@ export const updateSubAdmin = async (req: Request, res: Response) => {
             data: { fullName: name, email, permissions }
         })
 
+        // Emit real-time update via Socket.IO
+        const io = (req as any).io
+        if (io) {
+            io.to(id).emit('permissionsUpdated', { permissions })
+        }
+
         res.json({ success: true, message: 'Sub-admin updated successfully' })
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to update sub-admin' })
@@ -78,6 +85,12 @@ export const deleteSubAdmin = async (req: Request, res: Response) => {
         }
 
         await prisma.admin.delete({ where: { id } })
+
+        // Notify the sub-admin via socket that their account is gone
+        const io = (req as any).io
+        if (io) {
+            io.to(id).emit('adminDeleted')
+        }
 
         res.json({ success: true, message: 'Sub-admin deleted effectively' })
     } catch (error) {

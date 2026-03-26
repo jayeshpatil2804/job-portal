@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     LayoutDashboard,
@@ -14,7 +14,11 @@ import {
     Bell,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSelector, useDispatch } from 'react-redux'
 import logo from '../../assets/logo.png'
+import socket from '../../utils/socket'
+import toast from 'react-hot-toast'
+import { checkAuth, logoutAdmin } from '../../redux/actions/authActions'
 
 const navLinks = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -26,9 +30,50 @@ const navLinks = [
 ]
 
 const AdminLayout = ({ children, title = 'Admin Panel' }) => {
+    const { user } = useSelector(state => state.auth)
+    const dispatch = useDispatch()
     const location = useLocation()
     const navigate = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+
+    useEffect(() => {
+        if (user?.id) {
+            socket.connect()
+            socket.emit('joinRoom', user.id)
+
+            socket.on('permissionsUpdated', (data) => {
+                toast.success('Your permissions have been updated!')
+                dispatch(checkAuth())
+            })
+
+            socket.on('adminDeleted', () => {
+                toast.error('Your administrator account has been deleted.')
+                dispatch(logoutAdmin())
+                navigate('/login')
+            })
+
+            return () => {
+                socket.off('permissionsUpdated')
+                socket.off('adminDeleted')
+                socket.disconnect()
+            }
+        }
+    }, [user?.id, dispatch, navigate])
+
+    const filteredLinks = navLinks.filter(link => {
+        if (link.path === '/admin/dashboard') return true
+        if (user?.isSuperAdmin) return true
+        
+        const permissionMap = {
+            '/admin/recruiters': 'RECRUITER_APPROVAL',
+            '/admin/candidates': 'CANDIDATE_MANAGEMENT',
+            '/admin/jobs': 'JOB_MODERATION',
+            '/admin/sub-admins': 'SUB_ADMIN_MANAGEMENT',
+            '/admin/reports': 'REPORTS'
+        }
+        
+        return user?.permissions?.includes(permissionMap[link.path])
+    })
 
     const handleLogout = () => {
         navigate('/login')
@@ -48,7 +93,7 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
 
             {/* Navigation */}
             <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                {navLinks.map(({ path, label, icon: Icon }) => {
+                {filteredLinks.map(({ path, label, icon: Icon }) => {
                     const isActive = location.pathname === path
                     return (
                         <Link
@@ -135,7 +180,9 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
                         </button>
                         <div>
                             <h1 className="text-lg font-bold text-[#0f172a]">{title}</h1>
-                            <p className="text-xs text-gray-400 hidden sm:block">Welcome back, Super Admin</p>
+                            <p className="text-xs text-gray-400 hidden sm:block">
+                                {user?.isSuperAdmin ? 'Welcome back, Super Admin' : `Welcome, ${user?.fullName || 'Admin'}`}
+                            </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -144,7 +191,7 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
                             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#f97316] rounded-full"></span>
                         </button>
                         <div className="w-9 h-9 rounded-xl bg-[#1a3c8f] flex items-center justify-center text-white font-bold text-sm">
-                            SA
+                            {user?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'AD'}
                         </div>
                     </div>
                 </header>
