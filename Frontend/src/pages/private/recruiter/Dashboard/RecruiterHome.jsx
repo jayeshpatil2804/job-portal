@@ -59,9 +59,29 @@ const RecruiterHome = () => {
         <RecruiterLayout>
             <div className="space-y-8">
                 {/* Header */}
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Recruiter Dashboard</h1>
-                    <p className="text-gray-500">Welcome back! Here's your recruitment overview</p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Recruiter Dashboard</h1>
+                        <p className="text-gray-500">Welcome back! Here's your recruitment overview</p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                        <a 
+                            href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/activate/whatsapp`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#f97316] text-white px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-[#ea580c] transition-all shadow-lg active:scale-95 flex items-center justify-center"
+                        >
+                            Activate Profile
+                        </a>
+                        <a 
+                            href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/support/whatsapp`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#1a3c8f] text-white px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-blue-800 transition-all shadow-lg active:scale-95 flex items-center justify-center"
+                        >
+                            Contact Support
+                        </a>
+                    </div>
                 </div>
 
                 {/* Stat Cards */}
