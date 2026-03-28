@@ -49,12 +49,17 @@ export const applyToJob = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Please upload a resume in your profile before applying' })
         }
 
+        const { selectedSkillIds } = req.body
+
         const application = await (prisma as any).application.create({
             data: {
                 jobId,
                 candidateId,
                 resumeFileId: profile.resumeFileId,
-                status: 'APPLIED'
+                status: 'APPLIED',
+                selectedSkills: selectedSkillIds ? {
+                    connect: (Array.isArray(selectedSkillIds) ? selectedSkillIds : [selectedSkillIds]).map((id: string) => ({ id }))
+                } : undefined
             }
         })
 
@@ -142,6 +147,7 @@ export const getJobApplicants = async (req: Request, res: Response) => {
                         }
                     }
                 },
+                selectedSkills: true,
                 resumeFile: {
                     select: { fileUrl: true }
                 },

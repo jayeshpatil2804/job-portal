@@ -12,6 +12,8 @@ import {
     Menu,
     X,
     Bell,
+    Settings2,
+    CheckCircle2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector, useDispatch } from 'react-redux'
@@ -26,6 +28,8 @@ const navLinks = [
     { path: '/admin/candidates', label: 'Candidates', icon: Users },
     { path: '/admin/jobs', label: 'Job Moderation', icon: Briefcase },
     { path: '/admin/sub-admins', label: 'Sub Admins', icon: ShieldCheck },
+    { path: '/admin/designations', label: 'Designations', icon: Settings2 },
+    { path: '/admin/skills', label: 'Job Skills', icon: CheckCircle2 },
     { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
 

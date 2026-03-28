@@ -16,6 +16,8 @@ const JobModeration = () => {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('ALL')
+    const [designations, setDesignations] = useState([])
+    const [selectedDesignation, setSelectedDesignation] = useState('ALL')
 
     useEffect(() => {
         fetchJobs()
@@ -23,10 +25,14 @@ const JobModeration = () => {
 
     const fetchJobs = async () => {
         try {
-            const res = await api.get('/admin/jobs')
-            setJobs(res.data.jobs)
+            const [jobsRes, desigRes] = await Promise.all([
+                api.get('/admin/jobs'),
+                api.get('/admin/designations')
+            ])
+            setJobs(jobsRes.data.jobs)
+            setDesignations(desigRes.data.designations)
         } catch (error) {
-            toast.error('Failed to load jobs')
+            toast.error('Failed to load data')
         } finally {
             setLoading(false)
         }
@@ -78,10 +84,15 @@ const JobModeration = () => {
     )
 
     const filtered = jobs.filter(j => {
-        const matchSearch = j.title.toLowerCase().includes(search.toLowerCase()) || j.company.toLowerCase().includes(search.toLowerCase())
-        if (filter === 'ALL') return matchSearch
-        if (filter === 'FLAGGED') return matchSearch && j.flagged
-        return matchSearch && j.status === filter
+        const matchSearch = j.title.toLowerCase().includes(search.toLowerCase()) || 
+                           j.company.toLowerCase().includes(search.toLowerCase()) ||
+                           (j.designation?.name || '').toLowerCase().includes(search.toLowerCase())
+        
+        const matchDesignation = selectedDesignation === 'ALL' || j.designationId === selectedDesignation
+        
+        const matchStatus = filter === 'ALL' ? true : (filter === 'FLAGGED' ? j.flagged : j.status === filter)
+        
+        return matchSearch && matchDesignation && matchStatus
     })
 
     return (
@@ -92,20 +103,35 @@ const JobModeration = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2 mb-5">
-                {['ALL', 'ACTIVE', 'FLAGGED', 'REMOVED'].map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => setFilter(tab)}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                            filter === tab
-                                ? 'bg-[#1a3c8f] text-white shadow-md'
-                                : 'bg-white text-gray-600 border border-gray-200 hover:border-[#1a3c8f]'
-                        }`}
-                    >
-                        {tab === 'FLAGGED' ? '🚩 ' : ''}{tab.charAt(0) + tab.slice(1).toLowerCase()} ({counts[tab]})
-                    </button>
-                ))}
+            <div className="flex flex-wrap gap-4 mb-5 items-center">
+                <div className="flex flex-wrap gap-2">
+                    {['ALL', 'ACTIVE', 'FLAGGED', 'REMOVED'].map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setFilter(tab)}
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                                filter === tab
+                                    ? 'bg-[#1a3c8f] text-white shadow-md'
+                                    : 'bg-white text-gray-600 border border-gray-200 hover:border-[#1a3c8f]'
+                            }`}
+                        >
+                            {tab === 'FLAGGED' ? '🚩 ' : ''}{tab.charAt(0) + tab.slice(1).toLowerCase()} ({counts[tab]})
+                        </button>
+                    ))}
+                </div>
+
+                <div className="h-8 w-px bg-gray-200 mx-2 hidden md:block" />
+
+                <select 
+                    value={selectedDesignation}
+                    onChange={e => setSelectedDesignation(e.target.value)}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:border-[#1a3c8f] focus:ring-2 focus:ring-blue-100 transition min-w-[180px]"
+                >
+                    <option value="ALL">All Designations</option>
+                    {designations.map(d => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                </select>
             </div>
 
             {/* Search */}
@@ -143,7 +169,14 @@ const JobModeration = () => {
                                 <div className="flex items-start justify-between gap-2 flex-wrap">
                                     <div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <h4 className="font-bold text-gray-900 text-sm">{job.title}</h4>
+                                            <h4 className="font-bold text-gray-900 text-sm">
+                                                {job.designation ? job.designation.name : job.title}
+                                            </h4>
+                                            {job.designation && (
+                                                <span className="px-2 py-0.5 bg-blue-100 text-[#1a3c8f] text-[9px] font-black uppercase tracking-widest rounded-lg">
+                                                    {job.title}
+                                                </span>
+                                            )}
                                             {job.flagged && (
                                                 <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full">
                                                     <Flag size={10} /> Flagged

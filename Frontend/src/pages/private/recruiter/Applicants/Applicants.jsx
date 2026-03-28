@@ -243,11 +243,19 @@ const Applicants = () => {
                                                     {app.candidate.profile?.yearsOfExp || 'Fresher'}
                                                 </p>
                                                 <div className="flex flex-wrap gap-1">
-                                                    {app.candidate.profile?.skills?.split(',').slice(0, 3).map((skill, i) => (
-                                                        <span key={i} className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-bold text-gray-500 uppercase tracking-tighter">
-                                                            {skill.trim()}
-                                                        </span>
-                                                    ))}
+                                                    {(app.selectedSkills && app.selectedSkills.length > 0) ? (
+                                                        app.selectedSkills.map((skill) => (
+                                                            <span key={skill.id} className="text-[10px] bg-[#1a3c8f] px-2 py-0.5 rounded-full font-bold text-white uppercase tracking-tighter">
+                                                                {skill.name}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        app.candidate.profile?.skills?.split(',').slice(0, 3).map((skill, i) => (
+                                                            <span key={i} className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-bold text-gray-500 uppercase tracking-tighter">
+                                                                {skill.trim()}
+                                                            </span>
+                                                        ))
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>

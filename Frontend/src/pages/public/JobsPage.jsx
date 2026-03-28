@@ -32,7 +32,7 @@ const JobCard = React.forwardRef(({ job, navigate }, ref) => (
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
                         <h3 className="text-2xl font-black text-gray-900 group-hover:text-[#1a3c8f] transition-colors leading-tight tracking-tight">
-                            {job.title}
+                            {job.designation ? job.designation.name : job.title}
                         </h3>
                         <div className="flex items-center gap-2">
                              <p className="text-sm font-black text-gray-400 uppercase tracking-widest">

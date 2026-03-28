@@ -57,6 +57,8 @@ const CandidateManagement = lazy(() => import('./pages/private/admin/CandidateMa
 const JobModeration = lazy(() => import('./pages/private/admin/JobModeration'))
 const SubAdminManagement = lazy(() => import('./pages/private/admin/SubAdminManagement'))
 const ReportsSection = lazy(() => import('./pages/private/admin/ReportsSection'))
+const DesignationManagement = lazy(() => import('./pages/private/admin/DesignationManagement'))
+const SkillManagement = lazy(() => import('./pages/private/admin/SkillManagement'))
 
 // Auth Wrappers
 import CandidateProtectedRoute from './components/CandidateProtectedRoute'
@@ -150,6 +152,8 @@ function App() {
                         <Route path="/admin/jobs" element={<JobModeration />} />
                         <Route path="/admin/sub-admins" element={<SubAdminManagement />} />
                         <Route path="/admin/reports" element={<ReportsSection />} />
+                        <Route path="/admin/designations" element={<DesignationManagement />} />
+                        <Route path="/admin/skills" element={<SkillManagement />} />
                     </Route>
 
                     {/* Admin Auth Routes (Secure) */}

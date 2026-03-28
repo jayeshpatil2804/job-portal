@@ -55,6 +55,16 @@ export const getReportsMetadata = async (req: Request, res: Response) => {
                 iconColor: 'text-red-500',
                 category: 'Moderation',
                 rows: `${await prisma.job.count({ where: { OR: [{ isFlagged: true }, { isRemoved: true }] } })} jobs`,
+            },
+            {
+                id: 'designations',
+                title: 'Designation-wise Applications',
+                description: 'Breakdown of applications received for each job designation',
+                icon: 'BarChart3',
+                iconBg: 'bg-green-50',
+                iconColor: 'text-green-600',
+                category: 'Analytics',
+                rows: `${await prisma.designation.count()} roles`,
             }
         ]
         res.json({ success: true, reports })
@@ -65,7 +75,7 @@ export const getReportsMetadata = async (req: Request, res: Response) => {
 
 export const downloadReport = async (req: Request, res: Response) => {
     try {
-        const { reportId } = req.params
+        const { reportId } = req.params as { reportId: string }
         const { format } = req.query
 
         let data: any[] = []
@@ -128,6 +138,24 @@ export const downloadReport = async (req: Request, res: Response) => {
                     Removed: j.isRemoved,
                     Status: j.status,
                     CreatedAt: j.createdAt
+                }))
+                break
+
+            case 'designations':
+                const allDesignations = await prisma.designation.findMany({
+                    include: {
+                        jobs: {
+                            include: {
+                                _count: { select: { applications: true } }
+                            }
+                        }
+                    }
+                })
+                data = allDesignations.map(d => ({
+                    Designation: d.name,
+                    TotalJobs: d.jobs.length,
+                    TotalApplications: d.jobs.reduce((acc, job) => acc + job._count.applications, 0),
+                    CreatedAt: d.createdAt
                 }))
                 break
 

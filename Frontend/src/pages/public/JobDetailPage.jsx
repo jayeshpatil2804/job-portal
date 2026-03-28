@@ -33,13 +33,35 @@ const JobDetailPage = () => {
         }
     }, [applySuccess])
 
-    const handleApply = () => {
+    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
+    const [selectedSkillIds, setSelectedSkillIds] = useState([])
+
+    const handleApply = async () => {
         if (!user) {
             toast.error('Please login as a candidate to apply')
             navigate('/candidate/login')
             return
         }
-        dispatch(applyToJob(id))
+        
+        if (job.skillsReq && job.skillsReq.length > 0 && !isApplyModalOpen) {
+            setIsApplyModalOpen(true)
+            return
+        }
+
+        dispatch(applyToJob({ jobId: id, selectedSkillIds }))
+    }
+
+    const toggleSkill = (skillId) => {
+        setSelectedSkillIds(prev => 
+            prev.includes(skillId) 
+                ? prev.filter(id => id !== skillId)
+                : [...prev, skillId]
+        )
+    }
+
+    const confirmApply = () => {
+        dispatch(applyToJob({ jobId: id, selectedSkillIds }))
+        setIsApplyModalOpen(false)
     }
 
     if (loading) {
@@ -107,11 +129,18 @@ const JobDetailPage = () => {
                                             <span className="px-4 py-1.5 bg-blue-50 text-[#1a3c8f] text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-100">
                                                 {job.department || 'Premium Role'}
                                             </span>
+                                            {job.designation && (
+                                                <span className="px-4 py-1.5 bg-green-50 text-green-700 text-[9px] font-black uppercase tracking-widest rounded-full border border-green-100">
+                                                    {job.designation.name}
+                                                </span>
+                                            )}
                                             <span className="px-4 py-1.5 bg-orange-50 text-orange-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-orange-100">
                                                 {job.jobType.replace('_', ' ')}
                                             </span>
                                         </div>
-                                        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">{job.title}</h1>
+                                        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+                                            {job.designation ? job.designation.name : job.title}
+                                        </h1>
                                         <p className="text-xl font-bold text-gray-400 flex items-center gap-2">
                                             at <span className="text-[#1a3c8f]">{job.recruiter.companyName}</span>
                                         </p>
@@ -143,13 +172,13 @@ const JobDetailPage = () => {
                                     </div>
                                 </div>
 
-                                {job.skills && (
+                                 {job.skillsReq && job.skillsReq.length > 0 && (
                                     <div className="space-y-6">
-                                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] pl-4">Technical Stack & Competencies</h3>
+                                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] pl-4">Core Competencies Required</h3>
                                         <div className="flex flex-wrap gap-3 pl-4">
-                                            {job.skills.split(',').map((skill, i) => (
-                                                <span key={i} className="px-6 py-3 bg-gray-50 text-gray-900 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-gray-100 hover:border-[#1a3c8f] transition-colors">
-                                                    {skill.trim()}
+                                            {job.skillsReq.map((skill) => (
+                                                <span key={skill.id} className="px-6 py-3 bg-blue-50/50 text-[#1a3c8f] rounded-2xl font-black text-[10px] uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-colors">
+                                                    {skill.name}
                                                 </span>
                                             ))}
                                         </div>
@@ -284,6 +313,75 @@ const JobDetailPage = () => {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Skill Selection Modal */}
+            <AnimatePresence>
+                {isApplyModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                            onClick={() => setIsApplyModalOpen(false)}
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="relative w-full max-w-xl bg-white rounded-[3.5rem] shadow-2xl overflow-hidden p-12"
+                        >
+                            <div className="space-y-8">
+                                <div className="text-center space-y-3">
+                                    <div className="w-16 h-16 bg-blue-50 rounded-3xl flex items-center justify-center text-[#1a3c8f] mx-auto mb-4">
+                                        <ShieldCheck size={32} />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">Select Your Skills</h3>
+                                    <p className="text-gray-500 font-medium">Select the skills required for this role that you have experience in.</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                    {job.skillsReq.map(skill => (
+                                        <button
+                                            key={skill.id}
+                                            onClick={() => toggleSkill(skill.id)}
+                                            className={`px-4 py-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${
+                                                selectedSkillIds.includes(skill.id)
+                                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                                    : 'bg-gray-50 border-gray-100 text-gray-700 hover:border-blue-200'
+                                            }`}
+                                        >
+                                            <span className="text-xs font-black uppercase tracking-tight">{skill.name}</span>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                                selectedSkillIds.includes(skill.id)
+                                                    ? 'bg-white border-white'
+                                                    : 'bg-white border-gray-200'
+                                            }`}>
+                                                {selectedSkillIds.includes(skill.id) && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full" />}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-4 pt-4">
+                                    <button 
+                                        onClick={() => setIsApplyModalOpen(false)}
+                                        className="flex-1 py-5 rounded-2xl border border-gray-200 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:bg-gray-50 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        onClick={confirmApply}
+                                        className="flex-2 py-5 px-10 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-gray-900/10 hover:bg-black transition-all"
+                                    >
+                                        Submit Application
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </DashboardLayout>
     )
 }
