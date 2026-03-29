@@ -24,7 +24,12 @@ import {
     Award
 } from 'lucide-react'
 import Navbar from '../../components/Navbar'
-import jobsImg from '../../assets/jobs.jfif'
+import jobsImg from '../../assets/banner.jpeg'
+import banner2 from '../../assets/banner 2.jpeg'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Autoplay, EffectFade } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/effect-fade'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
 import { getAllOpenJobs } from '../../redux/actions/jobActions'
@@ -179,13 +184,37 @@ const HomePage = () => {
         <div className="min-h-screen bg-white">
             <Navbar />
 
-            {/* ── Hero Section ── */}
-            <section 
-                className="relative py-24 md:py-32 px-4 overflow-hidden bg-[#1a3c8f] bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${jobsImg})` }}
-            >
-                {/* Overlay to ensure text readability */}
-                <div className="absolute inset-0 bg-[#1a3c8f]/80" />
+            {/* ── Hero Section with Swiper Background ── */}
+            <section className="relative py-24 md:py-32 px-4 overflow-hidden min-h-[600px] flex items-center">
+                {/* Swiper Background Slider */}
+                <div className="absolute inset-0 z-0">
+                    <Swiper
+                        modules={[Autoplay, EffectFade]}
+                        effect="fade"
+                        speed={2000}
+                        autoplay={{
+                            delay: 5000,
+                            disableOnInteraction: false,
+                        }}
+                        loop={true}
+                        className="h-full w-full"
+                    >
+                        <SwiperSlide>
+                            <div 
+                                className="w-full h-full bg-cover bg-center bg-no-repeat"
+                                style={{ backgroundImage: `url(${jobsImg})` }}
+                            />
+                        </SwiperSlide>
+                        <SwiperSlide>
+                            <div 
+                                className="w-full h-full bg-cover bg-center bg-no-repeat"
+                                style={{ backgroundImage: `url(${banner2})` }}
+                            />
+                        </SwiperSlide>
+                    </Swiper>
+                    {/* Unified Contrast Overlay */}
+                    <div className="absolute inset-0 bg-black/40 z-10" />
+                </div>
                 
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full -mr-64 -mt-64 blur-3xl animate-pulse" />
                 <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-400/10 rounded-full -ml-32 -mb-32 blur-3xl" />
@@ -194,7 +223,7 @@ const HomePage = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="max-w-6xl mx-auto text-center relative z-10"
+                    className="max-w-6xl mx-auto text-center relative z-20"
                 >
                     <div className="inline-flex items-center gap-2 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-[0.2em] mb-10">
                         <Sparkles size={14} className="text-blue-300" />

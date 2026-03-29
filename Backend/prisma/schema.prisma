@@ -89,6 +89,7 @@ model CandidateProfile {
   
   // Skills
   skills          String?
+  skillIds        Skill[]   @relation("CandidateSkills")
   
   // Resume
   resumeUrl       String?
@@ -229,6 +230,11 @@ model Job {
   responsibilities String?  @db.Text
   requirements     String?  @db.Text
   skills           String?  @db.Text
+  
+  designationId    String?
+  designation      Designation? @relation(fields: [designationId], references: [id])
+  skillsReq        Skill[]      @relation("JobSkills")
+
   benefits         String?  @db.Text
   deadline         DateTime?
   isFeatured       Boolean  @default(false)
@@ -274,6 +280,8 @@ model Application {
   resumeFile   File?             @relation("ApplicationResume", fields: [resumeFileId], references: [id])
   
   interview    Interview?
+  
+  selectedSkills Skill[]             @relation("ApplicationSkills")
   
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
@@ -327,4 +335,25 @@ model Payment {
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model Designation {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  jobs      Job[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Skill {
+  id                String             @id @default(uuid())
+  name              String             @unique
+  category          String?            // e.g. "IT", "Non-IT", "Healthcare"
+  
+  jobs              Job[]              @relation("JobSkills")
+  applications      Application[]      @relation("ApplicationSkills")
+  candidateProfiles CandidateProfile[] @relation("CandidateSkills")
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }

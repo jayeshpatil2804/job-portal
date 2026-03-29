@@ -10,7 +10,7 @@ export const createJob = async (req: Request, res: Response) => {
             salaryMin, salaryMax, location, vacancies, 
             description, responsibilities, requirements, 
             skills, benefits, deadline, isFeatured, isRemote,
-            status 
+            status, designationId, skillIds
         } = req.body
 
         // Check if recruiter has paid
@@ -45,7 +45,11 @@ export const createJob = async (req: Request, res: Response) => {
                 deadline: deadline ? new Date(deadline) : null,
                 isFeatured: isFeatured === true || isFeatured === 'true',
                 isRemote: isRemote === true || isRemote === 'true',
-                status: status || 'OPEN'
+                status: status || 'OPEN',
+                designationId: designationId || null,
+                skillsReq: skillIds ? {
+                    connect: (Array.isArray(skillIds) ? skillIds : [skillIds]).map((id: string) => ({ id }))
+                } : undefined
             }
         })
 
@@ -94,6 +98,8 @@ export const getJobById = async (req: Request, res: Response) => {
             where: { id },
             include: { 
                 recruiter: { select: { fullName: true, companyName: true, email: true } },
+                designation: true,
+                skillsReq: true,
                 _count: {
                     select: { applications: true }
                 }
@@ -120,7 +126,8 @@ export const editJob = async (req: Request, res: Response) => {
             title, department, jobType, experience, 
             salaryMin, salaryMax, location, vacancies, 
             description, responsibilities, requirements, 
-            skills, benefits, deadline, isFeatured, isRemote 
+            skills, benefits, deadline, isFeatured, isRemote,
+            designationId, skillIds
         } = req.body
 
         // Ensure the job belongs to this recruiter
@@ -151,7 +158,11 @@ export const editJob = async (req: Request, res: Response) => {
                 benefits,
                 deadline: deadline ? new Date(deadline) : null,
                 isFeatured: isFeatured === true || isFeatured === 'true',
-                isRemote: isRemote === true || isRemote === 'true'
+                isRemote: isRemote === true || isRemote === 'true',
+                designationId: designationId || undefined,
+                skillsReq: skillIds ? {
+                    set: (Array.isArray(skillIds) ? skillIds : [skillIds]).map((id: string) => ({ id }))
+                } : undefined
             }
         })
 
@@ -265,7 +276,9 @@ export const getAllOpenJobs = async (req: Request, res: Response) => {
                 ...(experience ? { experience: { contains: experience as string, mode: 'insensitive' } } : {}),
             },
             include: {
-                recruiter: { select: { fullName: true, companyName: true } }
+                recruiter: { select: { fullName: true, companyName: true } },
+                designation: true,
+                skillsReq: true
             },
             orderBy: { createdAt: 'desc' }
         })

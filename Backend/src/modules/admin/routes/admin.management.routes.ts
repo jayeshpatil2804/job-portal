@@ -10,11 +10,28 @@ import {
 import { getAllJobs, toggleJobFlag, toggleJobRemove } from '../controllers/jobs.controller'
 import { getSubAdmins, createSubAdmin, updateSubAdmin, deleteSubAdmin } from '../controllers/subadmin.controller'
 import { downloadReport, getReportsMetadata } from '../controllers/reports.controller'
+import { 
+    getAllDesignations, 
+    createDesignation, 
+    updateDesignation, 
+    deleteDesignation 
+} from '../controllers/designation.controller'
+import { 
+    getAllSkills, 
+    createSkill, 
+    updateSkill, 
+    deleteSkill 
+} from '../controllers/skill.controller'
 import { protect, restrictTo, checkPermission } from '../../auth/middleware/auth.middleware'
 
 const router = Router()
 
-// All routes here require ADMIN role
+// Public or Shared read routes (Recruiters need these to post jobs)
+router.get('/designations', protect, getAllDesignations)
+router.get('/skills', protect, getAllSkills)
+router.post('/skills', protect, restrictTo('ADMIN', 'RECRUITER'), createSkill)
+
+// All other routes here require ADMIN role
 router.use(protect, restrictTo('ADMIN'))
 
 // Dashboard (Requires ANY admin permission or Super Admin status)
@@ -43,5 +60,14 @@ router.delete('/subadmins/:id', checkPermission('SUB_ADMIN_MANAGEMENT'), deleteS
 // Reports
 router.get('/reports', checkPermission('REPORTS'), getReportsMetadata)
 router.get('/reports/:reportId/download', checkPermission('REPORTS'), downloadReport)
+
+// Designations modifications (ADMIN ONLY)
+router.post('/designations', createDesignation)
+router.put('/designations/:id', updateDesignation)
+router.delete('/designations/:id', deleteDesignation)
+
+// Skills modifications (ADMIN ONLY)
+router.put('/skills/:id', updateSkill)
+router.delete('/skills/:id', deleteSkill)
 
 export default router

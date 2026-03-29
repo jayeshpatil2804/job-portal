@@ -64,14 +64,30 @@ const Navbar = () => {
                                     <User size={18} className="text-[#1a3c8f]" />
                                     Admin
                                 </Link>
+                                <Link
+                                    to="/login"
+                                    className="text-sm font-bold text-[#1a3c8f] hover:text-blue-700 transition-colors border border-blue-100 bg-blue-50 px-4 py-2 rounded-md flex items-center gap-2"
+                                >
+                                    Support
+                                </Link>
                             </>
                         ) : (
-                            <Link
-                                to={user.role === 'RECRUITER' ? "/recruiter/dashboard" : "/dashboard"}
-                                className="bg-[#1a3c8f] text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-[#162f72] transition-colors"
-                            >
-                                Dashboard
-                            </Link>
+                            <div className="flex items-center gap-4">
+                                <Link
+                                    to={user.role === 'RECRUITER' ? "/recruiter/dashboard" : "/dashboard"}
+                                    className="bg-[#1a3c8f] text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-[#162f72] transition-colors"
+                                >
+                                    Dashboard
+                                </Link>
+                                <a
+                                    href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/support/whatsapp`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm font-bold text-[#1a3c8f] hover:text-blue-700 transition-colors border border-blue-100 bg-blue-50 px-4 py-2 rounded-md"
+                                >
+                                    Support
+                                </a>
+                            </div>
                         )}
                     </div>
 
@@ -145,15 +161,33 @@ const Navbar = () => {
                                             <User size={18} />
                                             Admin Portal
                                         </Link>
+                                        <Link
+                                            to="/login"
+                                            onClick={() => setMobileOpen(false)}
+                                            className="w-full text-center py-4 rounded-2xl text-sm font-black text-[#1a3c8f] bg-blue-50 border border-blue-100 transition-all uppercase tracking-widest"
+                                        >
+                                            Contact Support
+                                        </Link>
                                     </div>
                                 ) : (
-                                    <Link
-                                        to={user.role === 'RECRUITER' ? "/recruiter/dashboard" : "/dashboard"}
-                                        onClick={() => setMobileOpen(false)}
-                                        className="w-full text-center py-4 rounded-2xl text-sm font-black text-white bg-[#1a3c8f] hover:bg-[#162f72] shadow-lg shadow-blue-900/20 transition-all uppercase tracking-widest"
-                                    >
-                                        Go to Dashboard
-                                    </Link>
+                                    <div className="flex flex-col gap-3">
+                                        <Link
+                                            to={user.role === 'RECRUITER' ? "/recruiter/dashboard" : "/dashboard"}
+                                            onClick={() => setMobileOpen(false)}
+                                            className="w-full text-center py-4 rounded-2xl text-sm font-black text-white bg-[#1a3c8f] hover:bg-[#162f72] shadow-lg shadow-blue-900/20 transition-all uppercase tracking-widest"
+                                        >
+                                            Go to Dashboard
+                                        </Link>
+                                        <a
+                                            href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/support/whatsapp`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={() => setMobileOpen(false)}
+                                            className="w-full text-center py-4 rounded-2xl text-sm font-black text-[#1a3c8f] bg-blue-50 border border-blue-100 transition-all uppercase tracking-widest"
+                                        >
+                                            Contact Support
+                                        </a>
+                                    </div>
                                 )}
                             </div>
                         </div>

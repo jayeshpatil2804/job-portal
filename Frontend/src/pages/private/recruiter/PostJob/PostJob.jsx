@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import RecruiterLayout from '../../../../components/RecruiterLayout'
 import { motion } from 'framer-motion'
 import { useDispatch } from 'react-redux'
 import { createJob } from '../../../../redux/actions/jobActions'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import api from '../../../../utils/api'
+import { Plus, X } from 'lucide-react'
 
 const PostJob = () => {
     const dispatch = useDispatch()
@@ -22,12 +24,33 @@ const PostJob = () => {
         description: '',
         responsibilities: '',
         requirements: '',
-        skills: '',
         benefits: '',
         deadline: '',
         isFeatured: false,
         isRemote: false,
+        designationId: '',
+        skillIds: []
     })
+
+    const [designations, setDesignations] = useState([])
+    const [availableSkills, setAvailableSkills] = useState([])
+    const [customSkill, setCustomSkill] = useState('')
+
+    useEffect(() => {
+        const fetchMeta = async () => {
+            try {
+                const [dRes, sRes] = await Promise.all([
+                    api.get('/admin/designations'),
+                    api.get('/admin/skills')
+                ])
+                setDesignations(dRes.data.designations)
+                setAvailableSkills(sRes.data.skills)
+            } catch (error) {
+                console.error("Meta fetch error:", error)
+            }
+        }
+        fetchMeta()
+    }, [])
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
@@ -35,6 +58,28 @@ const PostJob = () => {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }))
+    }
+
+    const handleSkillToggle = (id) => {
+        setFormData(prev => ({
+            ...prev,
+            skillIds: prev.skillIds.includes(id) 
+                ? prev.skillIds.filter(sid => sid !== id)
+                : [...prev.skillIds, id]
+        }))
+    }
+
+    const handleAddCustomSkill = async () => {
+        if (!customSkill.trim()) return
+        try {
+            const res = await api.post('/admin/skills', { name: customSkill.trim(), category: formData.department || 'Other' })
+            setAvailableSkills(prev => [...prev, res.data.skill])
+            handleSkillToggle(res.data.skill.id)
+            setCustomSkill('')
+            toast.success('Skill added')
+        } catch (error) {
+            toast.error('Failed to add skill')
+        }
     }
 
     const handleSubmit = async (e, status = 'OPEN') => {
@@ -49,6 +94,8 @@ const PostJob = () => {
             setLoading(true);
             const payload = {
                 title: formData.jobTitle,
+                designationId: formData.designationId,
+                skillIds: formData.skillIds,
                 department: formData.department,
                 jobType: formData.jobType,
                 experience: formData.experience,
@@ -100,10 +147,26 @@ const PostJob = () => {
                                     value={formData.jobTitle}
                                     onChange={handleChange}
                                     type="text" 
-                                    placeholder="e.g., Senior Textile Designer" 
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    placeholder="e.g. Senior Full Stack Developer" 
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-6"
                                     required
                                 />
+
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Designation category *</label>
+                                <div className="flex gap-2">
+                                    <select 
+                                        name="designationId"
+                                        value={formData.designationId}
+                                        onChange={handleChange}
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        required
+                                    >
+                                        <option value="">Select Designation Category</option>
+                                        {designations.map(d => (
+                                            <option key={d.id} value={d.id}>{d.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
                             <div>
@@ -185,8 +248,39 @@ const PostJob = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase">Required Skills (comma separated)</label>
-                                <input name="skills" value={formData.skills} onChange={handleChange} type="text" placeholder="e.g., Textile Design, Adobe Illustrator, Pattern Making" className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                <label className="block text-sm font-semibold text-gray-700 mb-3 uppercase">Required Skills *</label>
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {availableSkills.map(skill => (
+                                        <button
+                                            key={skill.id}
+                                            type="button"
+                                            onClick={() => handleSkillToggle(skill.id)}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                                                formData.skillIds.includes(skill.id)
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-400'
+                                            }`}
+                                        >
+                                            {skill.name}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={customSkill}
+                                        onChange={e => setCustomSkill(e.target.value)}
+                                        placeholder="Add custom skill..." 
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={handleAddCustomSkill}
+                                        className="px-4 py-2 bg-gray-100 text-[#1a3c8f] font-bold rounded-lg hover:bg-gray-200 transition-all text-sm flex items-center gap-1"
+                                    >
+                                        <Plus size={16} /> Add
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

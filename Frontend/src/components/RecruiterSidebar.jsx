@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, PlusCircle, Briefcase, Users, Calendar, LogOut, User, X } from 'lucide-react'
+import { LayoutDashboard, PlusCircle, Briefcase, Users, Calendar, LogOut, User, X, MessageSquare } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../utils/api'
 import logo from '../assets/logo.png'
@@ -121,6 +121,15 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                         <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
                         <span className="text-[10px] uppercase tracking-[0.15em]">Sign Out</span>
                     </button>
+                    <a
+                        href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/support/whatsapp`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 px-5 py-4 w-full rounded-2xl text-blue-100/60 hover:bg-blue-400/10 hover:text-white transition-all font-bold group mt-2"
+                    >
+                        <MessageSquare size={20} className="group-hover:scale-110 transition-transform text-blue-300" />
+                        <span className="text-[10px] uppercase tracking-[0.15em]">Help & Support</span>
+                    </a>
                 </div>
             </motion.aside>
         </>
