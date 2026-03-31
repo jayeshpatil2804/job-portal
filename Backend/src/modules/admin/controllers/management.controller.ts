@@ -124,3 +124,39 @@ export const toggleCandidateActivation = async (req: Request, res: Response) => 
         res.status(500).json({ success: false, message: 'Failed to update candidate activation status' })
     }
 }
+
+export const updateRecruiterPaymentStatus = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string
+        const { paymentStatus } = req.body // 'PAID' | 'UNPAID' | 'TEMP_ACTIVATED'
+
+        let updateData: any = {}
+
+        if (paymentStatus === 'PAID') {
+            updateData = { isPaid: true, isActive: true }
+        } else if (paymentStatus === 'UNPAID') {
+            updateData = { isPaid: false, isActive: false }
+        } else if (paymentStatus === 'TEMP_ACTIVATED') {
+            updateData = { isPaid: false, isActive: true }
+        } else {
+            return res.status(400).json({ success: false, message: 'Invalid payment status' })
+        }
+
+        await prisma.recruiter.update({
+            where: { id },
+            data: updateData
+        })
+
+        if ((req as any).io && updateData.isActive !== undefined) {
+             (req as any).io.to(id).emit('accountStatusChanged', { isActive: updateData.isActive })
+        }
+
+        res.json({
+            success: true,
+            message: `Recruiter payment status updated to ${paymentStatus} successfully`
+        })
+    } catch (error) {
+        console.error('Update payment status error:', error)
+        res.status(500).json({ success: false, message: 'Failed to update recruiter payment status' })
+    }
+}

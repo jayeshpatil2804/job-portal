@@ -16,13 +16,13 @@ export const createJob = async (req: Request, res: Response) => {
         // Check if recruiter has paid
         const recruiter = await prisma.recruiter.findUnique({
             where: { id: recruiterId },
-            select: { isPaid: true }
+            select: { isPaid: true, isActive: true }
         })
 
-        if (!recruiter?.isPaid) {
+        if (!recruiter?.isPaid && !recruiter?.isActive) {
             return res.status(403).json({ 
                 success: false, 
-                message: 'Payment required to post jobs. Please complete your payment.' 
+                message: 'Payment or account activation required to post jobs.' 
             })
         }
 

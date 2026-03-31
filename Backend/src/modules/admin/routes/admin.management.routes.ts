@@ -5,7 +5,8 @@ import {
     updateRecruiterStatus, 
     getAllCandidates,
     toggleRecruiterActivation,
-    toggleCandidateActivation
+    toggleCandidateActivation,
+    updateRecruiterPaymentStatus
 } from '../controllers/management.controller'
 import { getAllJobs, toggleJobFlag, toggleJobRemove } from '../controllers/jobs.controller'
 import { getSubAdmins, createSubAdmin, updateSubAdmin, deleteSubAdmin } from '../controllers/subadmin.controller'
@@ -42,6 +43,7 @@ router.get('/activity', getRecentActivity)
 router.get('/recruiters', checkPermission('RECRUITER_APPROVAL'), getAllRecruiters)
 router.patch('/recruiters/:id/status', checkPermission('RECRUITER_APPROVAL'), updateRecruiterStatus)
 router.patch('/recruiters/:id/activate', checkPermission('RECRUITER_APPROVAL'), toggleRecruiterActivation)
+router.patch('/recruiters/:id/payment-status', checkPermission('RECRUITER_APPROVAL'), updateRecruiterPaymentStatus)
 
 router.get('/candidates', checkPermission('CANDIDATE_MANAGEMENT'), getAllCandidates)
 router.patch('/candidates/:id/activate', checkPermission('CANDIDATE_MANAGEMENT'), toggleCandidateActivation)
