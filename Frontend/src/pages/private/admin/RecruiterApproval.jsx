@@ -44,13 +44,20 @@ const RecruiterApproval = () => {
         setSelected(null)
     }
 
-    const handleActivationToggle = async (id, currentStatus) => {
+    const handlePaymentStatusChange = async (id, status) => {
         try {
-            await api.patch(`/admin/recruiters/${id}/activate`, { isActive: !currentStatus })
-            setRecruiters(prev => prev.map(r => r.id === id ? { ...r, isActive: !currentStatus } : r))
-            toast.success(`Recruiter account ${!currentStatus ? 'activated' : 'deactivated'}`)
+            await api.patch(`/admin/recruiters/${id}/payment-status`, { paymentStatus: status })
+            setRecruiters(prev => prev.map(r => {
+                if (r.id === id) {
+                    if (status === 'PAID') return { ...r, isPaid: true, isActive: true }
+                    if (status === 'UNPAID') return { ...r, isPaid: false, isActive: false }
+                    if (status === 'TEMP_ACTIVATED') return { ...r, isPaid: false, isActive: true }
+                }
+                return r
+            }))
+            toast.success(`Payment status updated to ${status.replace('_', ' ').toLowerCase()}`)
         } catch (error) {
-            toast.error('Failed to toggle activation status')
+            toast.error('Failed to update payment status')
         }
     }
 
@@ -165,26 +172,19 @@ const RecruiterApproval = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1.5">
-                                                {r.isPaid ? (
-                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 w-fit w-[64px]">
-                                                        Paid
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-500 w-fit w-[64px]">
-                                                        Unpaid
-                                                    </span>
-                                                )}
-                                                {r.isActive ? (
-                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 w-fit w-[64px]">
-                                                        Active
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-700 w-fit w-[64px]">
-                                                        Inactive
-                                                    </span>
-                                                )}
-                                            </div>
+                                            <select
+                                                value={ r.isPaid ? 'PAID' : (r.isActive ? 'TEMP_ACTIVATED' : 'UNPAID') }
+                                                onChange={(e) => handlePaymentStatusChange(r.id, e.target.value)}
+                                                className={`px-3 py-1.5 text-xs font-bold rounded-lg border focus:outline-none transition-colors cursor-pointer appearance-none text-center ${
+                                                    r.isPaid ? 'bg-green-100 text-green-700 border-green-200' :
+                                                    r.isActive ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                                                    'bg-gray-100 text-gray-600 border-gray-200'
+                                                }`}
+                                            >
+                                                <option value="PAID">Paid ✓</option>
+                                                <option value="TEMP_ACTIVATED">Temp Activated ⏱</option>
+                                                <option value="UNPAID">Unpaid ✗</option>
+                                            </select>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
@@ -212,12 +212,6 @@ const RecruiterApproval = () => {
                                                         Reset
                                                     </button>
                                                 )}
-                                                <button
-                                                    onClick={() => handleActivationToggle(r.id, r.isActive)}
-                                                    className={`px-3 py-1.5 text-white text-xs font-bold rounded-lg transition-colors flex items-center ${r.isActive ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}
-                                                >
-                                                    {r.isActive ? 'Deactivate' : 'Activate'}
-                                                </button>
                                             </div>
                                         </td>
                                     </motion.tr>

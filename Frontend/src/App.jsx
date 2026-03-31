@@ -28,6 +28,8 @@ const RecruiterOtpVerify = lazy(() => import('./pages/public/auth/recruiter/Recr
 const RecruiterResetPassword = lazy(() => import('./pages/public/auth/recruiter/RecruiterResetPassword'))
 const GoogleCallback = lazy(() => import('./pages/public/auth/GoogleCallback'))
 const CompleteProfile = lazy(() => import('./pages/public/auth/CompleteProfile'))
+const PoliciesPage = lazy(() => import('./pages/public/PoliciesPage'))
+const ContactPage = lazy(() => import('./pages/public/ContactPage'))
 
 // Admin Auth Pages
 const AdminLogin = lazy(() => import('./pages/public/auth/admin/AdminLogin'))
@@ -92,6 +94,8 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/jobs" element={<JobsPage />} />
                     <Route path="/job/:id" element={<JobDetailPage />} />
+                    <Route path="/policies" element={<PoliciesPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
                     
                     {/* Protected Candidate Routes */}
                     <Route element={<CandidateProtectedRoute />}>

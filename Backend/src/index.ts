@@ -12,6 +12,7 @@ import jobRoutes from './modules/job/routes/job.routes'
 import applicationRoutes from './modules/job/routes/application.routes'
 import interviewRoutes from './modules/job/routes/interview.routes'
 import paymentRoutes from './modules/payment/routes/payment.routes'
+import contactRoutes from './modules/contact/routes/contact.routes'
 import path from 'path'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
@@ -98,6 +99,7 @@ app.use('/api/jobs', jobRoutes)
 app.use('/api/applications', applicationRoutes)
 app.use('/api/interviews', interviewRoutes)
 app.use('/api/payment', paymentRoutes)
+app.use('/api/contact', contactRoutes)
 app.use('/users', googleAuthRoutes)     // For Google Console Redirect
 
 // Test route

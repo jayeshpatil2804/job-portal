@@ -503,11 +503,15 @@ const HomePage = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-16 mb-20">
                         {/* Brand */}
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             <h3 className="text-white font-black text-3xl tracking-tighter italic">LOSODHAN.</h3>
                             <p className="text-sm font-medium leading-relaxed max-w-[250px]">
                                 Bridging the gap between extraordinary textile talent and elite industry leaders across India.
                             </p>
+                            <div className="flex items-start gap-3 text-xs font-medium leading-relaxed max-w-[220px]">
+                                <MapPinned size={15} className="text-blue-400 shrink-0 mt-0.5" />
+                                <span>Pandesara, Surat, GJ — 394221</span>
+                            </div>
                             <div className="flex gap-4">
                                <div className="w-10 h-10 bg-white/5 rounded-xl border border-white/5 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer">
                                   <Mail size={16} className="text-blue-400" />
@@ -539,9 +543,9 @@ const HomePage = () => {
                             <div className="space-y-6">
                                 <h4 className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Legal</h4>
                                 <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
-                                    <li><Link to="/privacy" className="hover:text-blue-400 transition-colors">Privacy</Link></li>
-                                    <li><Link to="/terms" className="hover:text-blue-400 transition-colors">Compliance</Link></li>
-                                    <li><Link to="/cookies" className="hover:text-blue-400 transition-colors">Cookies</Link></li>
+                                    <li><Link to="/policies" className="hover:text-blue-400 transition-colors">Privacy Policy</Link></li>
+                                    <li><Link to="/policies" className="hover:text-blue-400 transition-colors">Terms & Conditions</Link></li>
+                                    <li><Link to="/policies" className="hover:text-blue-400 transition-colors">Refund Policy</Link></li>
                                 </ul>
                             </div>
                         </div>
