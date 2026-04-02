@@ -1,0 +1,2 @@
+connected to aws-1 6543
+connected to aws-0 6543

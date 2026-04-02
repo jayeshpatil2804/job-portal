@@ -35,7 +35,7 @@ const CompleteProfile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (formData.password !== formData.confirmPassword) {
             return toast.error('Passwords do not match');
         }
@@ -53,9 +53,9 @@ const CompleteProfile = () => {
             if (response.data.status === 'success') {
                 const completedUser = response.data.user;
                 dispatch(setUser(completedUser));
-                
+
                 toast.success('Basic profile setup completed!');
-                
+
                 // Role-specific redirection
                 if (completedUser.role === 'RECRUITER') {
                     navigate('/recruiter/complete-profile', { replace: true });
@@ -69,14 +69,14 @@ const CompleteProfile = () => {
     };
 
     return (
-        <AuthLayout 
-            title="Complete Your Profile" 
+        <AuthLayout
+            title="Complete Your Profile"
             subtitle={`Just a few more details to set up your ${role?.toLowerCase()} account`}
             theme={isRecruiter ? "orange" : "blue"}
         >
             <form onSubmit={handleSubmit} className="space-y-4">
                 {isRecruiter && (
-                    <FormInput 
+                    <FormInput
                         label="Company Name"
                         name="companyName"
                         icon={Briefcase}
@@ -88,12 +88,12 @@ const CompleteProfile = () => {
                     />
                 )}
 
-                <FormInput 
+                <FormInput
                     label="Mobile Number"
                     name="mobile"
                     type="tel"
                     icon={Phone}
-                    placeholder="+91 98765 43210"
+                    placeholder="+918511952831 "
                     value={formData.mobile}
                     onChange={handleChange}
                     required
@@ -101,7 +101,7 @@ const CompleteProfile = () => {
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormInput 
+                    <FormInput
                         label="Set Password"
                         name="password"
                         type="password"
@@ -112,7 +112,7 @@ const CompleteProfile = () => {
                         required
                         theme={isRecruiter ? "orange" : "blue"}
                     />
-                    <FormInput 
+                    <FormInput
                         label="Confirm Password"
                         name="confirmPassword"
                         type="password"
@@ -128,9 +128,8 @@ const CompleteProfile = () => {
                 <div className="mt-6">
                     <button
                         type="submit"
-                        className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors ${
-                            isRecruiter ? 'bg-[#f97316] hover:bg-[#ea580c]' : 'bg-[#1a3c8f] hover:bg-[#162f72]'
-                        }`}
+                        className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors ${isRecruiter ? 'bg-[#f97316] hover:bg-[#ea580c]' : 'bg-[#1a3c8f] hover:bg-[#162f72]'
+                            }`}
                     >
                         Complete Setup
                     </button>
