@@ -30,7 +30,7 @@ const CandidateSignup = () => {
                 ...submitData,
                 mobile: submitData.mobile.replace(/\D/g, '') // Keep only digits
             };
-            
+
             const response = await api.post('/candidate/signup', sanitizedData);
             toast.success(response.data.message || 'Signup successful!');
             navigate(`/candidate/verify-otp/${formData.email}`);
@@ -51,14 +51,14 @@ const CandidateSignup = () => {
     };
 
     return (
-        <AuthLayout 
-            title="Candidate Registration" 
+        <AuthLayout
+            title="Candidate Registration"
             subtitle="Create your profile to start applying to jobs"
             theme="blue"
         >
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormInput 
+                    <FormInput
                         label="Full Name"
                         name="fullName"
                         icon={User}
@@ -69,12 +69,12 @@ const CandidateSignup = () => {
                         theme="blue"
                     />
 
-                    <FormInput 
+                    <FormInput
                         label="Mobile Number"
                         name="mobile"
                         type="tel"
                         icon={Phone}
-                        placeholder="+91 98765 43210"
+                        placeholder="+918511952831 "
                         value={formData.mobile}
                         onChange={handleChange}
                         required
@@ -82,7 +82,7 @@ const CandidateSignup = () => {
                     />
                 </div>
 
-                <FormInput 
+                <FormInput
                     label="Email address"
                     name="email"
                     type="email"
@@ -95,7 +95,7 @@ const CandidateSignup = () => {
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormInput 
+                    <FormInput
                         label="Password"
                         name="password"
                         type="password"
@@ -106,8 +106,8 @@ const CandidateSignup = () => {
                         required
                         theme="blue"
                     />
-                    
-                    <FormInput 
+
+                    <FormInput
                         label="Confirm Password"
                         name="confirmPassword"
                         type="password"

@@ -29,7 +29,7 @@ const ActivationDialog = ({ isOpen, isPaid, userType = 'CANDIDATE', onPaymentSuc
 
   const showSuccessUI = isPaid || paymentDone;
 
-  const adminNumber = "+91 98765 43210";
+  const adminNumber = "+918511952831 ";
   const PRICE = userType === 'RECRUITER' ? 1199 : 299;
 
   const handlePayment = async () => {
@@ -135,7 +135,7 @@ const ActivationDialog = ({ isOpen, isPaid, userType = 'CANDIDATE', onPaymentSuc
 
               {showSuccessUI ? (
                 /* Post-payment success state */
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-green-50 rounded-2xl sm:rounded-[2rem] p-5 sm:p-6 border border-green-100 space-y-4"
@@ -171,7 +171,7 @@ const ActivationDialog = ({ isOpen, isPaid, userType = 'CANDIDATE', onPaymentSuc
                   <div className="relative bg-gradient-to-br from-[#1a3c8f] to-blue-700 rounded-2xl sm:rounded-[2rem] p-5 sm:p-7 text-white overflow-hidden shadow-xl shadow-blue-900/10">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-8 -mt-8" />
                     <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full -ml-4 -mb-4" />
-                    
+
                     <div className="relative flex items-center justify-between">
                       <div>
                         <div className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full mb-2">
@@ -235,7 +235,7 @@ const ActivationDialog = ({ isOpen, isPaid, userType = 'CANDIDATE', onPaymentSuc
                           Pay once and enjoy premium access for 365 days. Simply call admin with your payment code for instant activation.
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                         <div className="w-10 h-10 bg-[#1a3c8f] text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/10">
                           <PhoneCall size={18} />
