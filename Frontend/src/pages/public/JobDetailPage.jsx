@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import DashboardLayout from '../../components/DashboardLayout'
+import Navbar from '../../components/Navbar'
+import Footer from '../../components/Footer'
 import { MapPin, Briefcase, Calendar, DollarSign, Clock, Users, ChevronLeft, Send, CheckCircle2, AlertCircle, Building2, Award, Zap, ShieldCheck } from 'lucide-react'
 import { getJobById } from '../../redux/actions/jobActions'
 import { applyToJob } from '../../redux/actions/applicationActions'
@@ -18,7 +20,7 @@ const JobDetailPage = () => {
     
     const { selectedJob: job, loading } = useSelector(state => state.job)
     const { loading: applying, success: applySuccess, error: applyError } = useSelector(state => state.application)
-    const { user } = useSelector(state => state.auth)
+    const { user, isAuthenticated } = useSelector(state => state.auth)
 
     useEffect(() => {
         dispatch(getJobById(id))
@@ -64,9 +66,21 @@ const JobDetailPage = () => {
         setIsApplyModalOpen(false)
     }
 
+    const PublicLayout = ({ children }) => (
+        <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans">
+            <Navbar />
+            <div className="flex-1 pt-24 px-4 md:px-8">
+                {children}
+            </div>
+            <Footer />
+        </div>
+    )
+
+    const Layout = (isAuthenticated && user?.role === 'CANDIDATE') ? DashboardLayout : PublicLayout
+
     if (loading) {
         return (
-            <DashboardLayout>
+            <Layout>
                 <div className="flex flex-col items-center justify-center py-32 space-y-6">
                     <div className="relative">
                         <div className="w-16 h-16 border-4 border-blue-100 rounded-full" />
@@ -74,7 +88,7 @@ const JobDetailPage = () => {
                     </div>
                     <p className="font-black text-gray-400 uppercase tracking-widest text-[10px] animate-pulse">Loading Position Details...</p>
                 </div>
-            </DashboardLayout>
+            </Layout>
         )
     }
 
@@ -88,7 +102,7 @@ const JobDetailPage = () => {
     const cardStyles = "bg-white p-10 rounded-[3.5rem] shadow-xl shadow-blue-900/5 border border-gray-50 relative overflow-hidden"
 
     return (
-        <DashboardLayout>
+        <Layout>
             <motion.div 
                 initial="hidden"
                 animate="visible"
@@ -382,7 +396,7 @@ const JobDetailPage = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </DashboardLayout>
+        </Layout>
     )
 }
 

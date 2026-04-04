@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Send, MapPin, Phone, Mail, Clock, BrainCircuit, Globe, Users, Target } from 'lucide-react'
+import { Send, MapPin, Phone, Mail, Clock, Globe, Users, Target, Building2, ShieldCheck, Zap, Sparkles } from 'lucide-react'
 import Navbar from '../../components/Navbar'
+import Footer from '../../components/Footer'
 import toast from 'react-hot-toast'
 import api from '../../utils/api'
 
@@ -34,206 +35,208 @@ const ContactPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans selection:bg-primary-100 selection:text-primary-900">
             <Navbar />
 
-            {/* Hero Section */}
-            <section className="relative bg-[#1a3c8f] py-20 px-4 overflow-hidden pt-36">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(96,165,250,0.15)_0%,_transparent_60%)]" />
-                <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-400/10 rounded-full -ml-36 -mb-36 blur-3xl" />
+            {/* ── Hero Section ── */}
+            <section className="relative min-h-[50vh] flex items-center justify-center pt-32 pb-20 px-4 overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute inset-0 bg-slate-950 z-10 opacity-95" />
+                    <div className="absolute inset-0 hero-mesh opacity-30 z-10" />
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2" />
+                </div>
                 
-                <div className="max-w-6xl mx-auto relative z-10 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                <div className="max-w-7xl mx-auto text-center relative z-20 w-full">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.8 }}
                     >
-                        <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter">
-                            Let's Talk About <br />
-                            <span className="text-blue-300">Your Future</span>
+                        <div className="inline-flex items-center gap-2 px-5 py-2 glass-effect-dark text-blue-100 rounded-full text-[10px] md:text-xs font-bold mb-10 tracking-[0.2em] uppercase border border-white/10">
+                            Support & Partnership
+                        </div>
+                        <h1 className="text-5xl md:text-7xl font-black text-white mb-8 leading-[1.1] tracking-tighter uppercase">
+                            Connect with <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">
+                                Textile Experts
+                            </span>
                         </h1>
-                        <p className="text-blue-100/80 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
-                            Whether you're looking to hire top talent or find your dream job in the textile industry, our team is here to help you succeed.
+                        <p className="text-slate-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+                            Whether you are an employer looking for skilled workforce or a job seeker searching for the right opportunity, feel free to reach out to us.
                         </p>
                     </motion.div>
                 </div>
             </section>
 
-            {/* Main Content Area */}
-            <main className="flex-grow py-20 px-4">
-                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+            {/* ── Main Content Area ── */}
+            <main className="flex-grow py-32 px-4 relative z-10 -mt-20">
+                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20">
                     
                     {/* Left Column: About & Contact Info */}
                     <motion.div 
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="space-y-12"
                     >
-                        {/* About Us */}
-                        <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-xs font-black uppercase tracking-widest border border-blue-100">
+                        {/* Info Header */}
+                        <div className="space-y-8">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border border-blue-100">
                                 <Users size={14} />
-                                About LOSODHAN
+                                Get In Touch
                             </div>
-                            <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-                                Empowering India's Textile Industry
+                            <h2 className="text-4xl font-black text-slate-950 tracking-tight leading-tight uppercase">
+                                Reach Our <span className="text-primary-900">Expert Team</span>
                             </h2>
-                            <p className="text-gray-600 leading-relaxed font-medium">
-                                LOSODHAN is a premier job portal dedicated exclusively to the textile sector. We bridge the gap between industry-leading manufacturers and skilled professionals. 
-                                Our mission is to streamline recruitment, foster career growth, and drive innovation within one of India's most vital economic sectors.
+                            <p className="text-slate-500 text-lg font-medium leading-relaxed">
+                                We're here to help you with all your hiring and job-related needs in the textile industry. Have any questions or need support?
                             </p>
-                            
-                            <div className="grid grid-cols-2 gap-6 pt-4">
-                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                    <Target className="text-[#1a3c8f] mb-3" size={24} />
-                                    <h3 className="font-bold text-gray-900 mb-2">Our Mission</h3>
-                                    <p className="text-sm text-gray-500">To connect the best textile talent with world-class opportunities.</p>
+                        </div>
+
+                        {/* Contact Info Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] hover-lift cursor-default">
+                                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+                                    <MapPin className="text-primary-900" size={24} />
                                 </div>
-                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                    <Globe className="text-[#1a3c8f] mb-3" size={24} />
-                                    <h3 className="font-bold text-gray-900 mb-2">Our Vision</h3>
-                                    <p className="text-sm text-gray-500">To be the central hub for professional growth in the textile realm.</p>
+                                <h3 className="font-black text-slate-900 text-lg tracking-tight mb-3 uppercase text-[12px]">Address</h3>
+                                <p className="text-slate-500 font-bold text-sm leading-relaxed">Pandesara, Surat, GJ, India</p>
+                            </div>
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] hover-lift cursor-default">
+                                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                                    <Phone className="text-indigo-600" size={24} />
                                 </div>
+                                <h3 className="font-black text-slate-900 text-lg tracking-tight mb-3 uppercase text-[12px]">Phone</h3>
+                                <p className="text-slate-500 font-bold text-sm leading-relaxed truncate">+91-8511952831</p>
+                            </div>
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] hover-lift cursor-default">
+                                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+                                    <Mail className="text-primary-900" size={24} />
+                                </div>
+                                <h3 className="font-black text-slate-900 text-lg tracking-tight mb-3 uppercase text-[12px]">Email</h3>
+                                <p className="text-slate-500 font-bold text-sm leading-relaxed truncate">info@losodhan.com</p>
+                            </div>
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] hover-lift cursor-default">
+                                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                                    <Globe className="text-indigo-600" size={24} />
+                                </div>
+                                <h3 className="font-black text-slate-900 text-lg tracking-tight mb-3 uppercase text-[12px]">Website</h3>
+                                <p className="text-slate-500 font-bold text-sm leading-relaxed truncate">https://losodhan.com</p>
                             </div>
                         </div>
 
-                        {/* Contact Info */}
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 border border-gray-50">
-                            <h3 className="text-xl font-black text-gray-900 mb-8 tracking-tight">Get In Touch</h3>
-                            
-                            <div className="space-y-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
-                                        <MapPin className="text-[#1a3c8f]" size={20} />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900 mb-1">Headquarters</p>
-                                        <p className="text-gray-500 text-sm leading-relaxed">Pandesara, Surat, GJ — 394221<br />India</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
-                                        <Mail className="text-[#1a3c8f]" size={20} />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900 mb-1">Email Us</p>
-                                        <p className="text-gray-500 text-sm">support@losodhan.com</p>
-                                        <p className="text-gray-500 text-sm">info@losodhan.com</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
-                                        <Clock className="text-[#1a3c8f]" size={20} />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900 mb-1">Working Hours</p>
-                                        <p className="text-gray-500 text-sm">Mon - Sat: 9:00 AM - 6:00 PM</p>
-                                        <p className="text-gray-500 text-sm">Sunday: Closed</p>
-                                    </div>
-                                </div>
+                        {/* Business Hours */}
+                        <div className="bg-slate-900 p-10 rounded-[2.5rem] text-white flex items-center gap-8 relative overflow-hidden group">
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 opacity-5 blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
+                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
+                                <Clock className="text-blue-400" size={24} />
+                            </div>
+                            <div className="space-y-1">
+                                <h4 className="font-black text-xs uppercase tracking-[0.3em] text-blue-400">Working Hours</h4>
+                                <p className="text-slate-200 font-bold text-lg">Mon — Sat: 10:00 AM - 7:00 PM</p>
+                                <p className="text-slate-400 text-sm font-medium italic">Sunday: Strategic Closed</p>
                             </div>
                         </div>
                     </motion.div>
 
                     {/* Right Column: Contact Form */}
                     <motion.div
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0, x: 30 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                     >
-                        <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-blue-900/10 border border-gray-100">
-                            <div className="mb-8">
-                                <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Send us a Message</h3>
-                                <p className="text-gray-500 text-sm">Fill out the form below and we'll reply to you shortly.</p>
+                        <div className="bg-white rounded-[3rem] p-10 md:p-14 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border border-slate-100">
+                            <div className="mb-10 text-center">
+                                <span className="p-2 bg-primary-900 text-white rounded-full inline-block mb-6 shadow-xl shadow-primary-900/30">
+                                    <Sparkles size={24} />
+                                </span>
+                                <h3 className="text-3xl font-black text-slate-950 tracking-tight leading-tight uppercase mb-4">Send Us a Message</h3>
+                                <p className="text-slate-400 font-medium text-sm">Fill out the contact form and our team will get back to you shortly.</p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-700 uppercase tracking-widest">Full Name</label>
+                            <form onSubmit={handleSubmit} className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Full Name</label>
                                         <input
                                             type="text"
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c8f]/20 focus:border-[#1a3c8f] transition-all font-medium"
-                                            placeholder="John Doe"
+                                            className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-primary-900/5 focus:border-primary-900 transition-all font-bold text-slate-950"
+                                            placeholder="Enter your name"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-700 uppercase tracking-widest">Email Address</label>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Email Address</label>
                                         <input
                                             type="email"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c8f]/20 focus:border-[#1a3c8f] transition-all font-medium"
+                                            className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-primary-900/5 focus:border-primary-900 transition-all font-bold text-slate-950"
                                             placeholder="john@example.com"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-700 uppercase tracking-widest">Mobile Number</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Phone Number</label>
                                         <input
                                             type="tel"
                                             name="mobile"
                                             value={formData.mobile}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c8f]/20 focus:border-[#1a3c8f] transition-all font-medium"
-                                            placeholder="+91 9876543210"
+                                            className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-primary-900/5 focus:border-primary-900 transition-all font-bold text-slate-950"
+                                            placeholder="+91 — — — — — "
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-700 uppercase tracking-widest">Subject</label>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Inquiry Category</label>
                                         <select
                                             name="subject"
                                             value={formData.subject}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c8f]/20 focus:border-[#1a3c8f] transition-all font-medium text-gray-700 appearance-none"
+                                            className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-primary-900/5 focus:border-primary-900 transition-all font-bold text-slate-950 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-[length:20px] bg-[right_1.5rem_center] bg-no-repeat"
                                         >
-                                            <option value="">Select a topic</option>
-                                            <option value="General Inquiry">General Inquiry</option>
-                                            <option value="Recruiter Support">Recruiter Support</option>
-                                            <option value="Candidate Support">Candidate Support</option>
-                                            <option value="Billing & Payments">Billing & Payments</option>
-                                            <option value="Partnership">Partnership</option>
+                                            <option value="">Select Topic</option>
+                                            <option value="Employer Registration">Employer Support</option>
+                                            <option value="Candidate Opportunities">Candidate Support</option>
+                                            <option value="Strategic Partnership">Strategic Partnership</option>
+                                            <option value="General Support">General Inquiries</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-700 uppercase tracking-widest">Your Message</label>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Your Question</label>
                                     <textarea
                                         name="message"
                                         value={formData.message}
                                         onChange={handleChange}
                                         required
                                         rows={5}
-                                        className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c8f]/20 focus:border-[#1a3c8f] transition-all font-medium resize-none"
-                                        placeholder="How can we help you today?"
+                                        className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-primary-900/5 focus:border-primary-900 transition-all font-bold text-slate-950 resize-none"
+                                        placeholder="How can we help your textile career or business?"
                                     />
                                 </div>
 
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full py-4 bg-[#1a3c8f] hover:bg-blue-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl shadow-blue-900/20 disabled:opacity-70 disabled:pointer-events-none"
+                                    className="w-full py-5 bg-primary-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-2xl shadow-primary-900/40 hover:bg-navy-700 disabled:opacity-70 disabled:pointer-events-none"
                                 >
                                     {loading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
                                         <>
-                                            <Send size={16} />
-                                            Send Message
+                                            <Send size={18} strokeWidth={3} />
+                                            Submit Message
                                         </>
                                     )}
                                 </button>
@@ -243,12 +246,7 @@ const ContactPage = () => {
                 </div>
             </main>
 
-            {/* Simple Footer just for this page so it doesn't look empty at the bottom */}
-            <footer className="bg-gray-950 text-gray-600 py-8 px-4 text-center mt-auto">
-                <p className="text-[10px] font-black uppercase tracking-widest">
-                    © {new Date().getFullYear()} LOSODHAN JOB PORTAL — All Rights Reserved
-                </p>
-            </footer>
+            <Footer />
         </div>
     )
 }

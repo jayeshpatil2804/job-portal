@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout'
+import Navbar from '../../components/Navbar'
+import Footer from '../../components/Footer'
 import { Search, MapPin, Briefcase, Bookmark, ChevronDown, DollarSign, Filter, RefreshCcw, X, ArrowRight, Zap } from 'lucide-react'
 import { getAllOpenJobs } from '../../redux/actions/jobActions'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -95,6 +97,7 @@ const JobsPage = () => {
     const initialLocation = searchParams.get('location') || ''
 
     const { jobs = [], loading = false } = useSelector(state => state.job || {})
+    const { user, isAuthenticated } = useSelector(state => state.auth || {})
     
     const [filters, setFilters] = useState({
         location: initialLocation,
@@ -146,8 +149,20 @@ const JobsPage = () => {
     const selectClasses = "w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#1a3c8f] focus:bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-500 outline-none appearance-none cursor-pointer transition-all shadow-sm"
     const labelClasses = "text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-2 mb-2 block"
 
+    const PublicLayout = ({ children }) => (
+        <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans">
+            <Navbar />
+            <div className="flex-1 pt-24 px-4 md:px-8">
+                {children}
+            </div>
+            <Footer />
+        </div>
+    )
+
+    const Layout = (isAuthenticated && user?.role === 'CANDIDATE') ? DashboardLayout : PublicLayout
+
     return (
-        <DashboardLayout>
+        <Layout>
             <div className="max-w-[1440px] mx-auto space-y-12 pb-20">
                 {/* ── Hero Section ── */}
                 <div className="relative overflow-hidden bg-[#1a3c8f] rounded-[3.5rem] p-12 md:p-20 text-white shadow-2xl shadow-blue-900/20">
@@ -317,7 +332,7 @@ const JobsPage = () => {
                     </div>
                 </div>
             </div>
-        </DashboardLayout>
+        </Layout>
     )
 }
 

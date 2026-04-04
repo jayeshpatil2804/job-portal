@@ -30,6 +30,7 @@ const GoogleCallback = lazy(() => import('./pages/public/auth/GoogleCallback'))
 const CompleteProfile = lazy(() => import('./pages/public/auth/CompleteProfile'))
 const PoliciesPage = lazy(() => import('./pages/public/PoliciesPage'))
 const ContactPage = lazy(() => import('./pages/public/ContactPage'))
+const AboutPage = lazy(() => import('./pages/public/AboutPage'))
 
 // Admin Auth Pages
 const AdminLogin = lazy(() => import('./pages/public/auth/admin/AdminLogin'))
@@ -96,6 +97,7 @@ function App() {
                     <Route path="/job/:id" element={<JobDetailPage />} />
                     <Route path="/policies" element={<PoliciesPage />} />
                     <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/about" element={<AboutPage />} />
                     
                     {/* Protected Candidate Routes */}
                     <Route element={<CandidateProtectedRoute />}>
