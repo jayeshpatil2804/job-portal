@@ -11,12 +11,18 @@ const CandidateProtectedRoute = ({ onlyAuth = false }) => {
         status: profileStatus,
         error 
     } = useSelector(state => state.profile);
+    const { user } = useSelector(state => state.auth);
 
     useEffect(() => {
-        if (profileStatus === 'idle') {
+        if (profileStatus === 'idle' && user?.role === 'CANDIDATE') {
             dispatch(fetchProfileStatus());
         }
-    }, [dispatch, profileStatus]);
+    }, [dispatch, profileStatus, user]);
+
+    // Handle authentication check (Candidate specific)
+    if (!user || user.role !== 'CANDIDATE') {
+        return <Navigate to="/candidate/login" replace />; 
+    }
 
     if (profileStatus === 'loading' || profileStatus === 'idle') {
         return (

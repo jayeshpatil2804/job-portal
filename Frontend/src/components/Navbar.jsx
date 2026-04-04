@@ -1,23 +1,42 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Menu, X, User, Home, Briefcase, UserCircle } from 'lucide-react'
+import { Menu, X, User, Home, Briefcase, UserCircle, Info, PhoneCall } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import logo from '../assets/logo.png'
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
     const location = useLocation()
     const { user } = useSelector(state => state.auth)
 
+    useState(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 20) {
+                setScrolled(true)
+            } else {
+                setScrolled(false)
+            }
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
     const navLinks = [
         { label: 'Home', path: '/', icon: <Home size={18} /> },
+        { label: 'About', path: '/about', icon: <Info size={18} /> },
         { label: 'Jobs', path: user ? '/jobs' : '/candidate/login', icon: <Briefcase size={18} /> },
+        { label: 'Contact', path: '/contact', icon: <PhoneCall size={18} /> },
         { label: 'Recruiter', path: user?.role === 'RECRUITER' ? '/recruiter/dashboard' : '/recruiter/login', icon: <UserCircle size={18} /> },
     ]
 
     return (
-        <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            scrolled 
+            ? 'glass-effect border-b border-gray-200/50 shadow-lg py-2' 
+            : 'bg-transparent py-4'
+        }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
@@ -31,9 +50,10 @@ const Navbar = () => {
                             <Link
                                 key={link.path}
                                 to={link.path}
-                                className={`text-sm font-medium transition-colors ${location.pathname === link.path
-                                    ? 'text-[#1a3c8f] font-semibold'
-                                    : 'text-gray-600 hover:text-[#1a3c8f]'
+                                className={`text-sm font-semibold transition-all hover:scale-105 ${
+                                    location.pathname === link.path
+                                    ? (scrolled ? 'text-primary-900' : 'text-blue-400')
+                                    : (scrolled ? 'text-gray-600 hover:text-primary-900' : 'text-gray-200 hover:text-white')
                                     }`}
                             >
                                 {link.label}
@@ -47,21 +67,25 @@ const Navbar = () => {
                             <>
                                 <Link
                                     to="/login"
-                                    className="text-sm font-medium text-gray-700 hover:text-[#1a3c8f] transition-colors"
+                                    className={`text-sm font-semibold transition-colors ${scrolled ? 'text-gray-700 hover:text-primary-900' : 'text-gray-200 hover:text-white'}`}
                                 >
                                     Login
                                 </Link>
                                 <Link
                                     to="/signup"
-                                    className="bg-[#1a3c8f] text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-[#162f72] transition-colors"
+                                    className="bg-primary-900 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-navy-600 transition-all shadow-lg shadow-primary-900/20 active:scale-95"
                                 >
-                                    Sign Up
+                                    Get Started
                                 </Link>
                                 <Link
                                     to="/auth/admin/secure/login"
-                                    className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-[#1a3c8f] transition-all hover:bg-gray-50 px-3 py-2 rounded-md"
+                                    className={`flex items-center gap-1.5 text-sm font-semibold transition-all px-3 py-2 rounded-xl ${
+                                        scrolled 
+                                        ? 'text-gray-700 hover:bg-gray-100' 
+                                        : 'text-gray-200 hover:bg-white/10'
+                                    }`}
                                 >
-                                    <User size={18} className="text-[#1a3c8f]" />
+                                    <User size={18} className={scrolled ? 'text-primary-900' : 'text-blue-400'} />
                                     Admin
                                 </Link>
                                 <Link
