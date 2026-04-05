@@ -24,13 +24,31 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    const navLinks = [
-        { label: 'Home', path: '/', icon: <Home size={18} /> },
-        { label: 'About', path: '/about', icon: <Info size={18} /> },
-        { label: 'Jobs', path: user ? '/jobs' : '/candidate/login', icon: <Briefcase size={18} /> },
-        { label: 'Contact', path: '/contact', icon: <PhoneCall size={18} /> },
-        { label: 'Recruiter', path: user?.role === 'RECRUITER' ? '/recruiter/dashboard' : '/recruiter/login', icon: <UserCircle size={18} /> },
+    const isCandidate = user?.role === 'CANDIDATE'
+    const isRecruiter = user?.role === 'RECRUITER'
+    const isAdmin = user?.role === 'ADMIN'
+
+    const allNavLinks = [
+        { label: 'Home', path: '/', icon: <Home size={18} />, showFor: 'all' },
+        { label: 'About', path: '/about', icon: <Info size={18} />, showFor: 'all' },
+        { label: 'Jobs', path: user ? '/jobs' : '/candidate/login', icon: <Briefcase size={18} />, showFor: 'guestOrCandidate' },
+        { label: 'Contact', path: '/contact', icon: <PhoneCall size={18} />, showFor: 'all' },
+        { label: 'Recruiter', path: isRecruiter ? '/recruiter/dashboard' : '/recruiter/login', icon: <UserCircle size={18} />, showFor: 'guestOrRecruiter' },
     ]
+
+    // Filter nav links based on role
+    const navLinks = allNavLinks.filter(link => {
+        if (link.showFor === 'all') return true
+        if (link.showFor === 'guestOrCandidate') {
+            // Show for guests or candidates; hide for recruiters and admins
+            return !isRecruiter && !isAdmin
+        }
+        if (link.showFor === 'guestOrRecruiter') {
+            // Show for guests or recruiters; hide for candidates and admins
+            return !isCandidate && !isAdmin
+        }
+        return true
+    })
 
     const handleDownloadApp = () => {
         const link = document.createElement('a')

@@ -6,10 +6,15 @@ import { getMyApplications } from '../../redux/actions/applicationActions'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
 
+import { useNavigate } from 'react-router-dom'
+import ActivationDialog from '../../components/common/ActivationDialog'
+
 const AppliedJobsPage = () => {
     useMountTimer('AppliedJobsPage')
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const { myApplications: applications, loading } = useSelector(state => state.application)
+    const { isActive, isPaid } = useSelector(state => state.profile)
     const [statusFilter, setStatusFilter] = useState('ALL')
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -49,6 +54,14 @@ const AppliedJobsPage = () => {
 
     return (
         <DashboardLayout>
+            {!isActive && (
+                <ActivationDialog 
+                    isOpen={true} 
+                    isPaid={isPaid} 
+                    userType="CANDIDATE" 
+                    onClose={() => navigate('/dashboard')} 
+                />
+            )}
             <div className="max-w-6xl mx-auto space-y-10 pb-20">
                 {/* ── Page Header ── */}
                 <div className="relative overflow-hidden rounded-[2.5rem] bg-white p-8 md:p-12 shadow-xl shadow-blue-900/5 border border-gray-50">

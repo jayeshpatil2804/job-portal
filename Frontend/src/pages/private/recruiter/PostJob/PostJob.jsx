@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import RecruiterLayout from '../../../../components/RecruiterLayout'
 import { motion } from 'framer-motion'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { createJob } from '../../../../redux/actions/jobActions'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import api from '../../../../utils/api'
 import { Plus, X } from 'lucide-react'
+import ActivationDialog from '../../../../components/common/ActivationDialog'
 
 const PostJob = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const { isActive, isPaid } = useSelector(state => state.recruiterProfile)
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         jobTitle: '',
@@ -127,6 +129,14 @@ const PostJob = () => {
 
     return (
         <RecruiterLayout>
+            {!isActive && (
+                <ActivationDialog 
+                    isOpen={true} 
+                    isPaid={isPaid} 
+                    userType="RECRUITER" 
+                    onClose={() => navigate('/recruiter/dashboard')} 
+                />
+            )}
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* Header */}
                 <div>
@@ -306,7 +316,7 @@ const PostJob = () => {
                                     <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors uppercase">Mark this job as featured (appears on homepage)</span>
                                 </label>
                                 <label className="flex items-center gap-3 cursor-pointer group">
-                                    <input name="isRemote" checked={formData.isRemote} onChange={handleChange} type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-100 text-blue-700" />
+                                    <input name="isRemote" checked={formData.isRemote} onChange={handleChange} type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-700" />
                                     <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors uppercase">Remote work available</span>
                                 </label>
                             </div>

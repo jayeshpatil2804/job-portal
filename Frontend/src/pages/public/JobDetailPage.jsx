@@ -11,6 +11,7 @@ import { clearApplicationStates } from '../../redux/slices/applicationSlice'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
+import ActivationDialog from '../../components/common/ActivationDialog'
 
 const JobDetailPage = () => {
     useMountTimer('JobDetailPage')
@@ -21,6 +22,7 @@ const JobDetailPage = () => {
     const { selectedJob: job, loading } = useSelector(state => state.job)
     const { loading: applying, success: applySuccess, error: applyError } = useSelector(state => state.application)
     const { user, isAuthenticated } = useSelector(state => state.auth)
+    const { isActive, isPaid } = useSelector(state => state.profile)
 
     useEffect(() => {
         dispatch(getJobById(id))
@@ -103,6 +105,14 @@ const JobDetailPage = () => {
 
     return (
         <Layout>
+            {isAuthenticated && user?.role === 'CANDIDATE' && !isActive && (
+                <ActivationDialog 
+                    isOpen={true} 
+                    isPaid={isPaid} 
+                    userType="CANDIDATE" 
+                    onClose={() => navigate('/jobs')} 
+                />
+            )}
             <motion.div 
                 initial="hidden"
                 animate="visible"

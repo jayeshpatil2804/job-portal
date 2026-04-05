@@ -28,7 +28,14 @@ const RecruiterOtpVerify = lazy(() => import('./pages/public/auth/recruiter/Recr
 const RecruiterResetPassword = lazy(() => import('./pages/public/auth/recruiter/RecruiterResetPassword'))
 const GoogleCallback = lazy(() => import('./pages/public/auth/GoogleCallback'))
 const CompleteProfile = lazy(() => import('./pages/public/auth/CompleteProfile'))
-const PoliciesPage = lazy(() => import('./pages/public/PoliciesPage'))
+
+// Setup new policy pages
+const PrivacyPolicy = lazy(() => import('./pages/public/policies/PrivacyPolicy'))
+const TermsAndConditions = lazy(() => import('./pages/public/policies/TermsAndConditions'))
+const DataCollectionPolicy = lazy(() => import('./pages/public/policies/DataCollectionPolicy'))
+const PaymentPolicy = lazy(() => import('./pages/public/policies/PaymentPolicy'))
+const RefundPolicy = lazy(() => import('./pages/public/policies/RefundPolicy'))
+
 const ContactPage = lazy(() => import('./pages/public/ContactPage'))
 const AboutPage = lazy(() => import('./pages/public/AboutPage'))
 
@@ -95,7 +102,14 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/jobs" element={<JobsPage />} />
                     <Route path="/job/:id" element={<JobDetailPage />} />
-                    <Route path="/policies" element={<PoliciesPage />} />
+                    
+                    {/* Separate Policy Routes */}
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+                    <Route path="/data-collection-policy" element={<DataCollectionPolicy />} />
+                    <Route path="/payment-policy" element={<PaymentPolicy />} />
+                    <Route path="/refund-policy" element={<RefundPolicy />} />
+
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     

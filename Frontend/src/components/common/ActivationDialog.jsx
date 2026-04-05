@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, PhoneCall, CheckCircle2, Info, UserCheck, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
+import { ShieldAlert, PhoneCall, CheckCircle2, Info, UserCheck, CreditCard, Sparkles, RefreshCw, X } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { createPaymentOrder, verifyPayment } from '../../redux/actions/paymentActions';
 import toast from 'react-hot-toast';
@@ -22,7 +22,7 @@ const loadRazorpayScript = () => {
   });
 };
 
-const ActivationDialog = ({ isOpen, isPaid, userType = 'CANDIDATE', onPaymentSuccess }) => {
+const ActivationDialog = ({ isOpen, isPaid, userType = 'CANDIDATE', onPaymentSuccess, onClose }) => {
   const dispatch = useDispatch();
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
@@ -107,6 +107,16 @@ const ActivationDialog = ({ isOpen, isPaid, userType = 'CANDIDATE', onPaymentSuc
         >
           {/* Top Decorative Gradient */}
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-[#1a3c8f] to-orange-500 z-10" />
+
+          {/* Optional Close Button */}
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          )}
 
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-10">
