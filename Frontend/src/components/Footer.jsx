@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Mail, MapPin, Phone, Linkedin, Instagram, Facebook, ArrowRight, Sparkles, Building2, UserCircle, Briefcase, ExternalLink } from 'lucide-react'
+import { Mail, MapPin, Phone, Linkedin, Instagram, Facebook, ArrowRight, Sparkles, Building2, UserCircle, Briefcase, ExternalLink, Lock } from 'lucide-react'
 import logo from '../assets/logo.png'
 
 const Footer = () => {
@@ -31,7 +31,7 @@ const Footer = () => {
             {/* Background Decorations */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-600/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
-            
+
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 {/* ── Main Footer Header ── */}
                 <div className="flex flex-col lg:flex-row justify-between items-start gap-12 pb-16 border-b border-white/5 mb-20">
@@ -53,9 +53,9 @@ const Footer = () => {
                                 { icon: <Linkedin size={20} />, label: 'LinkedIn' },
                                 { icon: <Facebook size={20} />, label: 'Facebook' }
                             ].map((social) => (
-                                <a 
+                                <a
                                     key={social.label}
-                                    href="#" 
+                                    href="#"
                                     className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-primary-900 hover:text-white transition-all duration-300 border border-white/10 group"
                                     aria-label={social.label}
                                 >
@@ -162,12 +162,15 @@ const Footer = () => {
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">
                         © {currentYear} LOSODHAN — Your Textile Job Partner. <span className="hidden sm:inline">Engineered for professional growth.</span>
                     </p>
-                    
+
                     <div className="flex flex-wrap justify-center gap-8">
                         <Link to="/policies#privacy" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Privacy</Link>
                         <Link to="/policies#terms" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Terms</Link>
                         <Link to="/contact" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Cookies</Link>
                         <a href="https://losodhan.com" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors flex items-center gap-1">Website <ExternalLink size={10} /></a>
+                        <Link to="/auth/admin/secure/login" className="opacity-1 hover:opacity-10 transition-opacity bg-transparent p-1" title="Portal">
+                            <Lock size={10} className="text-slate-700" />
+                        </Link>
                     </div>
                 </div>
             </div>
