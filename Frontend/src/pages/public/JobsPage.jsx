@@ -8,8 +8,10 @@ import { Search, MapPin, Briefcase, Bookmark, ChevronDown, DollarSign, Filter, R
 import { getAllOpenJobs } from '../../redux/actions/jobActions'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
+import ActivationDialog from '../../components/common/ActivationDialog'
+import toast from 'react-hot-toast'
 
-const JobCard = React.forwardRef(({ job, navigate }, ref) => (
+const JobCard = React.forwardRef(({ job, navigate, onJobClick }, ref) => (
     <motion.div 
         ref={ref}
         layout
@@ -73,7 +75,7 @@ const JobCard = React.forwardRef(({ job, navigate }, ref) => (
                     </div>
                     
                     <button 
-                        onClick={() => navigate(`/job/${job.id}`)}
+                        onClick={() => onJobClick ? onJobClick(job.id) : navigate(`/job/${job.id}`)}
                         className="group flex items-center gap-3 bg-gray-900 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-gray-900/10 hover:bg-black transition-all active:scale-95 whitespace-nowrap"
                     >
                         View Details
@@ -98,6 +100,9 @@ const JobsPage = () => {
 
     const { jobs = [], loading = false } = useSelector(state => state.job || {})
     const { user, isAuthenticated } = useSelector(state => state.auth || {})
+    const { isActive, isPaid } = useSelector(state => state.profile || {})
+    
+    const [showActivation, setShowActivation] = useState(false)
     
     const [filters, setFilters] = useState({
         location: initialLocation,
@@ -146,6 +151,15 @@ const JobsPage = () => {
         dispatch(getAllOpenJobs())
     }
 
+    const handleJobClick = (jobId) => {
+        if (isAuthenticated && user?.role === 'CANDIDATE' && !isActive) {
+            toast.error('Payment not full. Please activate to view details.')
+            setShowActivation(true)
+            return
+        }
+        navigate(`/job/${jobId}`)
+    }
+
     const selectClasses = "w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#1a3c8f] focus:bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-500 outline-none appearance-none cursor-pointer transition-all shadow-sm"
     const labelClasses = "text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-2 mb-2 block"
 
@@ -163,6 +177,12 @@ const JobsPage = () => {
 
     return (
         <Layout>
+            <ActivationDialog 
+                isOpen={showActivation} 
+                isPaid={isPaid} 
+                userType="CANDIDATE" 
+                onClose={() => setShowActivation(false)} 
+            />
             <div className="max-w-[1440px] mx-auto space-y-12 pb-20">
                 {/* ── Hero Section ── */}
                 <div className="relative overflow-hidden bg-[#1a3c8f] rounded-[3.5rem] p-12 md:p-20 text-white shadow-2xl shadow-blue-900/20">
@@ -325,7 +345,7 @@ const JobsPage = () => {
                                 </motion.div>
                             ) : (
                                 <AnimatePresence mode="popLayout">
-                                    {jobs.map(job => <JobCard key={job.id} job={job} navigate={navigate} />)}
+                                    {jobs.map(job => <JobCard key={job.id} job={job} navigate={navigate} onJobClick={handleJobClick} />)}
                                 </AnimatePresence>
                             )}
                         </div>

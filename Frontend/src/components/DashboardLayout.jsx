@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Sidebar from './Sidebar'
 import { Menu } from 'lucide-react'
 import { useSelector, useDispatch } from 'react-redux'
-import ActivationDialog from './common/ActivationDialog'
 import { fetchProfileStatus } from '../redux/actions/profileActions'
+import toast from 'react-hot-toast'
+
 import logo from '../assets/logo.png'
 import socket from '../utils/socket'
 
@@ -12,10 +13,7 @@ const DashboardLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const { isActive, isPaid, status: profileStatus } = useSelector(state => state.profile)
     const { user } = useSelector(state => state.auth)
-
-    const handlePaymentSuccess = () => {
-        dispatch(fetchProfileStatus())
-    }
+    const toastShown = useRef(false)
 
     // Ensure profile status is always fresh (handles back-navigation & direct visits)
     useEffect(() => {
@@ -23,6 +21,17 @@ const DashboardLayout = ({ children }) => {
             dispatch(fetchProfileStatus())
         }
     }, [dispatch, profileStatus, user])
+
+    // Show warning toast for unpaid users instead of blocking the dashboard
+    useEffect(() => {
+        if (profileStatus === 'succeeded' && !isActive && !toastShown.current) {
+            toast.error('Payment not paid yet. Full features locked.', { duration: 5000 })
+            toastShown.current = true
+        }
+        if (isActive) {
+            toastShown.current = false // Reset if they suddenly become active
+        }
+    }, [profileStatus, isActive])
 
     // Real-time activation via Socket.IO
     useEffect(() => {
@@ -43,8 +52,6 @@ const DashboardLayout = ({ children }) => {
 
     return (
         <div className="flex min-h-screen bg-gray-50 font-sans antialiased text-slate-900">
-            {/* Activation Dialog — only show after profile is confirmed loaded */}
-            <ActivationDialog isOpen={profileStatus === 'succeeded' && !isActive} isPaid={isPaid} userType="CANDIDATE" onPaymentSuccess={handlePaymentSuccess} />
             {/* Mobile Header - Merged & Premium */}
             <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#1a3c8f] text-white flex items-center justify-between px-6 z-30 shadow-2xl border-b border-white/10 backdrop-blur-md">
                 <div className="flex items-center gap-3 group">

@@ -9,6 +9,7 @@ import { scheduleInterview } from '../../../../redux/actions/interviewActions'
 import { clearInterviewStates } from '../../../../redux/slices/interviewSlice'
 import ScheduleInterviewModal from '../../../../components/ScheduleInterviewModal'
 import { toast } from 'react-hot-toast'
+import ActivationDialog from '../../../../components/common/ActivationDialog'
 
 const SummaryCard = ({ label, count, color, icon: Icon }) => (
     <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex-1 min-w-[180px] relative overflow-hidden group">
@@ -30,6 +31,7 @@ const Applicants = () => {
     
     const { applicants, loading } = useSelector(state => state.application)
     const { loading: interviewLoading, success: interviewSuccess } = useSelector(state => state.interview)
+    const { isActive, isPaid } = useSelector(state => state.recruiterProfile)
     
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState('ALL')
@@ -102,6 +104,14 @@ const Applicants = () => {
 
     return (
         <RecruiterLayout>
+            {!isActive && (
+                <ActivationDialog 
+                    isOpen={true} 
+                    isPaid={isPaid} 
+                    userType="RECRUITER" 
+                    onClose={() => navigate('/recruiter/dashboard')} 
+                />
+            )}
             <ScheduleInterviewModal 
                 isOpen={isInterviewModalOpen}
                 onClose={() => setIsInterviewModalOpen(false)}

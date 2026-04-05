@@ -5,6 +5,8 @@ import DashboardLayout from '../../../../components/DashboardLayout'
 import { Calendar, Clock, MapPin, Video, ExternalLink, User, Briefcase, ChevronRight, Building } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getMyInterviews } from '../../../../redux/actions/interviewActions'
+import ActivationDialog from '../../../../components/common/ActivationDialog'
+import { useNavigate } from 'react-router-dom'
 
 const InterviewCard = ({ interview, isRecruiter }) => {
     const { application, date, mode, location, status } = interview
@@ -94,6 +96,9 @@ const Interviews = () => {
     const { interviews, loading } = useSelector(state => state.interview)
     const { user } = useSelector(state => state.auth)
     const isRecruiter = user?.role === 'RECRUITER'
+    const profileState = useSelector(state => isRecruiter ? state.recruiterProfile : state.profile)
+    const { isActive, isPaid } = profileState || {}
+    const navigate = useNavigate()
 
     useEffect(() => {
         dispatch(getMyInterviews())
@@ -103,6 +108,14 @@ const Interviews = () => {
 
     return (
         <Layout>
+            {!isActive && (
+                <ActivationDialog 
+                    isOpen={true} 
+                    isPaid={isPaid} 
+                    userType={isRecruiter ? 'RECRUITER' : 'CANDIDATE'} 
+                    onClose={() => navigate(isRecruiter ? '/recruiter/dashboard' : '/dashboard')} 
+                />
+            )}
             <div className="max-w-7xl mx-auto space-y-10 pb-20">
                 {/* Header */}
                 <div className="flex justify-between items-end">
