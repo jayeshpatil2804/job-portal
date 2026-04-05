@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Menu, X, User, Home, Briefcase, UserCircle, Info, PhoneCall } from 'lucide-react'
+import { Menu, X, User, Home, Briefcase, UserCircle, Info, PhoneCall, Download } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import logo from '../assets/logo.png'
+import apkFile from '../assets/Losodhan Textile Job Portal.apk'
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false)
@@ -31,10 +32,19 @@ const Navbar = () => {
         { label: 'Recruiter', path: user?.role === 'RECRUITER' ? '/recruiter/dashboard' : '/recruiter/login', icon: <UserCircle size={18} /> },
     ]
 
+    const handleDownloadApp = () => {
+        const link = document.createElement('a')
+        link.href = apkFile
+        link.download = 'Losodhan-Textile-Job-Portal.apk'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
     return (
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-            scrolled 
-            ? 'glass-effect border-b border-gray-200/50 shadow-lg py-2' 
+            scrolled
+            ? 'glass-effect border-b border-gray-200/50 shadow-lg py-2'
             : 'bg-transparent py-4'
         }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,6 +73,17 @@ const Navbar = () => {
 
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center gap-4">
+                        <button
+                            onClick={handleDownloadApp}
+                            className={`flex items-center gap-2 text-sm font-semibold transition-all hover:scale-105 ${
+                                scrolled 
+                                ? 'text-gray-700 hover:text-primary-900' 
+                                : 'text-gray-200 hover:text-white'
+                            }`}
+                        >
+                            <Download size={16} />
+                            <span className="hidden lg:inline">Download App</span>
+                        </button>
                         {!user ? (
                             <>
                                 <Link
@@ -76,17 +97,6 @@ const Navbar = () => {
                                     className="bg-primary-900 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-navy-600 transition-all shadow-lg shadow-primary-900/20 active:scale-95"
                                 >
                                     Get Started
-                                </Link>
-                                <Link
-                                    to="/auth/admin/secure/login"
-                                    className={`flex items-center gap-1.5 text-sm font-semibold transition-all px-3 py-2 rounded-xl ${
-                                        scrolled 
-                                        ? 'text-gray-700 hover:bg-gray-100' 
-                                        : 'text-gray-200 hover:bg-white/10'
-                                    }`}
-                                >
-                                    <User size={18} className={scrolled ? 'text-primary-900' : 'text-blue-400'} />
-                                    Admin
                                 </Link>
                                 <Link
                                     to="/login"
@@ -161,6 +171,16 @@ const Navbar = () => {
 
                             <div className="pt-6 border-t border-gray-100 space-y-3">
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4 px-4">Account</p>
+                                <button
+                                    onClick={() => {
+                                        handleDownloadApp()
+                                        setMobileOpen(false)
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-black text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-900/20 transition-all uppercase tracking-widest"
+                                >
+                                    <Download size={18} />
+                                    Download App
+                                </button>
                                 {!user ? (
                                     <div className="flex flex-col gap-3">
                                         <Link
@@ -177,14 +197,7 @@ const Navbar = () => {
                                         >
                                             Sign Up
                                         </Link>
-                                        <Link
-                                            to="/auth/admin/secure/login"
-                                            onClick={() => setMobileOpen(false)}
-                                            className="flex items-center justify-center gap-2 w-full py-4 text-sm font-black text-gray-400 hover:text-[#1a3c8f] transition-all"
-                                        >
-                                            <User size={18} />
-                                            Admin Portal
-                                        </Link>
+
                                         <Link
                                             to="/login"
                                             onClick={() => setMobileOpen(false)}
