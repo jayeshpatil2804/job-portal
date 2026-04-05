@@ -10,12 +10,19 @@ import socket from '../utils/socket'
 const DashboardLayout = ({ children }) => {
     const dispatch = useDispatch()
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const { isActive, isPaid } = useSelector(state => state.profile)
+    const { isActive, isPaid, status: profileStatus } = useSelector(state => state.profile)
     const { user } = useSelector(state => state.auth)
 
     const handlePaymentSuccess = () => {
         dispatch(fetchProfileStatus())
     }
+
+    // Ensure profile status is always fresh (handles back-navigation & direct visits)
+    useEffect(() => {
+        if ((profileStatus === 'idle') && user?.role === 'CANDIDATE') {
+            dispatch(fetchProfileStatus())
+        }
+    }, [dispatch, profileStatus, user])
 
     // Real-time activation via Socket.IO
     useEffect(() => {
@@ -36,8 +43,8 @@ const DashboardLayout = ({ children }) => {
 
     return (
         <div className="flex min-h-screen bg-gray-50 font-sans antialiased text-slate-900">
-            {/* Activation Dialog for Inactive Users */}
-            <ActivationDialog isOpen={!isActive} isPaid={isPaid} userType="CANDIDATE" onPaymentSuccess={handlePaymentSuccess} />
+            {/* Activation Dialog — only show after profile is confirmed loaded */}
+            <ActivationDialog isOpen={profileStatus === 'succeeded' && !isActive} isPaid={isPaid} userType="CANDIDATE" onPaymentSuccess={handlePaymentSuccess} />
             {/* Mobile Header - Merged & Premium */}
             <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#1a3c8f] text-white flex items-center justify-between px-6 z-30 shadow-2xl border-b border-white/10 backdrop-blur-md">
                 <div className="flex items-center gap-3 group">

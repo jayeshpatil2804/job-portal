@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { Mail, MapPin, Phone, Linkedin, Instagram, Facebook, ArrowRight, Sparkles, Building2, UserCircle, Briefcase, ExternalLink, Lock } from 'lucide-react'
 import logo from '../assets/logo.png'
 
 const Footer = () => {
+    const { user } = useSelector(state => state.auth)
     const currentYear = new Date().getFullYear();
 
     const footerLinks = {
@@ -13,10 +15,11 @@ const Footer = () => {
             { label: 'Contact Us', path: '/contact' },
         ],
         resources: [
-            { label: 'Privacy Policy', path: '/policies#privacy' },
-            { label: 'Terms of Use', path: '/policies#terms' },
-            { label: 'Support Center', path: '/contact' },
-            { label: 'Help Desk', path: '/contact' },
+            { label: 'Privacy Policy', path: '/privacy-policy' },
+            { label: 'Terms of Use', path: '/terms-and-conditions' },
+            { label: 'Data Collection Policy', path: '/data-collection-policy' },
+            { label: 'Payment Policy', path: '/payment-policy' },
+            { label: 'Return & Refund Policy', path: '/refund-policy' },
         ],
         segments: [
             { label: 'Manufacturing', path: '/jobs?category=manufacturing' },
@@ -164,13 +167,16 @@ const Footer = () => {
                     </p>
 
                     <div className="flex flex-wrap justify-center gap-8">
-                        <Link to="/policies#privacy" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Privacy</Link>
-                        <Link to="/policies#terms" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Terms</Link>
+                        <Link to="/privacy-policy" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Privacy</Link>
+                        <Link to="/terms-and-conditions" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Terms</Link>
+                        <Link to="/refund-policy" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Refund</Link>
                         <Link to="/contact" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Cookies</Link>
                         <a href="https://losodhan.com" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors flex items-center gap-1">Website <ExternalLink size={10} /></a>
-                        <Link to="/auth/admin/secure/login" className="opacity-1 hover:opacity-10 transition-opacity bg-transparent p-1" title="Portal">
-                            <Lock size={10} className="text-slate-700" />
-                        </Link>
+                        {!user && (
+                            <Link to="/auth/admin/secure/login" className="opacity-1 hover:opacity-10 transition-opacity bg-transparent p-1" title="Portal">
+                                <Lock size={10} className="text-slate-700" />
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
