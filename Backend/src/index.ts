@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { startSubscriptionCron } from './jobs/subscriptionCron'
 import candidateAuthRoutes from './modules/auth/routes/candidate.routes'
 import recruiterAuthRoutes from './modules/auth/routes/recruiter.routes'
 import adminAuthRoutes from './modules/auth/routes/admin.routes'
@@ -20,6 +21,9 @@ import { Server } from 'socket.io'
 import cookieParser from 'cookie-parser'
 
 dotenv.config()
+
+// Start scheduled jobs
+startSubscriptionCron()
 
 const app = express()
 const httpServer = createServer(app)

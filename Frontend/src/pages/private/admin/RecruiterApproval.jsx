@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown, Calendar, RefreshCw, Mail, Phone } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../../utils/api'
 import AdminLayout from '../../../components/admin/AdminLayout'
+import Pagination from '../../../components/common/Pagination'
 
 const STATUS_MAP = {
     PENDING: { label: 'Pending', classes: 'bg-yellow-100 text-yellow-700', icon: <Clock size={12} /> },
@@ -17,15 +18,36 @@ const RecruiterApproval = () => {
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('ALL')
     const [selected, setSelected] = useState(null)
+    const [renewModal, setRenewModal] = useState(null)
+    const [renewDuration, setRenewDuration] = useState(12)
+    const [subscriptionProfile, setSubscriptionProfile] = useState(null)
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10
+    })
 
     useEffect(() => {
         fetchRecruiters()
-    }, [])
+    }, [pagination.currentPage, pagination.itemsPerPage])
 
     const fetchRecruiters = async () => {
         try {
-            const res = await api.get('/admin/recruiters')
+            setLoading(true)
+            const res = await api.get('/admin/recruiters', {
+                params: {
+                    page: pagination.currentPage,
+                    limit: pagination.itemsPerPage
+                }
+            })
             setRecruiters(res.data.recruiters)
+            if (res.data.pagination) {
+                setPagination(prev => ({
+                    ...prev,
+                    ...res.data.pagination
+                }))
+            }
         } catch (error) {
             toast.error('Failed to load recruiters')
         } finally {
@@ -59,6 +81,37 @@ const RecruiterApproval = () => {
         } catch (error) {
             toast.error('Failed to update payment status')
         }
+    }
+
+    const openSubscriptionProfile = async (id) => {
+        try {
+            const res = await api.get(`/admin/recruiters/${id}`)
+            setSubscriptionProfile(res.data.recruiter)
+        } catch (error) {
+            toast.error('Failed to load recruiter profile')
+        }
+    }
+
+    const handleRenew = async () => {
+        if (!renewModal) return
+
+        try {
+            await api.post(`/admin/recruiters/${renewModal.id}/renew`, { durationMonths: renewDuration })
+            toast.success(`Recruiter subscription renewed for ${renewDuration} months`)
+            setRenewModal(null)
+            setRenewDuration(12)
+            fetchRecruiters()
+        } catch (error) {
+            toast.error('Failed to renew subscription')
+        }
+    }
+
+    const handlePageChange = (page) => {
+        setPagination(prev => ({ ...prev, currentPage: page }))
+    }
+
+    const handleLimitChange = (limit) => {
+        setPagination(prev => ({ ...prev, itemsPerPage: limit, currentPage: 1 }))
     }
 
     const filtered = recruiters.filter(r => {
@@ -129,6 +182,7 @@ const RecruiterApproval = () => {
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Website</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Applied</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Subscription</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Payment</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
@@ -171,6 +225,23 @@ const RecruiterApproval = () => {
                                                 {s.icon} {s.label}
                                             </span>
                                         </td>
+                                        <td className="px-6 py-4 hidden xl:table-cell">
+                                            {r.subscriptionExpiryDate ? (
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-semibold text-gray-900">{r.subscriptionExpiryDate}</p>
+                                                    <div className="flex gap-1">
+                                                        {r.isExpiringSoon && !r.isExpired && (
+                                                            <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">Soon</span>
+                                                        )}
+                                                        {r.isExpired && (
+                                                            <span className="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Expired</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-gray-400">N/A</p>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4">
                                             <select
                                                 value={ r.isPaid ? 'PAID' : (r.isActive ? 'TEMP_ACTIVATED' : 'UNPAID') }
@@ -188,6 +259,20 @@ const RecruiterApproval = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
+                                                {r.isPaid && (
+                                                    <button
+                                                        onClick={() => setRenewModal(r)}
+                                                        className="px-2 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                                    >
+                                                        <RefreshCw size={12} /> Renew
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => openSubscriptionProfile(r.id)}
+                                                    className="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                                >
+                                                    <Eye size={12} /> View
+                                                </button>
                                                 {r.status === 'PENDING' && (
                                                     <>
                                                         <button
@@ -221,6 +306,206 @@ const RecruiterApproval = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Pagination */}
+            <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                onPageChange={handlePageChange}
+                onLimitChange={handleLimitChange}
+            />
+
+            {/* Profile Modal */}
+            <AnimatePresence>
+                {subscriptionProfile && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+                        onClick={() => setSubscriptionProfile(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="font-bold text-xl text-[#0f172a]">Recruiter Profile</h3>
+                                <button
+                                    onClick={() => setSubscriptionProfile(null)}
+                                    className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
+                                >
+                                    <XCircle size={20} />
+                                </button>
+                            </div>
+
+                            {/* Subscription Info */}
+                            {subscriptionProfile.subscriptionExpiryDate && (
+                                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-5 mb-6 border border-blue-100">
+                                    <h4 className="font-bold text-[#0f172a] mb-3 flex items-center gap-2">
+                                        <Calendar size={18} className="text-[#1a3c8f]" />
+                                        Subscription Details
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="bg-white rounded-xl p-3">
+                                            <p className="text-xs text-gray-500 mb-1">Start Date</p>
+                                            <p className="font-bold text-gray-900">{subscriptionProfile.subscriptionStartDate || 'N/A'}</p>
+                                        </div>
+                                        <div className="bg-white rounded-xl p-3">
+                                            <p className="text-xs text-gray-500 mb-1">Expiry Date</p>
+                                            <p className="font-bold text-gray-900">{subscriptionProfile.subscriptionExpiryDate}</p>
+                                        </div>
+                                        <div className="bg-white rounded-xl p-3">
+                                            <p className="text-xs text-gray-500 mb-1">Days Remaining</p>
+                                            <p className={`font-bold ${subscriptionProfile.isExpired ? 'text-red-600' : subscriptionProfile.isExpiringSoon ? 'text-orange-600' : 'text-green-600'
+                                                }`}>
+                                                {subscriptionProfile.subscriptionDaysRemaining !== null
+                                                    ? `${subscriptionProfile.subscriptionDaysRemaining} days`
+                                                    : 'N/A'}
+                                            </p>
+                                        </div>
+                                        <div className="bg-white rounded-xl p-3">
+                                            <p className="text-xs text-gray-500 mb-1">Status</p>
+                                            <p className={`font-bold ${subscriptionProfile.isPaid ? 'text-green-600' : 'text-gray-600'
+                                                }`}>
+                                                {subscriptionProfile.isPaid ? 'PAID' : 'UNPAID'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {subscriptionProfile.isPaid && !subscriptionProfile.isExpired && (
+                                        <button
+                                            onClick={() => {
+                                                setRenewModal({ id: subscriptionProfile.id, name: subscriptionProfile.fullName })
+                                                setSubscriptionProfile(null)
+                                            }}
+                                            className="w-full mt-4 py-2.5 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <RefreshCw size={16} /> Renew Subscription
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* User Info */}
+                            <div className="space-y-3 mb-6">
+                                <div className="flex items-center gap-4 mb-5">
+                                    <div className={`w-14 h-14 rounded-2xl bg-purple-500 flex items-center justify-center text-white font-bold text-lg`}>
+                                        {subscriptionProfile.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p className="font-extrabold text-gray-900">{subscriptionProfile.fullName}</p>
+                                        <p className="text-sm text-[#1a3c8f] font-semibold">{subscriptionProfile.companyName}</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><Mail size={15} className="text-gray-400" /><span>{subscriptionProfile.email}</span></div>
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><Phone size={15} className="text-gray-400" /><span>{subscriptionProfile.mobile}</span></div>
+                                </div>
+                            </div>
+
+                            {/* Payment History */}
+                            {subscriptionProfile.paymentHistory && subscriptionProfile.paymentHistory.length > 0 && (
+                                <div className="mb-6">
+                                    <h4 className="font-bold text-[#0f172a] mb-3">Payment History</h4>
+                                    <div className="space-y-2">
+                                        {subscriptionProfile.paymentHistory.map(payment => (
+                                            <div key={payment.id} className="bg-gray-50 rounded-xl p-4 flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-sm font-semibold">₹{payment.amount}</p>
+                                                    <p className="text-xs text-gray-500">{payment.createdAt}</p>
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold ${payment.status === 'COMPLETED'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                    {payment.status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={() => setSubscriptionProfile(null)}
+                                className="w-full py-2.5 bg-[#1a3c8f] text-white font-bold rounded-xl hover:bg-[#153275] transition-colors"
+                            >
+                                Close
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Renew Modal */}
+            <AnimatePresence>
+                {renewModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+                        onClick={() => setRenewModal(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
+                        >
+                            <div className="mb-6">
+                                <h3 className="font-bold text-xl text-[#0f172a] mb-1">Renew Subscription</h3>
+                                <p className="text-sm text-gray-500">
+                                    {renewModal.name} (Recruiter)
+                                </p>
+                            </div>
+
+                            <div className="space-y-4 mb-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Duration (months)
+                                    </label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[3, 6, 12, 18, 24, 36].map(months => (
+                                            <button
+                                                key={months}
+                                                onClick={() => setRenewDuration(months)}
+                                                className={`py-2.5 rounded-xl text-sm font-bold transition-all ${renewDuration === months
+                                                    ? 'bg-[#1a3c8f] text-white shadow-md'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`}
+                                            >
+                                                {months} mo
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setRenewModal(null)}
+                                    className="flex-1 py-2.5 border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleRenew}
+                                    className="flex-1 py-2.5 bg-[#1a3c8f] text-white font-bold rounded-xl hover:bg-[#153275] transition-colors"
+                                >
+                                    Confirm Renew
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </AdminLayout>
     )
 }

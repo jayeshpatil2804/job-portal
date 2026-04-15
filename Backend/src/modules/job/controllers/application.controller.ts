@@ -23,9 +23,9 @@ export const applyToJob = async (req: Request, res: Response) => {
         })
 
         if (!shooter?.isPaid) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Payment required to apply for jobs. Please complete your payment.' 
+            return res.status(403).json({
+                success: false,
+                message: 'Payment required to apply for jobs. Please complete your payment.'
             })
         }
 
