@@ -3,10 +3,19 @@ import prisma from '../../../config/db'
 
 export const getAllJobs = async (req: Request, res: Response) => {
     try {
-        const jobs = await prisma.job.findMany({
-            include: { recruiter: { include: { profile: true } }, _count: { select: { applications: true } } },
-            orderBy: { createdAt: 'desc' },
-        })
+        const page = parseInt(req.query.page as string) || 1
+        const limit = parseInt(req.query.limit as string) || 10
+        const skip = (page - 1) * limit
+
+        const [jobs, total] = await Promise.all([
+            prisma.job.findMany({
+                include: { recruiter: { include: { profile: true } }, _count: { select: { applications: true } } },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit
+            }),
+            prisma.job.count()
+        ])
 
         const formattedJobs = jobs.map(j => ({
             id: j.id,
@@ -21,7 +30,18 @@ export const getAllJobs = async (req: Request, res: Response) => {
             flagged: j.isFlagged
         }))
 
-        res.json({ success: true, jobs: formattedJobs })
+        res.json({
+            success: true,
+            jobs: formattedJobs,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNextPage: page * limit < total,
+                hasPrevPage: page > 1
+            }
+        })
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to fetch jobs' })
     }

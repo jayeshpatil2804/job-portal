@@ -33,11 +33,16 @@ model Candidate {
   isPaid     Boolean  @default(false)
   isActive   Boolean  @default(false)
   isProfileCompleted Boolean  @default(false)
+
+  // Subscription tracking
+  subscriptionStartDate  DateTime?
+  subscriptionExpiryDate DateTime?
   
   profile    CandidateProfile?
   files      File[]
   applications Application[]
   payments   Payment[]
+  notifications Notification[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -143,17 +148,23 @@ model Recruiter {
   isPaid     Boolean  @default(false)
   isActive   Boolean  @default(false)
   isProfileCompleted Boolean  @default(false)
+
+  // Subscription tracking
+  subscriptionStartDate  DateTime?
+  subscriptionExpiryDate DateTime?
   
   profile     CompanyProfile?
   files       File[]
   jobs        Job[]
   payments    Payment[]
+  notifications Notification[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([email])
   @@index([verificationStatus])
+  @@index([subscriptionExpiryDate])
 }
 
 model CompanyProfile {
@@ -356,4 +367,22 @@ model Skill {
 
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  type        String   // SUBSCRIPTION_EXPIRING | SUBSCRIPTION_EXPIRED
+  message     String
+  isRead      Boolean  @default(false)
+
+  candidateId String?
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  recruiterId String?
+  recruiter   Recruiter? @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([candidateId])
+  @@index([recruiterId])
 }

@@ -4,6 +4,7 @@ import { Search, Trash2, Flag, Eye, CheckCircle, Building2, MapPin, Clock } from
 import toast from 'react-hot-toast'
 import api from '../../../utils/api'
 import AdminLayout from '../../../components/admin/AdminLayout'
+import Pagination from '../../../components/common/Pagination'
 
 const typeColor = {
     'Full-time': 'bg-blue-50 text-blue-700',
@@ -18,18 +19,36 @@ const JobModeration = () => {
     const [filter, setFilter] = useState('ALL')
     const [designations, setDesignations] = useState([])
     const [selectedDesignation, setSelectedDesignation] = useState('ALL')
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10
+    })
 
     useEffect(() => {
         fetchJobs()
-    }, [])
+    }, [pagination.currentPage, pagination.itemsPerPage])
 
     const fetchJobs = async () => {
         try {
+            setLoading(true)
             const [jobsRes, desigRes] = await Promise.all([
-                api.get('/admin/jobs'),
+                api.get('/admin/jobs', {
+                    params: {
+                        page: pagination.currentPage,
+                        limit: pagination.itemsPerPage
+                    }
+                }),
                 api.get('/admin/designations')
             ])
             setJobs(jobsRes.data.jobs)
+            if (jobsRes.data.pagination) {
+                setPagination(prev => ({
+                    ...prev,
+                    ...jobsRes.data.pagination
+                }))
+            }
             setDesignations(desigRes.data.designations)
         } catch (error) {
             toast.error('Failed to load data')

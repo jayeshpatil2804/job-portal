@@ -61,11 +61,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 variants={sidebarVariants}
                 className={`fixed left-0 top-0 h-screen w-64 bg-[#1a3c8f] text-white flex flex-col z-50 shadow-2xl lg:shadow-none border-r border-blue-800/10`}
             >
-                <div className="p-8 pb-10 flex items-center justify-between border-b border-blue-800/20">
-                    <Link to="/" className="flex items-center group">
-                        <div className="relative">
-                            <img src={logo} alt="LOSODHAN" className="h-14 w-auto object-contain brightness-0 invert transition-all duration-500 group-hover:scale-110 group-hover:rotate-3" />
-                            <div className="absolute -inset-4 bg-blue-400/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="px-6 py-6 border-b border-white/10 flex items-center justify-between">
+                    <Link to="/" className="flex items-center gap-3">
+                        <img src={logo} alt="LOSODHAN" className="h-10 w-auto object-contain brightness-0 invert" />
+                        <div>
+                            <p className="text-[10px] font-bold tracking-[0.2em] text-blue-300 uppercase">Candidate</p>
                         </div>
                     </Link>
                     <button 
@@ -76,9 +76,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     </button>
                 </div>
 
-                <nav className="flex-1 mt-8 overflow-y-auto custom-scrollbar">
-                    <div className="px-4 mb-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300/50 px-4 mb-4">Menu</p>
+                <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+                    <div className="px-1 mb-4">
                         <ul className="space-y-1">
                             {navLinks.map((link) => {
                                 const isActive = location.pathname.startsWith(link.path)
@@ -87,23 +86,27 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                                         <Link
                                             to={link.path}
                                             onClick={() => isMobile && setIsOpen(false)}
-                                            className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 relative group ${
-                                                isActive 
-                                                ? 'bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white font-black shadow-lg shadow-orange-900/30' 
-                                                : 'text-blue-100/70 hover:bg-white/5 hover:text-white font-bold'
-                                            }`}
-                                        >
-                                            {isActive && (
-                                                <motion.div 
-                                                    layoutId="activeNav"
-                                                    className="absolute inset-0 bg-white/10 rounded-2xl"
-                                                />
-                                            )}
-                                            <div className={`relative ${isActive ? 'scale-110' : 'opacity-70 group-hover:opacity-100 transition-opacity'}`}>
-                                                {link.icon}
-                                            </div>
-                                            <span className="relative text-[11px] uppercase tracking-[0.15em]">{link.label}</span>
-                                        </Link>
+                                        className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative ${
+                                            isActive 
+                                                ? 'bg-[#f97316] text-white shadow-lg shadow-orange-500/30' 
+                                                : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                                        }`}
+                                    >
+                                        <div className="shrink-0">
+                                            {React.cloneElement(link.icon, { size: 19 })}
+                                        </div>
+                                        <span className="text-sm font-medium">{link.label}</span>
+                                        {isActive && (
+                                            <motion.div
+                                                layoutId="activeIndicator"
+                                                className="absolute right-3"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            </motion.div>
+                                        )}
+                                    </Link>
                                     </li>
                                 )
                             })}
@@ -111,22 +114,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     </div>
                 </nav>
 
-                <div className="p-6 border-t border-blue-800/50 bg-[#162f72]/50">
+                <div className="px-4 py-4 border-t border-white/10">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-4 px-5 py-4 w-full rounded-2xl text-blue-100/60 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold group"
+                        className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-blue-200 hover:bg-white/10 hover:text-white transition-all duration-200"
                     >
-                        <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-                        <span className="text-[10px] uppercase tracking-[0.15em]">Sign Out</span>
+                        <LogOut size={19} />
+                        <span className="text-sm font-medium">Logout</span>
                     </button>
                     <a
                         href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/support/whatsapp`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-4 px-5 py-4 w-full rounded-2xl text-blue-100/60 hover:bg-blue-400/10 hover:text-white transition-all font-bold group mt-2"
+                        className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-blue-200 hover:bg-white/10 hover:text-white transition-all duration-200 mt-2"
                     >
-                        <MessageSquare size={20} className="group-hover:scale-110 transition-transform text-blue-300" />
-                        <span className="text-[10px] uppercase tracking-[0.15em]">Help & Support</span>
+                        <MessageSquare size={19} />
+                        <span className="text-sm font-medium">Support</span>
                     </a>
                 </div>
             </motion.aside>

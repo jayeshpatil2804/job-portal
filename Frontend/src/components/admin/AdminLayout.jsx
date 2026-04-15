@@ -13,7 +13,8 @@ import {
     X,
     Bell,
     Settings2,
-    CheckCircle2
+    CheckCircle2,
+    CreditCard
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector, useDispatch } from 'react-redux'
@@ -27,6 +28,7 @@ const navLinks = [
     { path: '/admin/recruiters', label: 'Recruiter Approval', icon: UserCheck },
     { path: '/admin/candidates', label: 'Candidates', icon: Users },
     { path: '/admin/jobs', label: 'Job Moderation', icon: Briefcase },
+    { path: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
     { path: '/admin/sub-admins', label: 'Sub Admins', icon: ShieldCheck },
     { path: '/admin/designations', label: 'Designations', icon: Settings2 },
     { path: '/admin/skills', label: 'Job Skills', icon: CheckCircle2 },
@@ -67,15 +69,16 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
     const filteredLinks = navLinks.filter(link => {
         if (link.path === '/admin/dashboard') return true
         if (user?.isSuperAdmin) return true
-        
+
         const permissionMap = {
             '/admin/recruiters': 'RECRUITER_APPROVAL',
             '/admin/candidates': 'CANDIDATE_MANAGEMENT',
             '/admin/jobs': 'JOB_MODERATION',
+            '/admin/subscriptions': 'CANDIDATE_MANAGEMENT',
             '/admin/sub-admins': 'SUB_ADMIN_MANAGEMENT',
             '/admin/reports': 'REPORTS'
         }
-        
+
         return user?.permissions?.includes(permissionMap[link.path])
     })
 
@@ -104,11 +107,10 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
                             key={path}
                             to={path}
                             onClick={() => setMobileOpen(false)}
-                            className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative ${
-                                isActive
+                            className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative ${isActive
                                     ? 'bg-[#f97316] text-white shadow-lg shadow-orange-500/30'
                                     : 'text-blue-200 hover:bg-white/10 hover:text-white'
-                            }`}
+                                }`}
                         >
                             <Icon size={19} className="shrink-0" />
                             <span className="text-sm font-medium">{label}</span>
@@ -172,7 +174,7 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
             </AnimatePresence>
 
             {/* Main Content */}
-            <main className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+            <main className="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0">
                 {/* Top Header */}
                 <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
@@ -201,8 +203,8 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
                 </header>
 
                 {/* Page Content */}
-                <div className="flex-1 p-6 md:p-8">
-                    <div className="max-w-7xl mx-auto">
+                <div className="flex-1 p-6 md:p-8 overflow-x-hidden">
+                    <div className="max-w-7xl mx-auto w-full">
                         {children}
                     </div>
                 </div>

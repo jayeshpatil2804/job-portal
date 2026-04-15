@@ -69,12 +69,14 @@ const SubAdminManagement = lazy(() => import('./pages/private/admin/SubAdminMana
 const ReportsSection = lazy(() => import('./pages/private/admin/ReportsSection'))
 const DesignationManagement = lazy(() => import('./pages/private/admin/DesignationManagement'))
 const SkillManagement = lazy(() => import('./pages/private/admin/SkillManagement'))
+const SubscriptionManagement = lazy(() => import('./pages/private/admin/SubscriptionManagement'))
 
 // Auth Wrappers
 import CandidateProtectedRoute from './components/CandidateProtectedRoute'
 import RecruiterProtectedRoute from './components/RecruiterProtectedRoute'
 import AdminProtectedRoute from './components/AdminProtectedRoute'
 import { checkAuth } from './redux/actions/authActions'
+import SubscriptionBanner from './components/SubscriptionBanner'
 
 function App() {
     const dispatch = useDispatch()
@@ -169,6 +171,7 @@ function App() {
                         <Route path="/admin/dashboard" element={<AdminDashboard />} />
                         <Route path="/admin/recruiters" element={<RecruiterApproval />} />
                         <Route path="/admin/candidates" element={<CandidateManagement />} />
+                        <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
                         <Route path="/admin/jobs" element={<JobModeration />} />
                         <Route path="/admin/sub-admins" element={<SubAdminManagement />} />
                         <Route path="/admin/reports" element={<ReportsSection />} />

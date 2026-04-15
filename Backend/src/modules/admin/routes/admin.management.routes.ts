@@ -1,12 +1,19 @@
 import { Router } from 'express'
 import { getDashboardStats, getRecentActivity } from '../controllers/dashboard.controller'
-import { 
-    getAllRecruiters, 
-    updateRecruiterStatus, 
+import {
+    getAllRecruiters,
+    updateRecruiterStatus,
     getAllCandidates,
     toggleRecruiterActivation,
     toggleCandidateActivation,
-    updateRecruiterPaymentStatus
+    updateRecruiterPaymentStatus,
+    getExpiringSubscriptions,
+    renewCandidateSubscription,
+    renewRecruiterSubscription,
+    getCandidateProfile,
+    getRecruiterProfile,
+    getSubscriptionsExpiringToday,
+    getAllSubscriptions
 } from '../controllers/management.controller'
 import { getAllJobs, toggleJobFlag, toggleJobRemove } from '../controllers/jobs.controller'
 import { getSubAdmins, createSubAdmin, updateSubAdmin, deleteSubAdmin } from '../controllers/subadmin.controller'
@@ -38,15 +45,22 @@ router.use(protect, restrictTo('ADMIN'))
 // Dashboard (Requires ANY admin permission or Super Admin status)
 router.get('/stats', getDashboardStats)
 router.get('/activity', getRecentActivity)
+router.get('/expiring-subscriptions', getExpiringSubscriptions)
+router.get('/subscriptions/expiring-today', getSubscriptionsExpiringToday)
+router.get('/subscriptions', getAllSubscriptions)
 
 // Users
 router.get('/recruiters', checkPermission('RECRUITER_APPROVAL'), getAllRecruiters)
 router.patch('/recruiters/:id/status', checkPermission('RECRUITER_APPROVAL'), updateRecruiterStatus)
 router.patch('/recruiters/:id/activate', checkPermission('RECRUITER_APPROVAL'), toggleRecruiterActivation)
 router.patch('/recruiters/:id/payment-status', checkPermission('RECRUITER_APPROVAL'), updateRecruiterPaymentStatus)
+router.post('/recruiters/:id/renew', checkPermission('RECRUITER_APPROVAL'), renewRecruiterSubscription)
+router.get('/recruiters/:id', checkPermission('RECRUITER_APPROVAL'), getRecruiterProfile)
 
 router.get('/candidates', checkPermission('CANDIDATE_MANAGEMENT'), getAllCandidates)
 router.patch('/candidates/:id/activate', checkPermission('CANDIDATE_MANAGEMENT'), toggleCandidateActivation)
+router.post('/candidates/:id/renew', checkPermission('CANDIDATE_MANAGEMENT'), renewCandidateSubscription)
+router.get('/candidates/:id', checkPermission('CANDIDATE_MANAGEMENT'), getCandidateProfile)
 
 // Jobs Moderation
 router.get('/jobs', checkPermission('JOB_MODERATION'), getAllJobs)
