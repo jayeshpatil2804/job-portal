@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getJobById, updateJob } from '../../../../redux/actions/jobActions';
 import { clearSelectedJob } from '../../../../redux/slices/jobSlice';
-import RecruiterLayout from '../../../../components/RecruiterLayout';
+import { fetchSkills, fetchDesignations } from '../../../../redux/slices/metaSlice';
 import { 
     Briefcase, Building2, MapPin, DollarSign, 
     Users, FileText, ArrowLeft, Save, Clock
@@ -54,6 +54,7 @@ const EditJob = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { selectedJob, loading, success } = useSelector((state) => state.job);
+    const { skills: availableSkills, designations } = useSelector(state => state.meta);
 
     const [formData, setFormData] = useState({
         jobTitle: '',
@@ -76,27 +77,14 @@ const EditJob = () => {
         skillIds: []
     });
 
-    const [designations, setDesignations] = useState([]);
-    const [availableSkills, setAvailableSkills] = useState([]);
     const [customSkill, setCustomSkill] = useState('');
 
     useEffect(() => {
         dispatch(getJobById(id));
-        const fetchMeta = async () => {
-            try {
-                const [dRes, sRes] = await Promise.all([
-                    api.get('/admin/designations'),
-                    api.get('/admin/skills')
-                ])
-                setDesignations(dRes.data.designations)
-                setAvailableSkills(sRes.data.skills)
-            } catch (error) {
-                console.error("Meta fetch error:", error)
-            }
-        }
-        fetchMeta()
+        if (availableSkills.length === 0) dispatch(fetchSkills());
+        if (designations.length === 0) dispatch(fetchDesignations());
         return () => dispatch(clearSelectedJob());
-    }, [dispatch, id]);
+    }, [dispatch, id, availableSkills.length, designations.length]);
 
     useEffect(() => {
         if (selectedJob) {

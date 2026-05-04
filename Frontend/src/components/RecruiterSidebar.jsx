@@ -18,11 +18,8 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     }, [])
 
     const navLinks = [
-
         { path: '/recruiter/post-job', label: 'Post Job', icon: <PlusCircle size={20} /> },
         { path: '/recruiter/manage-jobs', label: 'Manage Jobs', icon: <Briefcase size={20} /> },
-        { path: '/recruiter/applicants', label: 'Applicants', icon: <Users size={20} /> },
-        { path: '/recruiter/interviews', label: 'Interviews', icon: <Calendar size={20} /> },
         { path: '/recruiter/profile', label: 'Profile', icon: <User size={20} /> },
     ]
 

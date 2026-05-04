@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown, Calendar, RefreshCw, Mail, Phone } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown, Calendar, RefreshCw, Mail, Phone, FileText, Shield, AlertCircle, CheckSquare, Square, User, MapPin, Briefcase, Image, Upload, Camera } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../../utils/api'
 import AdminLayout from '../../../components/admin/AdminLayout'
@@ -11,6 +11,16 @@ const STATUS_MAP = {
     APPROVED: { label: 'Approved', classes: 'bg-green-100 text-green-700', icon: <CheckCircle size={12} /> },
     REJECTED: { label: 'Rejected', classes: 'bg-red-100 text-red-700', icon: <XCircle size={12} /> },
 }
+
+const VERIFICATION_CHECKLIST = [
+    { key: 'companyInfo', label: 'Company Information', icon: <Building2 size={14} /> },
+    { key: 'contactInfo', label: 'Contact Details', icon: <Phone size={14} /> },
+    { key: 'website', label: 'Website Verification', icon: <Globe size={14} /> },
+    { key: 'companyLogo', label: 'Company Logo', icon: <Image size={14} /> },
+    { key: 'documents', label: 'Documents Uploaded', icon: <FileText size={14} /> },
+    { key: 'emailVerified', label: 'Email Verified', icon: <Mail size={14} /> },
+    { key: 'payment', label: 'Payment Status', icon: <Shield size={14} /> },
+]
 
 const RecruiterApproval = () => {
     const [recruiters, setRecruiters] = useState([])
@@ -171,141 +181,203 @@ const RecruiterApproval = () => {
                 />
             </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="border-b border-gray-100 bg-gray-50">
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Company</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Website</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Applied</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Subscription</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Payment</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {filtered.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="py-12 text-center text-gray-400 text-sm">No recruiters found</td>
-                                </tr>
-                            ) : filtered.map((r, i) => {
-                                const s = STATUS_MAP[r.status]
-                                return (
-                                    <motion.tr
-                                        key={r.id}
-                                        initial={{ opacity: 0, y: 8 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.04 }}
-                                        className="hover:bg-gray-50/50 transition-colors"
+            {/* Cards Grid - Similar to Candidate Management */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {filtered.map((r, i) => {
+                    const s = STATUS_MAP[r.status]
+                    
+                    // Mock verification status - in real app this would come from API
+                    const verificationStatus = {
+                        companyInfo: r.company ? true : false,
+                        contactInfo: r.contact && r.email ? true : false,
+                        website: r.website ? true : false,
+                        companyLogo: r.companyLogo ? true : false,
+                        documents: r.documentsUploaded ? true : false,
+                        emailVerified: r.emailVerified ? true : false,
+                        payment: r.isPaid ? true : false
+                    }
+                    
+                    const completedChecks = Object.values(verificationStatus).filter(Boolean).length
+                    const totalChecks = Object.keys(verificationStatus).length
+                    const verificationPercentage = Math.round((completedChecks / totalChecks) * 100)
+                    
+                    return (
+                        <motion.div
+                            key={r.id}
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.06 }}
+                            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all duration-300 group"
+                        >
+                            {/* Company Header */}
+                            <div className="flex items-start gap-4">
+                                <div className="relative">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+                                        {r.companyLogo ? (
+                                            <img src={r.companyLogo} alt="Company Logo" className="w-full h-full rounded-xl object-cover" />
+                                        ) : (
+                                            <Building2 size={20} className="text-white" />
+                                        )}
+                                    </div>
+                                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${
+                                        verificationPercentage === 100 ? 'bg-green-500' :
+                                        verificationPercentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                                    }`}>
+                                        <span className="text-[8px] text-white font-bold">{verificationPercentage}%</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-gray-900 text-sm truncate">{r.company}</h4>
+                                    <p className="text-xs text-[#1a3c8f] font-semibold truncate">{r.fullName || 'N/A'}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${s.classes}`}>
+                                            {s.icon} {s.label}
+                                        </span>
+                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${
+                                            r.isPaid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
+                                        }`}>
+                                            {r.isPaid ? 'Paid' : 'Unpaid'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Contact Information */}
+                            <div className="flex gap-3 mt-4 text-xs text-gray-500">
+                                <span className="flex items-center gap-1 truncate">
+                                    <Mail size={11} />
+                                    <span className="truncate">{r.email}</span>
+                                </span>
+                                <span className="flex items-center gap-1 truncate">
+                                    <Phone size={11} />
+                                    <span className="truncate">{r.contact}</span>
+                                </span>
+                            </div>
+
+                            {/* Location and Applied Date */}
+                            <div className="flex gap-3 mt-2 text-xs text-gray-500">
+                                {r.location && (
+                                    <span className="flex items-center gap-1 truncate">
+                                        <MapPin size={11} />
+                                        <span className="truncate">{r.location}</span>
+                                    </span>
+                                )}
+                                {r.appliedOn && (
+                                    <span className="flex items-center gap-1 truncate">
+                                        <Calendar size={11} />
+                                        <span className="truncate">{r.appliedOn}</span>
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Verification Progress */}
+                            <div className="mt-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-semibold text-gray-700">Verification Status</span>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                        verificationPercentage === 100 ? 'bg-green-100 text-green-700' :
+                                        verificationPercentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-red-100 text-red-700'
+                                    }`}>
+                                        {verificationPercentage}% Complete
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                        className={`h-2 rounded-full transition-all duration-300 ${
+                                            verificationPercentage === 100 ? 'bg-green-500' :
+                                            verificationPercentage >= 50 ? 'bg-yellow-500' :
+                                            'bg-red-500'
+                                        }`}
+                                        style={{ width: `${verificationPercentage}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Verification Checklist */}
+                            <div className="flex flex-wrap gap-1 mt-3">
+                                {VERIFICATION_CHECKLIST.slice(0, 4).map(check => (
+                                    <div
+                                        key={check.key}
+                                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-medium ${
+                                            verificationStatus[check.key]
+                                                ? 'bg-green-50 text-green-700 border border-green-200'
+                                                : 'bg-gray-50 text-gray-500 border border-gray-200'
+                                        }`}
+                                        title={check.label}
                                     >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                                                    <Building2 size={16} className="text-[#1a3c8f]" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="font-semibold text-sm text-gray-900 truncate max-w-[180px]" title={r.company}>{r.company}</p>
-                                                    <p className="text-xs text-gray-400 truncate max-w-[180px]" title={r.email}>{r.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 truncate max-w-[140px]" title={r.contact}>{r.contact}</td>
-                                        <td className="px-6 py-4 hidden md:table-cell">
-                                            <a href={`https://${r.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-blue-600 hover:underline max-w-[150px]" title={r.website}>
-                                                <Globe size={13} className="shrink-0" /> <span className="truncate">{r.website}</span>
-                                            </a>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-400 hidden lg:table-cell">{r.appliedOn}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${s.classes}`}>
-                                                {s.icon} {s.label}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 hidden xl:table-cell">
-                                            {r.subscriptionExpiryDate ? (
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-semibold text-gray-900">{r.subscriptionExpiryDate}</p>
-                                                    <div className="flex gap-1">
-                                                        {r.isExpiringSoon && !r.isExpired && (
-                                                            <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">Soon</span>
-                                                        )}
-                                                        {r.isExpired && (
-                                                            <span className="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Expired</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <p className="text-xs text-gray-400">N/A</p>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <select
-                                                value={ r.isPaid ? 'PAID' : (r.isActive ? 'TEMP_ACTIVATED' : 'UNPAID') }
-                                                onChange={(e) => handlePaymentStatusChange(r.id, e.target.value)}
-                                                className={`px-3 py-1.5 text-xs font-bold rounded-lg border focus:outline-none transition-colors cursor-pointer appearance-none text-center ${
-                                                    r.isPaid ? 'bg-green-100 text-green-700 border-green-200' :
-                                                    r.isActive ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                                                    'bg-gray-100 text-gray-600 border-gray-200'
-                                                }`}
-                                            >
-                                                <option value="PAID">Paid ✓</option>
-                                                <option value="TEMP_ACTIVATED">Temp Activated ⏱</option>
-                                                <option value="UNPAID">Unpaid ✗</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                {r.isPaid && (
-                                                    <button
-                                                        onClick={() => setRenewModal(r)}
-                                                        className="px-2 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
-                                                    >
-                                                        <RefreshCw size={12} /> Renew
-                                                    </button>
-                                                )}
-                                                <button
-                                                    onClick={() => openSubscriptionProfile(r.id)}
-                                                    className="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
-                                                >
-                                                    <Eye size={12} /> View
-                                                </button>
-                                                {r.status === 'PENDING' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleAction(r.id, 'APPROVED')}
-                                                            className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
-                                                        >
-                                                            <CheckCircle size={12} /> Approve
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleAction(r.id, 'REJECTED')}
-                                                            className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
-                                                        >
-                                                            <XCircle size={12} /> Reject
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {r.status !== 'PENDING' && (
-                                                    <button
-                                                        onClick={() => handleAction(r.id, 'PENDING')}
-                                                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold rounded-lg transition-colors"
-                                                    >
-                                                        Reset
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </motion.tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                        {verificationStatus[check.key] ? <CheckCircle size={8} /> : <AlertCircle size={8} />}
+                                        {check.label.split(' ')[0]}
+                                    </div>
+                                ))}
+                                {totalChecks > 4 && (
+                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                        +{totalChecks - 4}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Subscription Info */}
+                            {r.subscriptionExpiryDate && (
+                                <div className="mt-3 flex items-center gap-1 text-xs text-gray-400">
+                                    <Calendar size={10} />
+                                    <span>Expires: {r.subscriptionExpiryDate}</span>
+                                    {r.isExpiringSoon && !r.isExpired && (
+                                        <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">Soon</span>
+                                    )}
+                                    {r.isExpired && (
+                                        <span className="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Expired</span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="mt-4 flex gap-2">
+                                <button
+                                    onClick={() => openSubscriptionProfile(r.id)}
+                                    className="flex-[0.5] flex items-center justify-center gap-1.5 py-2 border border-[#1a3c8f] text-[#1a3c8f] text-xs font-bold rounded-xl hover:bg-[#1a3c8f] hover:text-white transition-all duration-200"
+                                >
+                                    <Eye size={14} /> View
+                                </button>
+                                {r.status === 'PENDING' && (
+                                    <>
+                                        <button
+                                            onClick={() => handleAction(r.id, 'APPROVED')}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
+                                        >
+                                            <CheckCircle size={12} /> Approve
+                                        </button>
+                                        <button
+                                            onClick={() => handleAction(r.id, 'REJECTED')}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
+                                        >
+                                            <XCircle size={12} /> Reject
+                                        </button>
+                                    </>
+                                )}
+                                {r.status !== 'PENDING' && (
+                                    <button
+                                        onClick={() => handleAction(r.id, 'PENDING')}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold rounded-xl transition-all duration-200"
+                                    >
+                                        Reset Status
+                                    </button>
+                                )}
+                            </div>
+                        </motion.div>
+                    )
+                })}
             </div>
+
+            {/* Empty State */}
+            {filtered.length === 0 && (
+                <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <Building2 size={32} className="text-gray-400" />
+                    </div>
+                    <p className="text-gray-400 text-sm">No recruiters found</p>
+                </div>
+            )}
 
             {/* Pagination */}
             <Pagination
@@ -391,20 +463,187 @@ const RecruiterApproval = () => {
                                 </div>
                             )}
 
-                            {/* User Info */}
-                            <div className="space-y-3 mb-6">
-                                <div className="flex items-center gap-4 mb-5">
-                                    <div className={`w-14 h-14 rounded-2xl bg-purple-500 flex items-center justify-center text-white font-bold text-lg`}>
-                                        {subscriptionProfile.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className="font-extrabold text-gray-900">{subscriptionProfile.fullName}</p>
-                                        <p className="text-sm text-[#1a3c8f] font-semibold">{subscriptionProfile.companyName}</p>
-                                    </div>
+                            {/* Enhanced Verification Checklist */}
+                            <div className="mb-6">
+                                <h4 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2">
+                                    <Shield size={18} className="text-[#1a3c8f]" />
+                                    Verification Checklist
+                                </h4>
+                                <div className="space-y-3">
+                                    {VERIFICATION_CHECKLIST.map(check => {
+                                        const isComplete = subscriptionProfile[check.key] || 
+                                            (check.key === 'companyInfo' && subscriptionProfile.companyName) ||
+                                            (check.key === 'contactInfo' && subscriptionProfile.email && subscriptionProfile.mobile) ||
+                                            (check.key === 'website' && subscriptionProfile.website) ||
+                                            (check.key === 'companyLogo' && subscriptionProfile.companyLogo) ||
+                                            (check.key === 'documents' && subscriptionProfile.documentsUploaded) ||
+                                            (check.key === 'emailVerified' && subscriptionProfile.emailVerified) ||
+                                            (check.key === 'payment' && subscriptionProfile.isPaid)
+                                        
+                                        return (
+                                            <div
+                                                key={check.key}
+                                                className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                                                    isComplete 
+                                                        ? 'bg-green-50 border-green-200' 
+                                                        : 'bg-yellow-50 border-yellow-200'
+                                                }`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                                    isComplete ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'
+                                                }`}>
+                                                    {isComplete ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className={`font-semibold text-sm ${
+                                                        isComplete ? 'text-green-700' : 'text-yellow-700'
+                                                    }`}>
+                                                        {check.label}
+                                                    </p>
+                                                    <p className="text-xs text-gray-600 mt-0.5">
+                                                        {isComplete ? 'Completed' : 'Pending verification'}
+                                                    </p>
+                                                </div>
+                                                {check.icon}
+                                            </div>
+                                        )
+                                    })}
                                 </div>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><Mail size={15} className="text-gray-400" /><span>{subscriptionProfile.email}</span></div>
-                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><Phone size={15} className="text-gray-400" /><span>{subscriptionProfile.mobile}</span></div>
+                            </div>
+
+                            {/* Enhanced Card-Based User Info */}
+                            <div className="mb-6">
+                                <h4 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2">
+                                    <User size={18} className="text-[#1a3c8f]" />
+                                    Company Profile Card
+                                </h4>
+                                
+                                {/* Main Profile Card */}
+                                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-100 overflow-hidden shadow-lg">
+                                    {/* Card Header with Image */}
+                                    <div className="relative h-32 bg-gradient-to-r from-blue-600 to-purple-600">
+                                        <div className="absolute inset-0 bg-black/10">
+                                            <div className="absolute bottom-4 left-4 right-4">
+                                                <div className="flex items-end gap-4">
+                                                    {/* Company Logo/Image */}
+                                                    <div className="relative">
+                                                        {subscriptionProfile.companyLogo ? (
+                                                            <img 
+                                                                src={subscriptionProfile.companyLogo} 
+                                                                alt="Company Logo"
+                                                                className="w-20 h-20 rounded-xl border-4 border-white shadow-lg object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-20 h-20 rounded-xl border-4 border-white shadow-lg bg-white/90 flex items-center justify-center">
+                                                                <Camera size={24} className="text-gray-400" />
+                                                            </div>
+                                                        )}
+                                                        <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${
+                                                            subscriptionProfile.companyLogo ? 'bg-green-500' : 'bg-yellow-500'
+                                                        }`}>
+                                                            {subscriptionProfile.companyLogo ? 
+                                                                <CheckCircle size={14} className="text-white" /> : 
+                                                                <AlertCircle size={14} className="text-white" />
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Company Info */}
+                                                    <div className="flex-1 pb-2">
+                                                        <h3 className="font-bold text-white text-lg">{subscriptionProfile.companyName}</h3>
+                                                        <p className="text-blue-100 text-sm">{subscriptionProfile.fullName}</p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                                                subscriptionProfile.status === 'APPROVED' ? 'bg-white/20 text-white' :
+                                                                subscriptionProfile.status === 'PENDING' ? 'bg-yellow-400/80 text-white' :
+                                                                'bg-red-400/80 text-white'
+                                                            }`}>
+                                                                {subscriptionProfile.status}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Card Body */}
+                                    <div className="p-4 space-y-3">
+                                        {/* Contact Information Grid */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div className="bg-white/80 rounded-xl p-3 border border-white/50">
+                                                <div className="flex items-center gap-2">
+                                                    <Mail size={14} className="text-blue-600" />
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs text-gray-500">Email</p>
+                                                        <p className="text-sm font-medium text-gray-900 truncate">{subscriptionProfile.email}</p>
+                                                    </div>
+                                                    {subscriptionProfile.emailVerified && (
+                                                        <CheckCircle size={12} className="text-green-500 flex-shrink-0" />
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-white/80 rounded-xl p-3 border border-white/50">
+                                                <div className="flex items-center gap-2">
+                                                    <Phone size={14} className="text-blue-600" />
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs text-gray-500">Phone</p>
+                                                        <p className="text-sm font-medium text-gray-900 truncate">{subscriptionProfile.mobile}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {subscriptionProfile.website && (
+                                                <div className="bg-white/80 rounded-xl p-3 border border-white/50">
+                                                    <div className="flex items-center gap-2">
+                                                        <Globe size={14} className="text-blue-600" />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs text-gray-500">Website</p>
+                                                            <a href={`https://${subscriptionProfile.website}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 hover:underline truncate block">
+                                                                {subscriptionProfile.website}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {subscriptionProfile.location && (
+                                                <div className="bg-white/80 rounded-xl p-3 border border-white/50">
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin size={14} className="text-blue-600" />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs text-gray-500">Location</p>
+                                                            <p className="text-sm font-medium text-gray-900 truncate">{subscriptionProfile.location}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Upload Status */}
+                                        <div className="bg-white/80 rounded-xl p-3 border border-white/50">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Upload size={14} className="text-blue-600" />
+                                                    <span className="text-sm font-medium text-gray-900">Document Upload Status</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    {subscriptionProfile.documentsUploaded ? (
+                                                        <>
+                                                            <CheckCircle size={12} className="text-green-500" />
+                                                            <span className="text-xs font-medium text-green-700">Complete</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <AlertCircle size={12} className="text-yellow-500" />
+                                                            <span className="text-xs font-medium text-yellow-700">Pending</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

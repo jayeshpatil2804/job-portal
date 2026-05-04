@@ -51,30 +51,27 @@ const DashboardPage = lazy(() => import('./pages/private/DashboardPage'))
 const AppliedJobsPage = lazy(() => import('./pages/private/AppliedJobsPage'))
 const CandidateInfoDetails = lazy(() => import('./pages/private/candidate/CandidateInfoDetails/CandidateInfoDetails'))
 const RecruiterInfoDetails = lazy(() => import('./pages/private/recruiter/RecruiterInfoDetails/RecruiterInfoDetails'))
-const RecruiterHome = lazy(() => import('./pages/private/recruiter/Dashboard/RecruiterHome'))
+
 const PostJob = lazy(() => import('./pages/private/recruiter/PostJob/PostJob'))
 const ManageJobs = lazy(() => import('./pages/private/recruiter/ManageJobs/ManageJobs'))
 const EditJob = lazy(() => import('./pages/private/recruiter/EditJob/EditJob'))
 const ViewJob = lazy(() => import('./pages/private/recruiter/ViewJob/ViewJob'))
-const Applicants = lazy(() => import('./pages/private/recruiter/Applicants/Applicants'))
-const Interviews = lazy(() => import('./pages/private/recruiter/Interviews/Interviews'))
 const RecruiterProfile = lazy(() => import('./pages/private/recruiter/RecruiterProfile/RecruiterProfile'))
 
 // Lazy loaded Admin Pages
 const AdminDashboard = lazy(() => import('./pages/private/admin/AdminDashboard'))
 const RecruiterApproval = lazy(() => import('./pages/private/admin/RecruiterApproval'))
 const CandidateManagement = lazy(() => import('./pages/private/admin/CandidateManagement'))
-const JobModeration = lazy(() => import('./pages/private/admin/JobModeration'))
+const JobManagement = lazy(() => import('./pages/private/admin/JobManagement'))
 const SubAdminManagement = lazy(() => import('./pages/private/admin/SubAdminManagement'))
-const ReportsSection = lazy(() => import('./pages/private/admin/ReportsSection'))
 const DesignationManagement = lazy(() => import('./pages/private/admin/DesignationManagement'))
-const SkillManagement = lazy(() => import('./pages/private/admin/SkillManagement'))
 
 
 // Auth Wrappers
 import CandidateProtectedRoute from './components/CandidateProtectedRoute'
 import RecruiterProtectedRoute from './components/RecruiterProtectedRoute'
 import AdminProtectedRoute from './components/AdminProtectedRoute'
+import RecruiterLayout from './components/RecruiterLayout'
 import { checkAuth } from './redux/actions/authActions'
 
 
@@ -96,7 +93,7 @@ function App() {
     }
 
     return (
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Toaster position="top-center" reverseOrder={false} />
             <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -129,14 +126,13 @@ function App() {
 
                     {/* Protected Recruiter Routes */}
                     <Route element={<RecruiterProtectedRoute />}>
-
-                        <Route path="/recruiter/post-job" element={<PostJob />} />
-                        <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
-                        <Route path="/recruiter/view-job/:id" element={<ViewJob />} />
-                        <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
-                        <Route path="/recruiter/applicants/:jobId?" element={<Applicants />} />
-                        <Route path="/recruiter/interviews" element={<Interviews />} />
-                        <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+                        <Route element={<RecruiterLayout />}>
+                            <Route path="/recruiter/post-job" element={<PostJob />} />
+                            <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
+                            <Route path="/recruiter/view-job/:id" element={<ViewJob />} />
+                            <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
+                            <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+                        </Route>
                     </Route>
 
                     {/* Recruiter Onboarding */}
@@ -171,12 +167,10 @@ function App() {
                         <Route path="/admin/dashboard" element={<AdminDashboard />} />
                         <Route path="/admin/recruiters" element={<RecruiterApproval />} />
                         <Route path="/admin/candidates" element={<CandidateManagement />} />
+                        <Route path="/admin/jobs" element={<JobManagement />} />
 
-                        <Route path="/admin/jobs" element={<JobModeration />} />
                         <Route path="/admin/sub-admins" element={<SubAdminManagement />} />
-                        <Route path="/admin/reports" element={<ReportsSection />} />
                         <Route path="/admin/designations" element={<DesignationManagement />} />
-                        <Route path="/admin/skills" element={<SkillManagement />} />
                     </Route>
 
                     {/* Admin Auth Routes (Secure) */}

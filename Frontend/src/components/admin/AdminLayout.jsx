@@ -6,15 +6,12 @@ import {
     Users,
     Briefcase,
     ShieldCheck,
-    BarChart3,
     LogOut,
     ChevronRight,
     Menu,
     X,
     Bell,
-    Settings2,
-    CheckCircle2,
-    CreditCard
+    Settings2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector, useDispatch } from 'react-redux'
@@ -27,12 +24,10 @@ const navLinks = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/recruiters', label: 'Recruiter Approval', icon: UserCheck },
     { path: '/admin/candidates', label: 'Candidates', icon: Users },
-    { path: '/admin/jobs', label: 'Job Moderation', icon: Briefcase },
+    { path: '/admin/jobs', label: 'Jobs', icon: Briefcase },
 
     { path: '/admin/sub-admins', label: 'Sub Admins', icon: ShieldCheck },
     { path: '/admin/designations', label: 'Designations', icon: Settings2 },
-    { path: '/admin/skills', label: 'Job Skills', icon: CheckCircle2 },
-    { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 const AdminLayout = ({ children, title = 'Admin Panel' }) => {
@@ -73,10 +68,7 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
         const permissionMap = {
             '/admin/recruiters': 'RECRUITER_APPROVAL',
             '/admin/candidates': 'CANDIDATE_MANAGEMENT',
-            '/admin/jobs': 'JOB_MODERATION',
-
             '/admin/sub-admins': 'SUB_ADMIN_MANAGEMENT',
-            '/admin/reports': 'REPORTS'
         }
 
         return user?.permissions?.includes(permissionMap[link.path])

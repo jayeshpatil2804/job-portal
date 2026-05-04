@@ -4,15 +4,24 @@ import { Menu } from 'lucide-react'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchRecruiterProfileStatus } from '../redux/actions/recruiterProfileActions'
 import toast from 'react-hot-toast'
+import { Outlet } from 'react-router-dom'
 
 import logo from '../assets/logo.png'
 import socket from '../utils/socket'
 
-const RecruiterLayout = ({ children }) => {
-    const dispatch = useDispatch()
+import { fetchSkills, fetchDesignations } from '../redux/slices/metaSlice';
+
+const RecruiterLayout = () => {
+    const dispatch = useDispatch();
+    const { skills, designations } = useSelector(state => state.meta);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const { isActive, isPaid, status: profileStatus } = useSelector(state => state.recruiterProfile)
     const { user } = useSelector(state => state.auth)
+
+    useEffect(() => {
+        if (skills.length === 0) dispatch(fetchSkills());
+        if (designations.length === 0) dispatch(fetchDesignations());
+    }, [dispatch, skills.length, designations.length]);
     const toastShown = useRef(false)
 
     // Ensure recruiter profile status is always fresh (handles back-navigation & direct visits)
@@ -77,7 +86,7 @@ const RecruiterLayout = ({ children }) => {
                 <div className="absolute bottom-0 left-0 -z-10 w-1/2 h-1/2 bg-slate-100/30 blur-[120px] rounded-full" />
 
                 <div className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto min-h-full">
-                    {children}
+                    <Outlet />
                 </div>
             </main>
         </div>

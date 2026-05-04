@@ -135,153 +135,145 @@ const ManageJobs = () => {
     }
 
     return (
-        <RecruiterLayout>
-            <div className="space-y-8 relative">
-                <ConfirmationModal 
-                    {...modalConfig}
-                    onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
-                />
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Manage Jobs</h1>
-                        <p className="text-gray-500">View and manage all your job postings</p>
+        <div className="space-y-8 relative">
+            <ConfirmationModal 
+                {...modalConfig}
+                onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+            />
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Manage Jobs</h1>
+                    <p className="text-gray-500">View and manage all your job postings</p>
+                </div>
+                <Link 
+                    to="/recruiter/post-job"
+                    className="flex items-center gap-2 bg-[#1a3c8f] text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-shadow shadow-md uppercase text-sm"
+                >
+                    <Plus size={18} />
+                    Post New Job
+                </Link>
+            </div>
+
+            {/* Status Summary */}
+            <div className="flex flex-wrap gap-6">
+                <StatusCard label="Total Jobs" count={stats.total} color="text-blue-600" />
+                <StatusCard label="Active" count={stats.active} color="text-green-600" />
+                <StatusCard label="Drafts" count={stats.draft} color="text-gray-600" />
+                <StatusCard label="Closed" count={stats.closed} color="text-red-600" />
+            </div>
+
+            {/* Filters and Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full md:w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Search jobs..." 
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        />
                     </div>
-                    <Link 
-                        to="/recruiter/post-job"
-                        className="flex items-center gap-2 bg-[#1a3c8f] text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-shadow shadow-md uppercase text-sm"
-                    >
-                        <Plus size={18} />
-                        Post New Job
-                    </Link>
+                    <div className="flex gap-2">
+                        <select className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium">
+                            <option>All Departments</option>
+                        </select>
+                        <select className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium">
+                            <option>All Status</option>
+                        </select>
+                    </div>
                 </div>
 
-                {/* Status Summary */}
-                <div className="flex flex-wrap gap-6">
-                    <StatusCard label="Total Jobs" count={stats.total} color="text-blue-600" />
-                    <StatusCard label="Active" count={stats.active} color="text-green-600" />
-                    <StatusCard label="Drafts" count={stats.draft} color="text-gray-600" />
-                    <StatusCard label="Closed" count={stats.closed} color="text-red-600" />
-                </div>
-
-                {/* Filters and Table */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <div className="relative w-full md:w-96">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input 
-                                type="text" 
-                                placeholder="Search jobs..." 
-                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                            />
-                        </div>
-                        <div className="flex gap-2">
-                            <select className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium">
-                                <option>All Departments</option>
-                            </select>
-                            <select className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium">
-                                <option>All Status</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                                <tr className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    <th className="px-6 py-4">Job Title</th>
-                                    <th className="px-6 py-4">Department</th>
-                                    <th className="px-6 py-4">Location</th>
-                                    <th className="px-6 py-4 text-center">Applicants</th>
-                                    <th className="px-6 py-4">Posted Date</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-center">Actions</th>
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50">
+                            <tr className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-4">Job Title</th>
+                                <th className="px-6 py-4">Department</th>
+                                <th className="px-6 py-4">Location</th>
+                                <th className="px-6 py-4">Posted Date</th>
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 uppercase font-bold text-xs0">
+                            {loading && jobs.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-10 text-center text-gray-500">
+                                        Loading jobs...
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 uppercase font-bold text-xs0">
-                                {loading && jobs.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
-                                            Loading jobs...
+                            ) : jobs.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-10 text-center text-gray-500">
+                                        No jobs found. Start by posting a new job!
+                                    </td>
+                                </tr>
+                            ) : (
+                                jobs.map((job) => (
+                                    <tr key={job.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm font-bold text-gray-900">{job.title}</div>
                                         </td>
-                                    </tr>
-                                ) : jobs.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
-                                            No jobs found. Start by posting a new job!
+                                        <td className="px-6 py-4 text-sm text-gray-600">{job.department}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{job.location}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                            {new Date(job.createdAt).toLocaleDateString()}
                                         </td>
-                                    </tr>
-                                ) : (
-                                    jobs.map((job) => (
-                                        <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm font-bold text-gray-900">{job.title}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{job.department}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{job.location}</td>
-                                            <td className="px-6 py-4 text-center text-sm font-bold text-blue-600">
-                                                <Link to={`/recruiter/applicants/${job.id}`} className="hover:underline">
-                                                    {job._count?.applications || 0}
+                                        <td className="px-6 py-4">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${getStatusStyle(job.status)}`}>
+                                                {job.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Link to={`/recruiter/view-job/${job.id}`} title="View" className="p-1.5 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors rounded">
+                                                    <Eye size={16} />
                                                 </Link>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                {new Date(job.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${getStatusStyle(job.status)}`}>
-                                                    {job.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <Link to={`/recruiter/view-job/${job.id}`} title="View" className="p-1.5 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors rounded">
-                                                        <Eye size={16} />
-                                                    </Link>
-                                                    {job.status === 'DRAFT' && (
-                                                        <button 
-                                                            onClick={() => handlePublishClick(job.id)}
-                                                            title="Publish Job" 
-                                                            className="p-1.5 hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors rounded"
-                                                        >
-                                                            <CheckCircle size={16} />
-                                                        </button>
-                                                    )}
-                                                    {job.status === 'OPEN' && (
-                                                        <button 
-                                                            onClick={() => handleCloseClick(job.id)}
-                                                            title="Close Job" 
-                                                            className="p-1.5 hover:bg-yellow-50 text-gray-400 hover:text-yellow-600 transition-colors rounded"
-                                                        >
-                                                            <PauseCircle size={16} />
-                                                        </button>
-                                                    )}
-                                                    {job.status === 'CLOSED' && (
-                                                        <button 
-                                                            onClick={() => handleReopenClick(job.id)}
-                                                            title="Re-open Job" 
-                                                            className="p-1.5 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors rounded"
-                                                        >
-                                                            <PlusCircle size={16} />
-                                                        </button>
-                                                    )}
+                                                {job.status === 'DRAFT' && (
                                                     <button 
-                                                        onClick={() => handleDeleteClick(job.id)}
-                                                        title="Delete" 
-                                                        className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-50 transition-colors rounded"
+                                                        onClick={() => handlePublishClick(job.id)}
+                                                        title="Publish Job" 
+                                                        className="p-1.5 hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors rounded"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <CheckCircle size={16} />
                                                     </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                                )}
+                                                {job.status === 'OPEN' && (
+                                                    <button 
+                                                        onClick={() => handleCloseClick(job.id)}
+                                                        title="Close Job" 
+                                                        className="p-1.5 hover:bg-yellow-50 text-gray-400 hover:text-yellow-600 transition-colors rounded"
+                                                    >
+                                                        <PauseCircle size={16} />
+                                                    </button>
+                                                )}
+                                                {job.status === 'CLOSED' && (
+                                                    <button 
+                                                        onClick={() => handleReopenClick(job.id)}
+                                                        title="Re-open Job" 
+                                                        className="p-1.5 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors rounded"
+                                                    >
+                                                        <PlusCircle size={16} />
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    onClick={() => handleDeleteClick(job.id)}
+                                                    title="Delete" 
+                                                    className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-50 transition-colors rounded"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </RecruiterLayout>
+        </div>
     )
 }
 
