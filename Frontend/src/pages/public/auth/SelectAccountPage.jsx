@@ -2,13 +2,16 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { User, Briefcase, Check } from 'lucide-react'
 
+import logo from '../../../assets/logo.png'
+
 const SelectAccountPage = () => {
     const navigate = useNavigate()
 
     return (
         <div className="min-h-screen bg-[#1a3c8f] flex flex-col items-center justify-center p-4">
             
-            <div className="text-center mb-10">
+            <div className="text-center mb-10 flex flex-col items-center">
+                <img src={logo} alt="LOSODHAN" className="h-16 w-auto object-contain brightness-0 invert mb-4" />
                 <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2">Welcome to LOSODHAN</h1>
                 <p className="text-blue-200">Choose your account type to continue</p>
             </div>

@@ -2,6 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
+import logo from '../assets/logo.png'
+
 const AuthLayout = ({ children, title, subtitle, theme = 'blue' }) => {
     const isBlue = theme === 'blue'
     const brandColor = isBlue ? '#1a3c8f' : '#f97316'
@@ -14,14 +16,13 @@ const AuthLayout = ({ children, title, subtitle, theme = 'blue' }) => {
                 transition={{ duration: 0.5 }}
                 className="sm:mx-auto sm:w-full sm:max-w-md"
             >
-                <Link to="/" className="text-center block">
-                    <motion.span 
+                <Link to="/" className="flex justify-center mb-6">
+                    <motion.img 
                         whileHover={{ scale: 1.05 }}
-                        className={`text-2xl font-extrabold`}
-                        style={{ color: brandColor }}
-                    >
-                        LOSODHAN
-                    </motion.span>
+                        src={logo}
+                        alt="LOSODHAN"
+                        className="h-12 w-auto object-contain"
+                    />
                 </Link>
                 <h2 className="mt-4 text-center text-2xl font-extrabold text-gray-900">
                     {title}
