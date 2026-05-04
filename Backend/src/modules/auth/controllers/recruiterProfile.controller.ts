@@ -27,7 +27,7 @@ export const getProfileStatus = async (req: Request, res: Response) => {
         }
 
         return res.json({
-            currentStep: profile.onboardingStep,
+            currentStep: 1, // Defaulting to 1 as onboarding is removed
             isProfileCompleted: profile.recruiter.isProfileCompleted,
             isPaid: profile.recruiter.isPaid,
             isActive: (profile.recruiter as any).isActive,
@@ -43,7 +43,6 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
     try {
         const recruiterId = (req as any).user.id
         const { 
-            onboardingStep, 
             isProfileCompleted, 
             companyName,
             fullName,
@@ -55,6 +54,7 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             address,
             city,
             state,
+            pinCode,
             gstNumber,
             gstCertificateUrl,
             gstCertificateFileId,
@@ -70,6 +70,8 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
         if (email || workEmail) recruiterUpdateData.email = email || workEmail
         if (mobile) recruiterUpdateData.mobile = mobile
         if (companyName) recruiterUpdateData.companyName = companyName
+        if (state) recruiterUpdateData.state = state
+        if (pinCode) recruiterUpdateData.pinCode = pinCode
         if (isProfileCompleted) recruiterUpdateData.isProfileCompleted = true
 
         if (Object.keys(recruiterUpdateData).length > 0) {
@@ -80,7 +82,6 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
         }
 
         const profileData = {
-            onboardingStep: onboardingStep || undefined,
             companyName,
             industry,
             website,
@@ -102,8 +103,7 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             update: profileData,
             create: {
                 recruiterId,
-                ...profileData,
-                onboardingStep: onboardingStep || 1
+                ...profileData
             }
         })
 
@@ -114,7 +114,7 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
         return res.json({
             status: 'success',
             message: 'Profile updated successfully',
-            currentStep: profile.onboardingStep,
+            currentStep: 1,
             isProfileCompleted: updatedRecruiter.isProfileCompleted,
             profile,
             user: updatedRecruiter
@@ -142,6 +142,7 @@ export const getCompanyProfile = async (req: Request, res: Response) => {
         const profile = await (prisma as any).companyProfile.findUnique({
             where: { recruiterId },
             include: {
+                recruiter: true,
                 gstCertificateFile: true,
                 msmeCertificateFile: true,
                 registrationCertificateFile: true
@@ -149,12 +150,40 @@ export const getCompanyProfile = async (req: Request, res: Response) => {
         })
 
         if (!profile) {
-            return res.status(404).json({ message: 'Profile not found' })
+            const recruiter = await (prisma as any).recruiter.findUnique({
+                where: { id: recruiterId }
+            })
+            
+            if (!recruiter) {
+                return res.status(404).json({ message: 'User not found' })
+            }
+
+            return res.json({
+                status: 'success',
+                profile: {
+                    companyName: recruiter.companyName,
+                    address: recruiter.address,
+                    city: recruiter.city,
+                    state: recruiter.state,
+                    pinCode: recruiter.pinCode,
+                    recruiter: recruiter
+                }
+            })
+        }
+
+        // Add recruiter fields to the profile object for frontend convenience
+        const profileWithRecruiterData = {
+            ...profile,
+            address: profile.recruiter.address,
+            city: profile.recruiter.city,
+            state: profile.recruiter.state,
+            pinCode: profile.recruiter.pinCode,
+            companyName: profile.companyName || profile.recruiter.companyName
         }
 
         return res.json({
             status: 'success',
-            profile
+            profile: profileWithRecruiterData
         })
     } catch (error) {
         console.error(error)

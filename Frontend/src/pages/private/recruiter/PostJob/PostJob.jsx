@@ -7,12 +7,11 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import api from '../../../../utils/api'
 import { Plus, X } from 'lucide-react'
-import ActivationDialog from '../../../../components/common/ActivationDialog'
 
 const PostJob = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const { isActive, isPaid } = useSelector(state => state.recruiterProfile)
+    const { isActive } = useSelector(state => state.recruiterProfile)
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         jobTitle: '',
@@ -118,7 +117,7 @@ const PostJob = () => {
 
             const resultAction = await dispatch(createJob(payload)).unwrap();
             toast.success(status === 'DRAFT' ? "Job saved as draft!" : "Job published successfully!");
-            navigate('/recruiter/dashboard'); // Or manage jobs page
+            navigate('/recruiter/manage-jobs'); // Or manage jobs page
         } catch (error) {
             console.error("Job post error:", error);
             toast.error(error || "Failed to process job");
@@ -129,14 +128,7 @@ const PostJob = () => {
 
     return (
         <RecruiterLayout>
-            {!isActive && (
-                <ActivationDialog 
-                    isOpen={true} 
-                    isPaid={isPaid} 
-                    userType="RECRUITER" 
-                    onClose={() => navigate('/recruiter/dashboard')} 
-                />
-            )}
+
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* Header */}
                 <div>

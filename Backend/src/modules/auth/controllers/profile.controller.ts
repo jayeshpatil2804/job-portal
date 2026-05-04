@@ -6,33 +6,25 @@ export const getProfileStatus = async (req: Request, res: Response) => {
         const candidateId = (req as any).user.id
 
         // Using (prisma as any) to bypass IDE type lag after schema update
-        const profile = await (prisma as any).candidateProfile.findUnique({
-            where: { candidateId },
-            include: {
-                candidate: {
-                    select: {
-                        isProfileCompleted: true,
-                        isPaid: true,
-                        isActive: true
-                    }
-                }
+        const candidate = await (prisma as any).candidate.findUnique({
+            where: { id: candidateId },
+            select: {
+                isProfileCompleted: true,
+                isPaid: true,
+                isActive: true
             }
         })
 
-        if (!profile) {
-            return res.json({
-                currentStep: 1,
-                isProfileCompleted: false,
-                data: {}
-            })
+        if (!candidate) {
+            return res.status(404).json({ message: 'User not found' })
         }
 
         return res.json({
-            currentStep: profile.onboardingStep,
-            isProfileCompleted: profile.candidate.isProfileCompleted,
-            isPaid: profile.candidate.isPaid,
-            isActive: (profile.candidate as any).isActive,
-            data: profile
+            currentStep: 1, // Defaulting to 1 as onboarding is removed
+            isProfileCompleted: candidate.isProfileCompleted,
+            isPaid: candidate.isPaid,
+            isActive: candidate.isActive,
+            data: {}
         })
     } catch (error) {
         console.error(error)
@@ -44,7 +36,6 @@ export const completeCandidateProfile = async (req: Request, res: Response) => {
     try {
         const candidateId = (req as any).user.id
         const { 
-            onboardingStep, 
             isProfileCompleted, 
             id, 
             candidateId: _, 
@@ -60,6 +51,10 @@ export const completeCandidateProfile = async (req: Request, res: Response) => {
             isPaid,
             mobile,
             fullName,
+            address,
+            city,
+            state,
+            pinCode,
             ...data 
         } = req.body
 
@@ -72,26 +67,30 @@ export const completeCandidateProfile = async (req: Request, res: Response) => {
             }
         }
 
-        const profile = await (prisma as any).candidateProfile.upsert({
-            where: { candidateId },
-            update: {
-                ...data,
-                onboardingStep: onboardingStep || undefined
-            },
-            create: {
-                candidateId,
-                ...data,
-                onboardingStep: onboardingStep || 1
-            }
-        })
+        // 1. Update Candidate model fields if provided
+        const candidateUpdateData: any = {}
+        if (address) candidateUpdateData.address = address
+        if (city) candidateUpdateData.city = city
+        if (state) candidateUpdateData.state = state
+        if (pinCode) candidateUpdateData.pinCode = pinCode
+        if (isProfileCompleted) candidateUpdateData.isProfileCompleted = true
 
-        // If this was the last step, mark profile as completed on the Candidate model
-        if (isProfileCompleted) {
+        if (Object.keys(candidateUpdateData).length > 0) {
             await (prisma as any).candidate.update({
                 where: { id: candidateId },
-                data: { isProfileCompleted: true }
+                data: candidateUpdateData
             })
         }
+
+        // 2. Update Profile model fields
+        const profile = await (prisma as any).candidateProfile.upsert({
+            where: { candidateId },
+            update: data,
+            create: {
+                candidateId,
+                ...data
+            }
+        })
 
         res.json({
             message: 'Profile updated successfully',
@@ -107,7 +106,9 @@ export const completeCandidateProfile = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
     try {
         const candidateId = (req as any).user.id
-        const profile = await (prisma as any).candidateProfile.findUnique({
+        
+        // Try to find the profile
+        let profile = await (prisma as any).candidateProfile.findUnique({
             where: { candidateId },
             include: {
                 candidate: true,
@@ -115,8 +116,23 @@ export const getProfile = async (req: Request, res: Response) => {
             }
         })
 
+        // If no profile record exists yet, return the base candidate data
         if (!profile) {
-            return res.status(404).json({ message: 'Profile not found' })
+            const candidate = await (prisma as any).candidate.findUnique({
+                where: { id: candidateId }
+            })
+            
+            if (!candidate) {
+                return res.status(404).json({ message: 'User not found' })
+            }
+
+            return res.json({
+                candidate,
+                candidateId: candidate.id,
+                isExperienced: false,
+                skills: '',
+                // other default fields
+            })
         }
 
         res.json(profile)
@@ -178,6 +194,22 @@ export const updateCandidateProfile = async (req: Request, res: Response) => {
         if (fullName) candidateUpdateData.fullName = fullName
         if (email) candidateUpdateData.email = email
         if (mobile) candidateUpdateData.mobile = mobile
+        if (profileData.address) {
+            candidateUpdateData.address = profileData.address
+            delete profileData.address
+        }
+        if (profileData.city) {
+            candidateUpdateData.city = profileData.city
+            delete profileData.city
+        }
+        if (profileData.state) {
+            candidateUpdateData.state = profileData.state
+            delete profileData.state
+        }
+        if (profileData.pinCode) {
+            candidateUpdateData.pinCode = profileData.pinCode
+            delete profileData.pinCode
+        }
 
         if (Object.keys(candidateUpdateData).length > 0) {
             await (prisma as any).candidate.update({
@@ -201,8 +233,7 @@ export const updateCandidateProfile = async (req: Request, res: Response) => {
             update: profileData,
             create: {
                 candidateId,
-                ...profileData,
-                onboardingStep: 1 // Default to step 1 if creating new
+                ...profileData
             }
         })
 

@@ -64,7 +64,7 @@ const RecruiterInfoDetails = () => {
   useEffect(() => {
     if (profileStatus === 'succeeded' && savedData) {
       if (isProfileCompleted) {
-        navigate('/recruiter/dashboard', { replace: true });
+        navigate('/recruiter/profile', { replace: true });
         return;
       }
 
@@ -191,7 +191,7 @@ const RecruiterInfoDetails = () => {
       })).unwrap();
 
       toast.success('Company profile saved! Redirecting to dashboard...');
-      navigate('/recruiter/dashboard', { replace: true });
+      navigate('/recruiter/profile', { replace: true });
     } catch (error) {
       toast.error(error || 'Failed to complete profile');
     } finally {

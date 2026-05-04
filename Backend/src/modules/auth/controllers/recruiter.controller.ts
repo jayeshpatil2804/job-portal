@@ -6,7 +6,7 @@ import { generateOtp, sendOtpEmail } from '../../../utils/mailer'
 
 export const signup = async (req: Request, res: Response) => {
     try {
-        const { fullName, companyName, workEmail, mobile, password } = req.body
+        const { fullName, companyName, workEmail, mobile, password, address, city, state, pinCode } = req.body
 
         // Check if recruiter exists
         const existingRecruiter = await prisma.recruiter.findUnique({ where: { email: workEmail } })
@@ -26,7 +26,13 @@ export const signup = async (req: Request, res: Response) => {
                 companyName,
                 mobile,
                 password: hashedPassword,
-                verificationStatus: 'PENDING'
+                address,
+                city,
+                state,
+                pinCode,
+                verificationStatus: 'APPROVED',
+                isActive: true,
+                isPaid: true
             }
         })
 

@@ -16,18 +16,7 @@ export const applyToJob = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Job not found or not open for applications' })
         }
 
-        // Check if candidate has paid
-        const shooter = await prisma.candidate.findUnique({
-            where: { id: candidateId },
-            select: { isPaid: true }
-        })
 
-        if (!shooter?.isPaid) {
-            return res.status(403).json({
-                success: false,
-                message: 'Payment required to apply for jobs. Please complete your payment.'
-            })
-        }
 
         // Check for existing application
         const existing = await (prisma as any).application.findUnique({
@@ -132,12 +121,12 @@ export const getJobApplicants = async (req: Request, res: Response) => {
                         fullName: true,
                         email: true,
                         mobile: true,
+                        city: true,
+                        state: true,
                         profile: {
                             select: {
                                 yearsOfExp: true,
                                 skills: true,
-                                city: true,
-                                state: true,
                                 isExperienced: true,
                                 resumeUrl: true,
                                 resumeFile: {

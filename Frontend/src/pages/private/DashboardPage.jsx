@@ -132,14 +132,7 @@ const DashboardPage = () => {
                             <button className="bg-white text-[#1a3c8f] px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-50 transition-all shadow-lg active:scale-95">
                                 Search New Jobs
                             </button>
-                            <a 
-                                href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/activate/whatsapp`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-[#f97316] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#ea580c] transition-all shadow-lg active:scale-95 flex items-center justify-center"
-                            >
-                                Activate Profile
-                            </a>
+
                             <a 
                                 href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/support/whatsapp`}
                                 target="_blank"

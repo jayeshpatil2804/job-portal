@@ -4,7 +4,10 @@ export const candidateSignupSchema = Joi.object({
     fullName: Joi.string().required().min(2).max(50),
     email: Joi.string().email().required(),
     mobile: Joi.string().required().pattern(/^[0-9]{10,15}$/),
-    password: Joi.string().required().min(6)
+    password: Joi.string().required().min(6),
+    address: Joi.string().optional().allow(''),
+    city: Joi.string().optional().allow(''),
+    state: Joi.string().optional().allow('')
 });
 
 export const candidateLoginSchema = Joi.object({

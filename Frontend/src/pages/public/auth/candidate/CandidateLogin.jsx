@@ -15,14 +15,9 @@ const CandidateLogin = () => {
     const dispatch = useDispatch();
     const { loading, isAuthenticated, user } = useSelector(state => state.auth);
     
-    // Redirect if already authenticated
     React.useEffect(() => {
         if (isAuthenticated && user?.role === 'CANDIDATE') {
-            if (user.isProfileCompleted) {
-                navigate('/dashboard');
-            } else {
-                navigate('/candidate/complete-profile');
-            }
+            navigate('/profile');
         }
     }, [isAuthenticated, user, navigate]);
 
@@ -41,11 +36,7 @@ const CandidateLogin = () => {
             const result = await dispatch(loginCandidate(formData)).unwrap();
             toast.success('Login successful!');
             
-            if (result.user.isProfileCompleted) {
-                navigate('/dashboard');
-            } else {
-                navigate('/candidate/complete-profile');
-            }
+            navigate('/profile');
         } catch (error) {
             if (error?.requiresVerification) {
                 toast.error(error.message);

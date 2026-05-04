@@ -15,14 +15,9 @@ const RecruiterLogin = () => {
     const dispatch = useDispatch();
     const { loading, isAuthenticated, user } = useSelector(state => state.auth);
     
-    // Redirect if already authenticated
     React.useEffect(() => {
         if (isAuthenticated && user?.role === 'RECRUITER') {
-            if (user.isProfileCompleted) {
-                navigate('/recruiter/dashboard');
-            } else {
-                navigate('/recruiter/complete-profile');
-            }
+            navigate('/recruiter/profile');
         }
     }, [isAuthenticated, user, navigate]);
 
@@ -46,11 +41,7 @@ const RecruiterLogin = () => {
             const result = await dispatch(loginRecruiter(loginData)).unwrap();
             toast.success('Login successful!');
             
-            if (result.user.isProfileCompleted) {
-                navigate('/recruiter/dashboard');
-            } else {
-                navigate('/recruiter/complete-profile');
-            }
+            navigate('/recruiter/profile');
         } catch (error) {
             if (error?.requiresVerification) {
                 toast.error(error.message);

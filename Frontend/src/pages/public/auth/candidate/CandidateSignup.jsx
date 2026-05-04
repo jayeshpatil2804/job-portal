@@ -4,7 +4,7 @@ import AuthLayout from '../../../../components/AuthLayout'
 import FormInput from '../../../../components/FormInput'
 import api from '../../../../utils/api'
 import toast from 'react-hot-toast'
-import { User, Mail, Phone, Lock } from 'lucide-react'
+import { User, Mail, Phone, Lock, MapPin } from 'lucide-react'
 import { supabase } from '../../../../utils/supabase'
 
 const CandidateSignup = () => {
@@ -14,7 +14,11 @@ const CandidateSignup = () => {
         email: '',
         mobile: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        address: '',
+        city: '',
+        state: '',
+        pinCode: ''
     });
 
     const handleChange = (e) => {
@@ -74,7 +78,7 @@ const CandidateSignup = () => {
                         name="mobile"
                         type="tel"
                         icon={Phone}
-                        placeholder="+918511952831 "
+                        placeholder="+918511952831"
                         value={formData.mobile}
                         onChange={handleChange}
                         required
@@ -93,6 +97,52 @@ const CandidateSignup = () => {
                     required
                     theme="blue"
                 />
+
+                <FormInput
+                    label="Full Address"
+                    name="address"
+                    icon={MapPin}
+                    placeholder="Street, Area, Building..."
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                    theme="blue"
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormInput
+                        label="City"
+                        name="city"
+                        icon={MapPin}
+                        placeholder="Surat"
+                        value={formData.city}
+                        onChange={handleChange}
+                        required
+                        theme="blue"
+                    />
+
+                    <FormInput
+                        label="State"
+                        name="state"
+                        icon={MapPin}
+                        placeholder="Gujarat"
+                        value={formData.state}
+                        onChange={handleChange}
+                        required
+                        theme="blue"
+                    />
+
+                    <FormInput
+                        label="PIN Code"
+                        name="pinCode"
+                        icon={MapPin}
+                        placeholder="395001"
+                        value={formData.pinCode}
+                        onChange={handleChange}
+                        required
+                        theme="blue"
+                    />
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormInput

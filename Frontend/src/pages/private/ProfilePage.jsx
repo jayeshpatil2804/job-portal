@@ -25,14 +25,7 @@ const ProfilePage = () => {
         city: '',
         state: '',
         pinCode: '',
-        qualification: '',
-        college: '',
-        passingYear: '',
-        isExperienced: false,
-        companyName: '',
-        designation: '',
-        yearsOfExp: '',
-        skills: ''
+
     })
 
     useEffect(() => {
@@ -49,18 +42,11 @@ const ProfilePage = () => {
                 mobile: profile.candidate.mobile || '',
                 dob: profile.dob || '',
                 gender: profile.gender || 'Male',
-                address: profile.address || '',
-                city: profile.city || '',
-                state: profile.state || '',
-                pinCode: profile.pinCode || '',
-                qualification: profile.qualification || '',
-                college: profile.college || '',
-                passingYear: profile.passingYear || '',
-                isExperienced: profile.isExperienced || false,
-                companyName: profile.companyName || '',
-                designation: profile.designation || '',
-                yearsOfExp: profile.yearsOfExp || '',
-                skills: profile.skills || ''
+                address: profile.candidate.address || '',
+                city: profile.candidate.city || '',
+                state: profile.candidate.state || '',
+                pinCode: profile.candidate.pinCode || '',
+
             })
         }
     }, [profile])
@@ -91,10 +77,7 @@ const ProfilePage = () => {
     }
 
     const tabs = [
-        { id: 'personal', label: 'Overview', icon: <User size={18} /> },
-        { id: 'education', label: 'Education', icon: <GraduationCap size={18} /> },
-        { id: 'experience', label: 'Experience', icon: <Briefcase size={18} /> },
-        { id: 'skills', label: 'Skills', icon: <Award size={18} /> },
+        { id: 'personal', label: 'Overview', icon: <User size={18} /> }
     ]
 
     if (loading && !profile?.candidate) {
@@ -150,14 +133,18 @@ const ProfilePage = () => {
                             <h2 className="text-3xl font-black text-gray-900 leading-tight">
                                 {profile?.candidate?.fullName || user?.fullName || 'Candidate'}
                             </h2>
-                            <p className="text-[#1a3c8f] font-black text-xs uppercase tracking-widest opacity-80">
-                                {profile?.designation || 'Fullstack Developer'}
-                            </p>
+                            {profile?.designation && (
+                                <p className="text-[#1a3c8f] font-black text-xs uppercase tracking-widest opacity-80">
+                                    {profile.designation}
+                                </p>
+                            )}
                             <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4 pt-2 border-t border-gray-50">
-                                <div className="flex items-center gap-2 text-gray-400 text-xs font-bold">
-                                    <MapPin size={14} className="text-[#1a3c8f]" />
-                                    {profile?.city ? `${profile.city}, ${profile.state}` : 'Location hidden'}
-                                </div>
+                                    {profile?.city && (
+                                        <div className="flex items-center gap-2 text-gray-400 text-xs font-bold">
+                                            <MapPin size={14} className="text-[#1a3c8f]" />
+                                            {profile.city}, {profile.state}
+                                        </div>
+                                    )}
                                 <div className="flex items-center gap-2 text-gray-400 text-xs font-bold">
                                     <Mail size={14} className="text-[#1a3c8f]" />
                                     {profile?.candidate?.email || 'Email missing'}
@@ -166,33 +153,10 @@ const ProfilePage = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 relative z-10">
-                         <div className="bg-blue-50 px-6 py-3 rounded-2xl text-center hidden sm:block">
-                            <p className="text-xl font-black text-[#1a3c8f]">65%</p>
-                            <p className="text-[9px] font-black text-blue-300 uppercase tracking-widest">Strength</p>
-                        </div>
-                    </div>
+
                 </div>
 
-                {/* ── Tabs Navigation ── */}
-                <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar p-1.5 bg-gray-100/50 rounded-2xl w-fit">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                                activeTab === tab.id
-                                    ? 'bg-white text-[#1a3c8f] shadow-sm active:scale-95'
-                                    : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                        >
-                            <span className={activeTab === tab.id ? 'text-[#1a3c8f]' : 'text-gray-400'}>
-                                {tab.icon}
-                            </span>
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
+
 
                 {/* ── Tab Content Area ── */}
                 <motion.div 
@@ -331,137 +295,6 @@ const ProfilePage = () => {
                                     </div>
                                 )}
 
-                                {activeTab === 'education' && (
-                                    <div className="space-y-10">
-                                         <div className="border-l-4 border-orange-500 pl-4">
-                                            <h3 className="text-xl font-black text-gray-900">Education Details</h3>
-                                            <p className="text-sm font-medium text-gray-400">Your academic background</p>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-                                            <div>
-                                                <label className={labelClasses}>Highest Qualification</label>
-                                                <input 
-                                                    type="text" 
-                                                    name="qualification"
-                                                    value={formData.qualification}
-                                                    onChange={handleInputChange}
-                                                    placeholder="e.g. B.Tech, MBA"
-                                                    className={inputClasses}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className={labelClasses}>College/University</label>
-                                                <input 
-                                                    type="text" 
-                                                    name="college"
-                                                    value={formData.college}
-                                                    onChange={handleInputChange}
-                                                    className={inputClasses}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className={labelClasses}>Passing Year</label>
-                                                <input 
-                                                    type="text" 
-                                                    name="passingYear"
-                                                    value={formData.passingYear}
-                                                    onChange={handleInputChange}
-                                                    className={inputClasses}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {activeTab === 'experience' && (
-                                    <div className="space-y-10">
-                                         <div className="border-l-4 border-green-500 pl-4">
-                                            <h3 className="text-xl font-black text-gray-900">Work Experience</h3>
-                                            <p className="text-sm font-medium text-gray-400">Professional career history</p>
-                                        </div>
-                                        <div className="mb-10 p-6 bg-gray-50 rounded-[2rem] border border-gray-100">
-                                            <label className="flex items-center gap-4 cursor-pointer">
-                                                <div className="relative">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        name="isExperienced"
-                                                        checked={formData.isExperienced}
-                                                        onChange={handleInputChange}
-                                                        className="sr-only p-4"
-                                                    />
-                                                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${formData.isExperienced ? 'bg-green-500 border-green-500' : 'bg-white border-gray-200'}`}>
-                                                        {formData.isExperienced && <div className="w-2 h-2 bg-white rounded-full" />}
-                                                    </div>
-                                                </div>
-                                                <span className="text-sm font-black text-gray-700 uppercase tracking-widest">I have work experience</span>
-                                            </label>
-                                        </div>
-                                        
-                                        {formData.isExperienced ? (
-                                            <motion.div 
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8"
-                                            >
-                                                <div>
-                                                    <label className={labelClasses}>Current/Last Company</label>
-                                                    <input 
-                                                        type="text" 
-                                                        name="companyName"
-                                                        value={formData.companyName}
-                                                        onChange={handleInputChange}
-                                                        className={inputClasses}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className={labelClasses}>Designation</label>
-                                                    <input 
-                                                        type="text" 
-                                                        name="designation"
-                                                        value={formData.designation}
-                                                        onChange={handleInputChange}
-                                                        className={inputClasses}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className={labelClasses}>Years of Experience</label>
-                                                    <input 
-                                                        type="text" 
-                                                        name="yearsOfExp"
-                                                        value={formData.yearsOfExp}
-                                                        onChange={handleInputChange}
-                                                        className={inputClasses}
-                                                    />
-                                                </div>
-                                            </motion.div>
-                                        ) : (
-                                            <div className="p-10 text-center bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-100">
-                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">Check the box above if you have experience</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'skills' && (
-                                    <div className="space-y-10">
-                                         <div className="border-l-4 border-purple-500 pl-4">
-                                            <h3 className="text-xl font-black text-gray-900">Key Skills</h3>
-                                            <p className="text-sm font-medium text-gray-400">List your professional technical skills</p>
-                                        </div>
-                                        <div>
-                                            <label className={labelClasses}>Core Competencies (Comma separated)</label>
-                                            <textarea 
-                                                name="skills"
-                                                value={formData.skills}
-                                                onChange={handleInputChange}
-                                                rows="6"
-                                                placeholder="e.g. React, Node.js, Design, Management"
-                                                className={inputClasses + " resize-none"}
-                                            ></textarea>
-                                            <p className="mt-4 text-[10px] font-black text-gray-300 uppercase tracking-widest ml-1">Example: Adobe XD, Figma, React, Tailwind CSS</p>
-                                        </div>
-                                    </div>
-                                )}
                             </motion.div>
                         </AnimatePresence>
 

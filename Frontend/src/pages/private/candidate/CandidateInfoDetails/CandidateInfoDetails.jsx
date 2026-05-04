@@ -64,7 +64,7 @@ const CandidateInfoDetails = () => {
   useEffect(() => {
     if (profileStatus === 'succeeded' && savedData) {
       if (isProfileCompleted) {
-        navigate('/dashboard', { replace: true });
+        navigate('/profile', { replace: true });
         return;
       }
 
@@ -200,7 +200,7 @@ const CandidateInfoDetails = () => {
       })).unwrap();
       
       toast.success('Profile saved! Redirecting to dashboard...');
-      navigate('/dashboard', { replace: true });
+      navigate('/profile', { replace: true });
     } catch (error) {
       toast.error(error || 'Failed to update profile');
     } finally {

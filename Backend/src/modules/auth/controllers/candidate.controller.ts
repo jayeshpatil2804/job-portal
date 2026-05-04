@@ -6,7 +6,7 @@ import { generateOtp, sendOtpEmail } from '../../../utils/mailer'
 
 export const signup = async (req: Request, res: Response) => {
     try {
-        const { fullName, email, mobile, password } = req.body
+        const { fullName, email, mobile, password, address, city, state, pinCode } = req.body
         // Check if candidate exists
         const existingCandidate = await prisma.candidate.findUnique({ where: { email } })
         if (existingCandidate) {
@@ -22,6 +22,10 @@ export const signup = async (req: Request, res: Response) => {
                 fullName,
                 mobile,
                 password: hashedPassword,
+                address,
+                city,
+                state,
+                pinCode,
                 isVerified: false
             }
         })

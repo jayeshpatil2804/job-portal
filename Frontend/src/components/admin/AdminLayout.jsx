@@ -28,7 +28,7 @@ const navLinks = [
     { path: '/admin/recruiters', label: 'Recruiter Approval', icon: UserCheck },
     { path: '/admin/candidates', label: 'Candidates', icon: Users },
     { path: '/admin/jobs', label: 'Job Moderation', icon: Briefcase },
-    { path: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
+
     { path: '/admin/sub-admins', label: 'Sub Admins', icon: ShieldCheck },
     { path: '/admin/designations', label: 'Designations', icon: Settings2 },
     { path: '/admin/skills', label: 'Job Skills', icon: CheckCircle2 },
@@ -74,7 +74,7 @@ const AdminLayout = ({ children, title = 'Admin Panel' }) => {
             '/admin/recruiters': 'RECRUITER_APPROVAL',
             '/admin/candidates': 'CANDIDATE_MANAGEMENT',
             '/admin/jobs': 'JOB_MODERATION',
-            '/admin/subscriptions': 'CANDIDATE_MANAGEMENT',
+
             '/admin/sub-admins': 'SUB_ADMIN_MANAGEMENT',
             '/admin/reports': 'REPORTS'
         }

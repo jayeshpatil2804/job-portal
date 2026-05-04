@@ -1,7 +1,9 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 import express from 'express'
 import cors from 'cors'
-import dotenv from 'dotenv'
-import { startSubscriptionCron } from './jobs/subscriptionCron'
+
 import candidateAuthRoutes from './modules/auth/routes/candidate.routes'
 import recruiterAuthRoutes from './modules/auth/routes/recruiter.routes'
 import adminAuthRoutes from './modules/auth/routes/admin.routes'
@@ -12,7 +14,7 @@ import fileRoutes from './modules/file/routes/file.routes'
 import jobRoutes from './modules/job/routes/job.routes'
 import applicationRoutes from './modules/job/routes/application.routes'
 import interviewRoutes from './modules/job/routes/interview.routes'
-import paymentRoutes from './modules/payment/routes/payment.routes'
+
 import contactRoutes from './modules/contact/routes/contact.routes'
 import path from 'path'
 import { createServer } from 'http'
@@ -20,10 +22,7 @@ import { Server } from 'socket.io'
 
 import cookieParser from 'cookie-parser'
 
-dotenv.config()
 
-// Start scheduled jobs
-startSubscriptionCron()
 
 const app = express()
 const httpServer = createServer(app)
@@ -102,7 +101,7 @@ app.use('/api/file', fileRoutes)
 app.use('/api/jobs', jobRoutes)
 app.use('/api/applications', applicationRoutes)
 app.use('/api/interviews', interviewRoutes)
-app.use('/api/payment', paymentRoutes)
+
 app.use('/api/contact', contactRoutes)
 app.use('/users', googleAuthRoutes)     // For Google Console Redirect
 
@@ -123,4 +122,4 @@ const PORT = process.env.PORT || 5000
 
 httpServer.listen(PORT, () => {
     console.log(`Server and Socket.IO running on port ${PORT}`)
-})
+}) // Trigger restart again

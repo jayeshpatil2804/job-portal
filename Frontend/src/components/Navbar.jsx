@@ -44,10 +44,10 @@ const Navbar = () => {
                             </button>
                         ) : (
                             <Link
-                                to={user.role === 'RECRUITER' ? "/recruiter/dashboard" : "/dashboard"}
+                                to={user.role === 'RECRUITER' ? "/recruiter/profile" : "/profile"}
                                 className="bg-[#ff7a20] text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-[#e66a1a] transition-all shadow-md active:scale-95"
                             >
-                                Dashboard
+                                {user.role === 'RECRUITER' ? 'Dashboard' : 'Profile'}
                             </Link>
                         )}
                     </div>

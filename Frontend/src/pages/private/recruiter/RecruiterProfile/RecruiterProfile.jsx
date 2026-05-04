@@ -31,6 +31,7 @@ const RecruiterProfile = () => {
         address: '',
         city: '',
         state: '',
+        pinCode: '',
         gstNumber: ''
     });
 
@@ -49,6 +50,7 @@ const RecruiterProfile = () => {
                 address: profile.address || '',
                 city: profile.city || '',
                 state: profile.state || '',
+                pinCode: profile.pinCode || '',
                 gstNumber: profile.gstNumber || ''
             });
         }
@@ -158,20 +160,16 @@ const RecruiterProfile = () => {
 
                          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <AlertCircle size={20} className="text-[#f97316]" /> Verification Status
+                                <CheckCircle2 size={20} className="text-[#22c55e]" /> Account Status
                             </h2>
-                            <div className={`p-4 rounded-xl border flex items-center gap-3 ${profile?.isProfileCompleted ? 'bg-green-50 border-green-100' : 'bg-orange-50 border-orange-100'}`}>
-                                {profile?.isProfileCompleted ? (
-                                    <CheckCircle2 className="text-green-500 shrink-0" size={24} />
-                                ) : (
-                                    <AlertCircle className="text-orange-500 shrink-0" size={24} />
-                                )}
+                            <div className="p-4 rounded-xl border flex items-center gap-3 bg-green-50 border-green-100">
+                                <CheckCircle2 className="text-green-500 shrink-0" size={24} />
                                 <div>
-                                    <p className={`text-sm font-bold ${profile?.isProfileCompleted ? 'text-green-700' : 'text-orange-700'}`}>
-                                        {profile?.isProfileCompleted ? 'Business Verified' : 'Under Review'}
+                                    <p className="text-sm font-bold text-green-700">
+                                        Verified Recruiter
                                     </p>
                                     <p className="text-xs text-gray-500 mt-0.5">
-                                        {profile?.isProfileCompleted ? 'Your business is allowed to post jobs.' : 'Complete all steps to start hiring.'}
+                                        Your account is active and verified.
                                     </p>
                                 </div>
                             </div>
@@ -259,6 +257,13 @@ const RecruiterProfile = () => {
                                                     value={formData.state}
                                                     onChange={handleInputChange}
                                                     placeholder="Enter state"
+                                                />
+                                                <FormInput
+                                                    label="PIN Code"
+                                                    name="pinCode"
+                                                    value={formData.pinCode}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Enter PIN code"
                                                 />
                                             </div>
                                         </div>

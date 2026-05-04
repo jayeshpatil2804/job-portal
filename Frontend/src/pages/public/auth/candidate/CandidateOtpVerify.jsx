@@ -67,10 +67,8 @@ const CandidateOtpVerify = () => {
             
             if (location.state?.purpose === 'reset-password') {
                 navigate('/candidate/reset-password', { state: { email, otp: otpCode } })
-            } else if (result.user?.isProfileCompleted) {
-                navigate('/dashboard')
             } else {
-                navigate('/candidate/complete-profile')
+                navigate('/profile')
             }
         } catch (error) {
             toast.error(error.message || 'Verification failed')

@@ -45,10 +45,12 @@ const CandidateProtectedRoute = ({ onlyAuth = false }) => {
         return <Outlet />;
     }
 
-    // If profile is not completed, they must complete it
+    // Profile completion check removed as requested
+    /*
     if (!isProfileCompleted) {
         return <Navigate to="/candidate/complete-profile" replace />;
     }
+    */
 
     // If profile is completed, allow access (ActivationDialog will handle payment state on dashboard)
     return <Outlet />;

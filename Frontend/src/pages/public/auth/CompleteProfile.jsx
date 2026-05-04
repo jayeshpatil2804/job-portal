@@ -4,7 +4,7 @@ import AuthLayout from '../../../components/AuthLayout'
 import { supabase } from '../../../utils/supabase'
 import api from '../../../utils/api'
 import toast from 'react-hot-toast'
-import { Phone, Lock, Briefcase } from 'lucide-react'
+import { Phone, Lock, Briefcase, MapPin } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import { setUser } from '../../../redux/slices/authSlice'
 import FormInput from '../../../components/FormInput'
@@ -19,7 +19,10 @@ const CompleteProfile = () => {
         mobile: '',
         password: '',
         confirmPassword: '',
-        companyName: ''
+        companyName: '',
+        address: '',
+        city: '',
+        state: ''
     });
 
     const isRecruiter = role === 'RECRUITER';
@@ -46,7 +49,10 @@ const CompleteProfile = () => {
                 role: user.role,
                 mobile: formData.mobile,
                 password: formData.password,
-                companyName: formData.companyName
+                companyName: formData.companyName,
+                address: formData.address,
+                city: formData.city,
+                state: formData.state
             });
 
             // Update Redux state with the completed user
@@ -56,12 +62,8 @@ const CompleteProfile = () => {
 
                 toast.success('Basic profile setup completed!');
 
-                // Role-specific redirection
-                if (completedUser.role === 'RECRUITER') {
-                    navigate('/recruiter/complete-profile', { replace: true });
-                } else {
-                    navigate('/candidate/complete-profile', { replace: true });
-                }
+                // Redirection
+                navigate(isRecruiter ? '/recruiter/profile' : '/profile', { replace: true });
             }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to complete profile');
@@ -93,12 +95,46 @@ const CompleteProfile = () => {
                     name="mobile"
                     type="tel"
                     icon={Phone}
-                    placeholder="+918511952831 "
+                    placeholder="+918511952831"
                     value={formData.mobile}
                     onChange={handleChange}
                     required
                     theme={isRecruiter ? "orange" : "blue"}
                 />
+
+                <FormInput
+                    label="Full Address"
+                    name="address"
+                    icon={MapPin}
+                    placeholder="Street, Area, Building..."
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                    theme={isRecruiter ? "orange" : "blue"}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormInput
+                        label="City"
+                        name="city"
+                        icon={MapPin}
+                        placeholder="City Name"
+                        value={formData.city}
+                        onChange={handleChange}
+                        required
+                        theme={isRecruiter ? "orange" : "blue"}
+                    />
+                    <FormInput
+                        label="State"
+                        name="state"
+                        icon={MapPin}
+                        placeholder="State Name"
+                        value={formData.state}
+                        onChange={handleChange}
+                        required
+                        theme={isRecruiter ? "orange" : "blue"}
+                    />
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormInput

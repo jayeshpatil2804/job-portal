@@ -29,19 +29,22 @@ model Candidate {
   mobile     String
   password   String
   role       UserRole @default(CANDIDATE)
+  
+  // Added address fields for signup
+  address    String?
+  city       String?
+  state      String?
+  pinCode    String?
+
   isVerified Boolean  @default(false)
-  isPaid     Boolean  @default(false)
-  isActive   Boolean  @default(false)
+  isPaid     Boolean  @default(true)
+  isActive   Boolean  @default(true)
   isProfileCompleted Boolean  @default(false)
 
-  // Subscription tracking
-  subscriptionStartDate  DateTime?
-  subscriptionExpiryDate DateTime?
-  
+
   profile    CandidateProfile?
   files      File[]
   applications Application[]
-  payments   Payment[]
   notifications Notification[]
 
   createdAt  DateTime @default(now())
@@ -72,12 +75,7 @@ model CandidateProfile {
   candidateId     String    @unique
   candidate       Candidate @relation(fields: [candidateId], references: [id])
   
-  onboardingStep  Int       @default(1)
-  // Personal Details
-  address         String?
-  city            String?
-  state           String?
-  pinCode         String?
+  // Personal Details (now mostly in Candidate, but keeping some here for detailed profile)
   dob             String?
   gender          String?
   
@@ -143,20 +141,20 @@ model Recruiter {
   companyName String
   mobile      String
   password    String
-  role        UserRole @default(RECRUITER)
+  role       UserRole @default(RECRUITER)
   verificationStatus VerificationStatus @default(PENDING)
-  isPaid     Boolean  @default(false)
-  isActive   Boolean  @default(false)
+  isPaid     Boolean  @default(true)
+  isActive   Boolean  @default(true)
   isProfileCompleted Boolean  @default(false)
+  address          String?
+  city             String?
+  state            String?
+  pinCode          String?
 
-  // Subscription tracking
-  subscriptionStartDate  DateTime?
-  subscriptionExpiryDate DateTime?
-  
+
   profile     CompanyProfile?
   files       File[]
   jobs        Job[]
-  payments    Payment[]
   notifications Notification[]
 
   createdAt   DateTime @default(now())
@@ -164,7 +162,6 @@ model Recruiter {
 
   @@index([email])
   @@index([verificationStatus])
-  @@index([subscriptionExpiryDate])
 }
 
 model CompanyProfile {
@@ -172,13 +169,9 @@ model CompanyProfile {
   recruiterId     String    @unique
   recruiter       Recruiter @relation(fields: [recruiterId], references: [id])
 
-  onboardingStep  Int       @default(1)
   companyName     String?
 
   // Company Details
-  address         String?
-  city            String?
-  state           String?
   industry        String?
   gstNumber       String?
   website         String?
@@ -330,23 +323,6 @@ model Interview {
   updatedAt     DateTime        @updatedAt
 }
 
-model Payment {
-  id              String   @id @default(uuid())
-  orderId         String   @unique
-  paymentId       String?  @unique
-  signature       String?
-  amount          Int
-  currency        String   @default("INR")
-  status          String   @default("PENDING") // PENDING, COMPLETED, FAILED
-  
-  candidateId     String?
-  candidate       Candidate? @relation(fields: [candidateId], references: [id])
-  recruiterId     String?
-  recruiter       Recruiter? @relation(fields: [recruiterId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
 
 model Designation {
   id        String   @id @default(uuid())

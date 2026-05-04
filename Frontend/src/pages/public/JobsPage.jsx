@@ -8,7 +8,7 @@ import { Search, MapPin, Briefcase, Bookmark, ChevronDown, DollarSign, Filter, R
 import { getAllOpenJobs } from '../../redux/actions/jobActions'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
-import ActivationDialog from '../../components/common/ActivationDialog'
+
 import toast from 'react-hot-toast'
 
 const JobCard = React.forwardRef(({ job, navigate, onJobClick }, ref) => (
@@ -102,7 +102,7 @@ const JobsPage = () => {
     const { user, isAuthenticated } = useSelector(state => state.auth || {})
     const { isActive, isPaid } = useSelector(state => state.profile || {})
     
-    const [showActivation, setShowActivation] = useState(false)
+
     
     const [filters, setFilters] = useState({
         location: initialLocation,
@@ -152,11 +152,6 @@ const JobsPage = () => {
     }
 
     const handleJobClick = (jobId) => {
-        if (isAuthenticated && user?.role === 'CANDIDATE' && !isActive) {
-            toast.error('Payment not full. Please activate to view details.')
-            setShowActivation(true)
-            return
-        }
         navigate(`/job/${jobId}`)
     }
 
@@ -177,12 +172,7 @@ const JobsPage = () => {
 
     return (
         <Layout>
-            <ActivationDialog 
-                isOpen={showActivation} 
-                isPaid={isPaid} 
-                userType="CANDIDATE" 
-                onClose={() => setShowActivation(false)} 
-            />
+
             <div className="max-w-[1440px] mx-auto space-y-12 pb-20">
                 {/* ── Hero Section ── */}
                 <div className="relative overflow-hidden bg-[#1a3c8f] rounded-[3.5rem] p-12 md:p-20 text-white shadow-2xl shadow-blue-900/20">

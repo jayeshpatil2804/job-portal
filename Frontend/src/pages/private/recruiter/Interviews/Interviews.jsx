@@ -5,7 +5,6 @@ import DashboardLayout from '../../../../components/DashboardLayout'
 import { Calendar, Clock, MapPin, Video, ExternalLink, User, Briefcase, ChevronRight, Building } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getMyInterviews } from '../../../../redux/actions/interviewActions'
-import ActivationDialog from '../../../../components/common/ActivationDialog'
 import { useNavigate } from 'react-router-dom'
 
 const InterviewCard = ({ interview, isRecruiter }) => {
@@ -108,14 +107,6 @@ const Interviews = () => {
 
     return (
         <Layout>
-            {!isActive && (
-                <ActivationDialog 
-                    isOpen={true} 
-                    isPaid={isPaid} 
-                    userType={isRecruiter ? 'RECRUITER' : 'CANDIDATE'} 
-                    onClose={() => navigate(isRecruiter ? '/recruiter/dashboard' : '/dashboard')} 
-                />
-            )}
             <div className="max-w-7xl mx-auto space-y-10 pb-20">
                 {/* Header */}
                 <div className="flex justify-between items-end">

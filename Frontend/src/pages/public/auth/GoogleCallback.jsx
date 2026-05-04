@@ -78,17 +78,9 @@ const GoogleCallback = () => {
 
                 // Role based redirect
                 if (authenticatedUser.role === "RECRUITER") {
-                    if (authenticatedUser.isProfileCompleted) {
-                        navigate("/recruiter/dashboard", { replace: true });
-                    } else {
-                        navigate("/recruiter/complete-profile", { replace: true });
-                    }
+                    navigate("/recruiter/profile", { replace: true });
                 } else {
-                    if (authenticatedUser.isProfileCompleted) {
-                        navigate("/dashboard", { replace: true });
-                    } else {
-                        navigate("/candidate/complete-profile", { replace: true });
-                    }
+                    navigate("/profile", { replace: true });
                 }
             } catch (err) {
                 console.error("Google Auth Error:", err);
