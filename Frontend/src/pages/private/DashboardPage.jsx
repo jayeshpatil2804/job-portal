@@ -60,16 +60,8 @@ const DashboardPage = () => {
             borderColor: 'border-orange-100',
         },
         {
-            title: 'Interviews',
-            count: stats?.interviewCount || 0,
-            icon: <Phone size={20} />,
-            color: 'text-[#a855f7]',
-            bgColor: 'bg-purple-50',
-            borderColor: 'border-purple-100',
-        },
-        {
             title: 'Success Rate',
-            count: stats?.totalApplications ? Math.round(((stats.shortlistedCount + stats.interviewCount) / stats.totalApplications) * 100) + '%' : '0%',
+            count: stats?.totalApplications ? Math.round(((stats.shortlistedCount) / stats.totalApplications) * 100) + '%' : '0%',
             icon: <TrendingUp size={20} />,
             color: 'text-[#22c55e]',
             bgColor: 'bg-green-50',

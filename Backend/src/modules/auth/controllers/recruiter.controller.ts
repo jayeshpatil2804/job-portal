@@ -31,8 +31,7 @@ export const signup = async (req: Request, res: Response) => {
                 state,
                 pinCode,
                 verificationStatus: 'APPROVED',
-                isActive: true,
-                isPaid: true
+                isActive: true
             }
         })
 

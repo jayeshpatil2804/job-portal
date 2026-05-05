@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Plus, Eye, Edit2, PauseCircle, Trash2, Search, PlusCircle, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
-import RecruiterLayout from '../../../../components/RecruiterLayout'
 import { getMyJobs, deleteJob, closeJob, updateJobStatus } from '../../../../redux/actions/jobActions'
 import toast from 'react-hot-toast'
 import ConfirmationModal from '../../../../components/ConfirmationModal'
@@ -18,6 +17,10 @@ const StatusCard = ({ label, count, color }) => (
 const ManageJobs = () => {
     const dispatch = useDispatch()
     const { myJobs: jobs, loading } = useSelector(state => state.job)
+    
+    const [searchTerm, setSearchTerm] = useState('')
+    const [departmentFilter, setDepartmentFilter] = useState('')
+    const [statusFilter, setStatusFilter] = useState('')
     
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
@@ -134,6 +137,16 @@ const ManageJobs = () => {
         closed: jobs.filter(j => j.status === 'CLOSED').length
     }
 
+    const uniqueDepartments = [...new Set(jobs.map(j => j.department))].filter(Boolean)
+
+    const filteredJobs = jobs.filter(job => {
+        const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              job.location.toLowerCase().includes(searchTerm.toLowerCase())
+        const matchesDepartment = departmentFilter ? job.department === departmentFilter : true
+        const matchesStatus = statusFilter ? job.status === statusFilter : true
+        return matchesSearch && matchesDepartment && matchesStatus
+    })
+
     return (
         <div className="space-y-8 relative">
             <ConfirmationModal 
@@ -171,15 +184,32 @@ const ManageJobs = () => {
                         <input 
                             type="text" 
                             placeholder="Search jobs..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                         />
                     </div>
                     <div className="flex gap-2">
-                        <select className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium">
-                            <option>All Departments</option>
+                        <select 
+                            value={departmentFilter}
+                            onChange={(e) => setDepartmentFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium"
+                        >
+                            <option value="">All Departments</option>
+                            {uniqueDepartments.map(dept => (
+                                <option key={dept} value={dept}>{dept}</option>
+                            ))}
                         </select>
-                        <select className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium">
-                            <option>All Status</option>
+                        <select 
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg outline-none text-sm font-medium"
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="OPEN">Open</option>
+                            <option value="CLOSED">Closed</option>
+                            <option value="DRAFT">Draft</option>
+                            <option value="PAUSED">Paused</option>
                         </select>
                     </div>
                 </div>
@@ -209,8 +239,14 @@ const ManageJobs = () => {
                                         No jobs found. Start by posting a new job!
                                     </td>
                                 </tr>
+                            ) : filteredJobs.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-10 text-center text-gray-500">
+                                        No jobs match your filters.
+                                    </td>
+                                </tr>
                             ) : (
-                                jobs.map((job) => (
+                                filteredJobs.map((job) => (
                                     <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="text-sm font-bold text-gray-900">{job.title}</div>

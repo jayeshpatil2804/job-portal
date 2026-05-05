@@ -11,7 +11,7 @@ import socket from '../utils/socket'
 const DashboardLayout = ({ children }) => {
     const dispatch = useDispatch()
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const { isActive, isPaid, status: profileStatus } = useSelector(state => state.profile)
+    const { isActive, status: profileStatus } = useSelector(state => state.profile)
     const { user } = useSelector(state => state.auth)
     const toastShown = useRef(false)
 
@@ -22,16 +22,6 @@ const DashboardLayout = ({ children }) => {
         }
     }, [dispatch, profileStatus, user])
 
-    // Show warning toast for unpaid users instead of blocking the dashboard
-    useEffect(() => {
-        if (profileStatus === 'succeeded' && !isActive && !toastShown.current) {
-            toast.error('Payment not paid yet. Full features locked.', { duration: 5000 })
-            toastShown.current = true
-        }
-        if (isActive) {
-            toastShown.current = false // Reset if they suddenly become active
-        }
-    }, [profileStatus, isActive])
 
     // Real-time activation via Socket.IO
     useEffect(() => {

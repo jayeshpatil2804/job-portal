@@ -29,14 +29,6 @@ export const applyToJob = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'You have already applied for this job' })
         }
 
-        // Get candidate's current resume from profile
-        const profile = await prisma.candidateProfile.findUnique({
-            where: { candidateId }
-        })
-
-        if (!profile || !profile.resumeFileId) {
-            return res.status(400).json({ message: 'Please upload a resume in your profile before applying' })
-        }
 
         const { selectedSkillIds } = req.body
 
@@ -44,7 +36,6 @@ export const applyToJob = async (req: Request, res: Response) => {
             data: {
                 jobId,
                 candidateId,
-                resumeFileId: profile.resumeFileId,
                 status: 'APPLIED',
                 selectedSkills: selectedSkillIds ? {
                     connect: (Array.isArray(selectedSkillIds) ? selectedSkillIds : [selectedSkillIds]).map((id: string) => ({ id }))
@@ -80,8 +71,7 @@ export const getMyApplications = async (req: Request, res: Response) => {
                             select: { companyName: true }
                         }
                     }
-                },
-                interview: true
+                }
             },
             orderBy: { createdAt: 'desc' }
         })
@@ -127,20 +117,12 @@ export const getJobApplicants = async (req: Request, res: Response) => {
                             select: {
                                 yearsOfExp: true,
                                 skills: true,
-                                isExperienced: true,
-                                resumeUrl: true,
-                                resumeFile: {
-                                    select: { fileUrl: true }
-                                }
+                                isExperienced: true
                             }
                         }
                     }
                 },
-                selectedSkills: true,
-                resumeFile: {
-                    select: { fileUrl: true }
-                },
-                interview: true
+                selectedSkills: true
             },
             orderBy: { createdAt: 'desc' }
         })

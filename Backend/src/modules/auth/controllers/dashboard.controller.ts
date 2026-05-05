@@ -19,10 +19,6 @@ export const getCandidateStats = async (req: any, res: Response) => {
             }
         });
 
-        // 3. Specific counts for top boxes
-        const interviewCount = await (prisma as any).application.count({
-            where: { candidateId, status: 'INTERVIEW_SCHEDULED' }
-        });
 
         const shortlistedCount = await (prisma as any).application.count({
             where: { candidateId, status: 'SHORTLISTED' }
@@ -53,7 +49,6 @@ export const getCandidateStats = async (req: any, res: Response) => {
             data: {
                 stats: {
                     totalApplications,
-                    interviewCount,
                     shortlistedCount,
                     statusBreakdown: statusCounts.map((s: any) => ({
                         status: s.status,

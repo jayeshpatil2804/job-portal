@@ -5,7 +5,6 @@ const initialState = {
   data: {},
   currentStep: 1,
   isProfileCompleted: false,
-  isPaid: false,
   isActive: false,
   loading: false,
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
@@ -34,7 +33,6 @@ export const profileSlice = createSlice({
         state.loading = false;
         state.currentStep = action.payload.currentStep;
         state.isProfileCompleted = action.payload.isProfileCompleted;
-        state.isPaid = action.payload.isPaid;
         state.isActive = action.payload.isActive;
         state.data = action.payload.data;
       })
@@ -58,9 +56,6 @@ export const profileSlice = createSlice({
           state.isProfileCompleted = action.payload.isProfileCompleted;
         }
 
-        if (action.payload.isPaid !== undefined) {
-          state.isPaid = action.payload.isPaid;
-        }
 
         if (action.payload.isActive !== undefined) {
           state.isActive = action.payload.isActive;
@@ -97,7 +92,6 @@ export const profileSlice = createSlice({
         state.status = 'succeeded';
         state.data = action.payload.user || {};
         state.isProfileCompleted = action.payload.user?.isProfileCompleted || false;
-        state.isPaid = action.payload.user?.isPaid || false;
         state.isActive = action.payload.user?.isActive || false;
         state.currentStep = action.payload.user?.onboardingStep || 1;
       })
@@ -105,7 +99,6 @@ export const profileSlice = createSlice({
         state.data = {};
         state.currentStep = 1;
         state.isProfileCompleted = false;
-        state.isPaid = false;
         state.isActive = false;
         state.status = 'idle';
         state.error = null;

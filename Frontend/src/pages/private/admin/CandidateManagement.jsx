@@ -13,8 +13,6 @@ const CandidateManagement = () => {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [profileOpen, setProfileOpen] = useState(null)
-    const [renewModal, setRenewModal] = useState(null)
-    const [renewDuration, setRenewDuration] = useState(12)
     const [subscriptionProfile, setSubscriptionProfile] = useState(null)
     const [pagination, setPagination] = useState({
         currentPage: 1,
@@ -66,20 +64,6 @@ const CandidateManagement = () => {
             setSubscriptionProfile(res.data.candidate)
         } catch (error) {
             toast.error('Failed to load candidate profile')
-        }
-    }
-
-    const handleRenew = async () => {
-        if (!renewModal) return
-
-        try {
-            await api.post(`/admin/candidates/${renewModal.id}/renew`, { durationMonths: renewDuration })
-            toast.success(`Candidate subscription renewed for ${renewDuration} months`)
-            setRenewModal(null)
-            setRenewDuration(12)
-            fetchCandidates()
-        } catch (error) {
-            toast.error('Failed to renew subscription')
         }
     }
 
@@ -147,26 +131,11 @@ const CandidateManagement = () => {
                                         <span className="text-xs">{c.location}</span>
                                     </div>
                                     <div className="flex gap-2">
-                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${c.isPaid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                                            {c.isPaid ? 'Paid' : 'Unpaid'}
-                                        </span>
                                         <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${c.isActive ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
                                             {c.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </div>
                                 </div>
-                                {c.subscriptionExpiryDate && (
-                                    <div className="flex items-center gap-1 mt-1 text-gray-400">
-                                        <Calendar size={10} />
-                                        <span className="text-[10px]">Expires: {c.subscriptionExpiryDate}</span>
-                                        {c.isExpiringSoon && !c.isExpired && (
-                                            <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">Soon</span>
-                                        )}
-                                        {c.isExpired && (
-                                            <span className="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Expired</span>
-                                        )}
-                                    </div>
-                                )}
                             </div>
                         </div>
 
@@ -195,14 +164,6 @@ const CandidateManagement = () => {
                             >
                                 <Eye size={14} /> Profile
                             </button>
-                            {c.isPaid && (
-                                <button
-                                    onClick={() => setRenewModal(c)}
-                                    className="flex-[0.5] flex items-center justify-center gap-1.5 py-2 bg-green-50 text-green-600 text-xs font-bold rounded-xl hover:bg-green-100 transition-all duration-200"
-                                >
-                                    <RefreshCw size={14} /> Renew
-                                </button>
-                            )}
                         </div>
                     </motion.div>
                 ))}
@@ -245,53 +206,6 @@ const CandidateManagement = () => {
                                 </button>
                             </div>
 
-                            {/* Subscription Info */}
-                            {subscriptionProfile.subscriptionExpiryDate && (
-                                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-5 mb-6 border border-blue-100">
-                                    <h4 className="font-bold text-[#0f172a] mb-3 flex items-center gap-2">
-                                        <Calendar size={18} className="text-[#1a3c8f]" />
-                                        Subscription Details
-                                    </h4>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Start Date</p>
-                                            <p className="font-bold text-gray-900">{subscriptionProfile.subscriptionStartDate || 'N/A'}</p>
-                                        </div>
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Expiry Date</p>
-                                            <p className="font-bold text-gray-900">{subscriptionProfile.subscriptionExpiryDate}</p>
-                                        </div>
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Days Remaining</p>
-                                            <p className={`font-bold ${subscriptionProfile.isExpired ? 'text-red-600' : subscriptionProfile.isExpiringSoon ? 'text-orange-600' : 'text-green-600'
-                                                }`}>
-                                                {subscriptionProfile.subscriptionDaysRemaining !== null
-                                                    ? `${subscriptionProfile.subscriptionDaysRemaining} days`
-                                                    : 'N/A'}
-                                            </p>
-                                        </div>
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Status</p>
-                                            <p className={`font-bold ${subscriptionProfile.isPaid ? 'text-green-600' : 'text-gray-600'
-                                                }`}>
-                                                {subscriptionProfile.isPaid ? 'PAID' : 'UNPAID'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {subscriptionProfile.isPaid && !subscriptionProfile.isExpired && (
-                                        <button
-                                            onClick={() => {
-                                                setRenewModal({ id: subscriptionProfile.id, name: subscriptionProfile.fullName })
-                                                setSubscriptionProfile(null)
-                                            }}
-                                            className="w-full mt-4 py-2.5 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <RefreshCw size={16} /> Renew Subscription
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-
                             {/* User Info */}
                             <div className="space-y-3 mb-6">
                                 <div className="flex items-center gap-4 mb-5">
@@ -312,28 +226,6 @@ const CandidateManagement = () => {
                                 </div>
                             </div>
 
-                            {/* Payment History */}
-                            {subscriptionProfile.paymentHistory && subscriptionProfile.paymentHistory.length > 0 && (
-                                <div className="mb-6">
-                                    <h4 className="font-bold text-[#0f172a] mb-3">Payment History</h4>
-                                    <div className="space-y-2">
-                                        {subscriptionProfile.paymentHistory.map(payment => (
-                                            <div key={payment.id} className="bg-gray-50 rounded-xl p-4 flex justify-between items-center">
-                                                <div>
-                                                    <p className="text-sm font-semibold">₹{payment.amount}</p>
-                                                    <p className="text-xs text-gray-500">{payment.createdAt}</p>
-                                                </div>
-                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold ${payment.status === 'COMPLETED'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
-                                                    }`}>
-                                                    {payment.status}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
 
                             <button
                                 onClick={() => setSubscriptionProfile(null)}
@@ -346,70 +238,6 @@ const CandidateManagement = () => {
                 )}
             </AnimatePresence>
 
-            {/* Renew Modal */}
-            <AnimatePresence>
-                {renewModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-                        onClick={() => setRenewModal(null)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            onClick={e => e.stopPropagation()}
-                            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
-                        >
-                            <div className="mb-6">
-                                <h3 className="font-bold text-xl text-[#0f172a] mb-1">Renew Subscription</h3>
-                                <p className="text-sm text-gray-500">
-                                    {renewModal.name}
-                                </p>
-                            </div>
-
-                            <div className="space-y-4 mb-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Duration (months)
-                                    </label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {[3, 6, 12, 18, 24, 36].map(months => (
-                                            <button
-                                                key={months}
-                                                onClick={() => setRenewDuration(months)}
-                                                className={`py-2.5 rounded-xl text-sm font-bold transition-all ${renewDuration === months
-                                                    ? 'bg-[#1a3c8f] text-white shadow-md'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                    }`}
-                                            >
-                                                {months} mo
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setRenewModal(null)}
-                                    className="flex-1 py-2.5 border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleRenew}
-                                    className="flex-1 py-2.5 bg-[#1a3c8f] text-white font-bold rounded-xl hover:bg-[#153275] transition-colors"
-                                >
-                                    Confirm Renew
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </AdminLayout>
     )
 }

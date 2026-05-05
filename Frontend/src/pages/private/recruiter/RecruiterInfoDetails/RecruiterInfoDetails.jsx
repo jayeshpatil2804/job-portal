@@ -13,7 +13,7 @@ import {
   fetchRecruiterProfileStatus,
   updateRecruiterProfile
 } from '../../../../redux/actions/recruiterProfileActions';
-import { uploadResume } from '../../../../redux/actions/fileActions';
+
 import { setRecruiterStep } from '../../../../redux/slices/recruiterProfileSlice';
 
 const RecruiterInfoDetails = () => {
@@ -27,7 +27,6 @@ const RecruiterInfoDetails = () => {
     data: savedData, 
     currentStep: reduxStep, 
     isProfileCompleted, 
-    isPaid,
     status: profileStatus 
   } = useSelector(state => state.recruiterProfile);
 
@@ -51,8 +50,7 @@ const RecruiterInfoDetails = () => {
   const steps = [
     { title: 'Company', icon: Building2 },
     { title: 'Address', icon: MapPin },
-    { title: 'GST', icon: CreditCard },
-    { title: 'Verification', icon: FileCheck }
+    { title: 'GST', icon: CreditCard }
   ];
 
   useEffect(() => {
@@ -74,7 +72,7 @@ const RecruiterInfoDetails = () => {
       }));
 
       const urlStep = parseInt(step);
-      if (!urlStep || urlStep < 1 || urlStep > 4) {
+      if (!urlStep || urlStep < 1 || urlStep > 3) {
         navigate(`/recruiter/complete-profile/${reduxStep || 1}`, { replace: true });
       }
     }
@@ -82,7 +80,7 @@ const RecruiterInfoDetails = () => {
 
   useEffect(() => {
     const urlStep = parseInt(step);
-    if (urlStep >= 1 && urlStep <= 4) {
+    if (urlStep >= 1 && urlStep <= 3) {
       dispatch(setRecruiterStep(urlStep));
     }
   }, [step, dispatch]);
@@ -128,7 +126,7 @@ const RecruiterInfoDetails = () => {
     setLocalLoading(true);
     try {
       const { gstCertificate, msmeCertificate, registrationCertificate, ...submitData } = formData;
-      const nextS = Math.min(reduxStep + 1, 4);
+      const nextS = Math.min(reduxStep + 1, 3);
 
       await dispatch(updateRecruiterProfile({
         ...submitData,
@@ -144,50 +142,19 @@ const RecruiterInfoDetails = () => {
     }
   };
 
-  const handleFileUpload = async (file, fieldName) => {
-    if (!file) return;
-    try {
-      const result = await dispatch(uploadResume(file)).unwrap(); // Reusing uploadResume action as it's generic now
-      return { url: result.file.fileUrl, id: result.file.id };
-    } catch (error) {
-      toast.error(`Failed to upload ${fieldName}`);
-      return null;
-    }
-  };
-
   const handleSubmit = async () => {
-    if (!formData.gstCertificate && !savedData?.gstCertificateFileId) {
-      return toast.error('GST Certificate is required');
+    if (!formData.gstNumber) {
+      return toast.error('GST number is required');
     }
 
     setLocalLoading(true);
     try {
-      let gstData = { url: savedData?.gstCertificateUrl, id: savedData?.gstCertificateFileId };
-      let msmeData = { url: savedData?.msmeCertificateUrl, id: savedData?.msmeCertificateFileId };
-      let regData = { url: savedData?.registrationCertificateUrl, id: savedData?.registrationCertificateFileId };
-
-      if (formData.gstCertificate instanceof File) {
-        gstData = await handleFileUpload(formData.gstCertificate, 'GST Certificate');
-      }
-      if (formData.msmeCertificate instanceof File) {
-        msmeData = await handleFileUpload(formData.msmeCertificate, 'MSME Certificate');
-      }
-      if (formData.registrationCertificate instanceof File) {
-        regData = await handleFileUpload(formData.registrationCertificate, 'Registration Certificate');
-      }
-
       const { gstCertificate, msmeCertificate, registrationCertificate, ...submitData } = formData;
 
       await dispatch(updateRecruiterProfile({
         ...submitData,
-        gstCertificateUrl: gstData?.url,
-        gstCertificateFileId: gstData?.id,
-        msmeCertificateUrl: msmeData?.url,
-        msmeCertificateFileId: msmeData?.id,
-        registrationCertificateUrl: regData?.url,
-        registrationCertificateFileId: regData?.id,
         isProfileCompleted: true,
-        onboardingStep: 4
+        onboardingStep: 3
       })).unwrap();
 
       toast.success('Company profile saved! Redirecting to dashboard...');
@@ -299,54 +266,7 @@ const RecruiterInfoDetails = () => {
           </motion.div>
         );
 
-      case 4:
-        return (
-          <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-blue-100 shadow-sm space-y-8">
-              <h3 className="text-xl font-semibold text-blue-900 flex items-center gap-2">
-                <FileCheck className="w-6 h-6 text-blue-600" /> Document Verification
-              </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* GST Upload */}
-                <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-slate-700">GST Certificate*</label>
-                  <div className="relative group">
-                    <input type="file" accept=".pdf" onChange={(e) => setFormData(prev => ({ ...prev, gstCertificate: e.target.files[0] }))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                    <div className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center transition-all ${formData.gstCertificate || savedData?.gstCertificateFileId ? 'border-green-400 bg-green-50' : 'border-slate-200 group-hover:border-blue-400'}`}>
-                      {formData.gstCertificate || savedData?.gstCertificateFileId ? <CheckCircle2 className="w-8 h-8 text-green-500" /> : <Upload className="w-8 h-8 text-slate-300" />}
-                      <span className="mt-2 text-[10px] font-bold text-slate-500 uppercase">GST</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* MSME Upload */}
-                <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-slate-700">MSME Certificate</label>
-                  <div className="relative group">
-                    <input type="file" accept=".pdf" onChange={(e) => setFormData(prev => ({ ...prev, msmeCertificate: e.target.files[0] }))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                    <div className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center transition-all ${formData.msmeCertificate || savedData?.msmeCertificateFileId ? 'border-green-400 bg-green-50' : 'border-slate-200 group-hover:border-blue-400'}`}>
-                      {formData.msmeCertificate || savedData?.msmeCertificateFileId ? <CheckCircle2 className="w-8 h-8 text-green-500" /> : <Upload className="w-8 h-8 text-slate-300" />}
-                      <span className="mt-2 text-[10px] font-bold text-slate-500 uppercase">MSME</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Company Registration Upload */}
-                <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-slate-700">Registration Docs</label>
-                  <div className="relative group">
-                    <input type="file" accept=".pdf" onChange={(e) => setFormData(prev => ({ ...prev, registrationCertificate: e.target.files[0] }))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                    <div className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center transition-all ${formData.registrationCertificate || savedData?.registrationCertificateFileId ? 'border-green-400 bg-green-50' : 'border-slate-200 group-hover:border-blue-400'}`}>
-                      {formData.registrationCertificate || savedData?.registrationCertificateFileId ? <CheckCircle2 className="w-8 h-8 text-green-500" /> : <Upload className="w-8 h-8 text-slate-300" />}
-                      <span className="mt-2 text-[10px] font-bold text-slate-500 uppercase">REGISTRATION</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        );
 
       default:
         return null;
@@ -405,7 +325,7 @@ const RecruiterInfoDetails = () => {
                 <ChevronLeft className="w-5 h-5" /> Previous
               </button>
 
-              {reduxStep < 4 ? (
+              {reduxStep < 3 ? (
                 <button type="button" onClick={nextStep} disabled={isGlobalLoading} className="flex items-center gap-2 px-8 py-2.5 bg-blue-900 text-white rounded-xl font-medium hover:bg-blue-800 transition-all shadow-md active:scale-95 disabled:opacity-50">
                   {localLoading ? 'Saving...' : <>Next Step <ChevronRight className="w-5 h-5" /></>}
                 </button>

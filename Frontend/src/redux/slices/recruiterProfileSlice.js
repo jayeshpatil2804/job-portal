@@ -5,7 +5,6 @@ const initialState = {
   data: null,
   currentStep: 1,
   isProfileCompleted: false,
-  isPaid: false,
   isActive: false,
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   loading: false,
@@ -35,7 +34,6 @@ const recruiterProfileSlice = createSlice({
         state.loading = false;
         state.currentStep = action.payload.currentStep;
         state.isProfileCompleted = action.payload.isProfileCompleted;
-        state.isPaid = action.payload.isPaid;
         state.isActive = action.payload.isActive;
         state.data = action.payload.data;
       })
@@ -52,7 +50,6 @@ const recruiterProfileSlice = createSlice({
         state.loading = false;
         state.currentStep = action.payload.currentStep;
         state.isProfileCompleted = action.payload.isProfileCompleted;
-        state.isPaid = action.payload.isPaid;
         state.isActive = action.payload.isActive;
         state.data = action.payload.profile;
       })
@@ -64,7 +61,6 @@ const recruiterProfileSlice = createSlice({
         state.status = 'succeeded';
         state.data = action.payload.user || {};
         state.isProfileCompleted = action.payload.user?.isProfileCompleted || false;
-        state.isPaid = action.payload.user?.isPaid || false;
         state.isActive = action.payload.user?.isActive || false;
         state.currentStep = action.payload.user?.onboardingStep || 1;
       });

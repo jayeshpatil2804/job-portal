@@ -10,10 +10,9 @@ import adminAuthRoutes from './modules/auth/routes/admin.routes'
 import adminManagementRoutes from './modules/admin/routes/admin.management.routes'
 import googleAuthRoutes from './modules/auth/routes/google.routes'
 import authRoutes from './modules/auth/routes/auth.routes'
-import fileRoutes from './modules/file/routes/file.routes'
+
 import jobRoutes from './modules/job/routes/job.routes'
 import applicationRoutes from './modules/job/routes/application.routes'
-import interviewRoutes from './modules/job/routes/interview.routes'
 
 import contactRoutes from './modules/contact/routes/contact.routes'
 import path from 'path'
@@ -97,10 +96,9 @@ app.use('/api/auth/admin', adminAuthRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/admin', adminManagementRoutes)
 app.use('/api/users', googleAuthRoutes) // For Frontend API
-app.use('/api/file', fileRoutes)
+
 app.use('/api/jobs', jobRoutes)
 app.use('/api/applications', applicationRoutes)
-app.use('/api/interviews', interviewRoutes)
 
 app.use('/api/contact', contactRoutes)
 app.use('/users', googleAuthRoutes)     // For Google Console Redirect

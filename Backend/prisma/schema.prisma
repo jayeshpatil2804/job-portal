@@ -23,110 +23,78 @@ enum Permission {
 }
 
 model Candidate {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  fullName   String
-  mobile     String
-  password   String
-  role       UserRole @default(CANDIDATE)
-  
+  id       String   @id @default(uuid())
+  email    String   @unique
+  fullName String
+  mobile   String
+  password String
+  role     UserRole @default(CANDIDATE)
+
   // Added address fields for signup
-  address    String?
-  city       String?
-  state      String?
-  pinCode    String?
+  address String?
+  city    String?
+  state   String?
+  pinCode String?
 
-  isVerified Boolean  @default(false)
-  isPaid     Boolean  @default(true)
-  isActive   Boolean  @default(true)
-  isProfileCompleted Boolean  @default(false)
+  isVerified         Boolean @default(false)
+  isActive           Boolean @default(true)
+  isProfileCompleted Boolean @default(false)
 
-
-  profile    CandidateProfile?
-  files      File[]
-  applications Application[]
+  profile       CandidateProfile?
+  applications  Application[]
   notifications Notification[]
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
 }
 
 model Admin {
-  id          String       @id @default(uuid())
-  email       String       @unique
-  fullName    String
-  password    String
-  role        UserRole     @default(ADMIN)
-  isVerified  Boolean      @default(true)
-  isSuperAdmin Boolean     @default(false)
-  
+  id           String   @id @default(uuid())
+  email        String   @unique
+  fullName     String
+  password     String
+  role         UserRole @default(ADMIN)
+  isVerified   Boolean  @default(true)
+  isSuperAdmin Boolean  @default(false)
+
   permissions Permission[] // Optional permissions for sub-admins
-  
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
 }
 
 model CandidateProfile {
-  id              String    @id @default(uuid())
-  candidateId     String    @unique
-  candidate       Candidate @relation(fields: [candidateId], references: [id])
-  
+  id          String    @id @default(uuid())
+  candidateId String    @unique
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+
   // Personal Details (now mostly in Candidate, but keeping some here for detailed profile)
-  dob             String?
-  gender          String?
-  
+  dob    String?
+  gender String?
+
   // Education
-  qualification   String?
-  college         String?
-  passingYear     String?
-  
+  qualification String?
+  college       String?
+  passingYear   String?
+
   // Experience
-  isExperienced   Boolean   @default(false)
-  companyName     String?
-  designation     String?
-  yearsOfExp      String?
-  
+  isExperienced Boolean @default(false)
+  companyName   String?
+  designation   String?
+  yearsOfExp    String?
+
   // Skills
-  skills          String?
-  skillIds        Skill[]   @relation("CandidateSkills")
-  
-  // Resume
-  resumeUrl       String?
-  resumeFileId    String?   @unique
-  resumeFile      File?     @relation("CandidateResume", fields: [resumeFileId], references: [id])
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  skills   String?
+  skillIds Skill[] @relation("CandidateSkills")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model File {
-  id              String            @id @default(uuid())
-  fileName        String
-  fileUrl         String
-  key             String            @unique
-  mimeType        String
-  size            Int
-  
-  // Relations
-  candidateId     String?
-  candidate       Candidate?       @relation(fields: [candidateId], references: [id])
-  candidateProfile CandidateProfile? @relation("CandidateResume")
-
-  recruiterId     String?
-  recruiter       Recruiter?       @relation(fields: [recruiterId], references: [id])
-  gstProfile      CompanyProfile?  @relation("GstCertificate")
-  msmeProfile     CompanyProfile?  @relation("MsmeCertificate")
-  regProfile      CompanyProfile?  @relation("RegistrationCertificate")
-
-  applicationResumes Application[] @relation("ApplicationResume")
-
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-}
 
 enum VerificationStatus {
   PENDING
@@ -135,62 +103,47 @@ enum VerificationStatus {
 }
 
 model Recruiter {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  fullName    String
-  companyName String
-  mobile      String
-  password    String
-  role       UserRole @default(RECRUITER)
+  id                 String             @id @default(uuid())
+  email              String             @unique
+  fullName           String
+  companyName        String
+  mobile             String
+  password           String
+  role               UserRole           @default(RECRUITER)
   verificationStatus VerificationStatus @default(PENDING)
-  isPaid     Boolean  @default(true)
-  isActive   Boolean  @default(true)
-  isProfileCompleted Boolean  @default(false)
-  address          String?
-  city             String?
-  state            String?
-  pinCode          String?
+  isActive           Boolean            @default(true)
+  isProfileCompleted Boolean            @default(false)
+  address            String?
+  city               String?
+  state              String?
+  pinCode            String?
 
-
-  profile     CompanyProfile?
-  files       File[]
-  jobs        Job[]
+  profile       CompanyProfile?
+  jobs          Job[]
   notifications Notification[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
   @@index([verificationStatus])
 }
 
 model CompanyProfile {
-  id              String    @id @default(uuid())
-  recruiterId     String    @unique
-  recruiter       Recruiter @relation(fields: [recruiterId], references: [id])
+  id          String    @id @default(uuid())
+  recruiterId String    @unique
+  recruiter   Recruiter @relation(fields: [recruiterId], references: [id])
 
-  companyName     String?
+  companyName String?
 
   // Company Details
-  industry        String?
-  gstNumber       String?
-  website         String?
+  industry  String?
+  gstNumber String?
+  website   String?
 
-  // Verification Documents
-  gstCertificateUrl      String?
-  gstCertificateFileId   String? @unique
-  gstCertificateFile     File?   @relation("GstCertificate", fields: [gstCertificateFileId], references: [id])
 
-  msmeCertificateUrl      String?
-  msmeCertificateFileId   String? @unique
-  msmeCertificateFile     File?   @relation("MsmeCertificate", fields: [msmeCertificateFileId], references: [id])
-
-  registrationCertificateUrl    String?
-  registrationCertificateFileId String? @unique
-  registrationCertificateFile   File?   @relation("RegistrationCertificate", fields: [registrationCertificateFileId], references: [id])
-
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OtpCode {
@@ -225,7 +178,7 @@ model Job {
   title            String
   department       String
   jobType          JobType?
-  experience       String   // e.g. "0-1 years", "2-3 years", "5+ years"
+  experience       String // e.g. "0-1 years", "2-3 years", "5+ years"
   salaryMin        Int?
   salaryMax        Int?
   location         String
@@ -234,23 +187,23 @@ model Job {
   responsibilities String?  @db.Text
   requirements     String?  @db.Text
   skills           String?  @db.Text
-  
-  designationId    String?
-  designation      Designation? @relation(fields: [designationId], references: [id])
-  skillsReq        Skill[]      @relation("JobSkills")
 
-  benefits         String?  @db.Text
-  deadline         DateTime?
-  isFeatured       Boolean  @default(false)
-  isRemote         Boolean  @default(false)
-  isFlagged        Boolean  @default(false)
-  isRemoved        Boolean  @default(false)
+  designationId String?
+  designation   Designation? @relation(fields: [designationId], references: [id])
+  skillsReq     Skill[]      @relation("JobSkills")
 
-  status           JobStatus @default(OPEN)
-  applications     Application[]
+  benefits   String?   @db.Text
+  deadline   DateTime?
+  isFeatured Boolean   @default(false)
+  isRemote   Boolean   @default(false)
+  isFlagged  Boolean   @default(false)
+  isRemoved  Boolean   @default(false)
 
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  status       JobStatus     @default(OPEN)
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([recruiterId])
   @@index([status])
@@ -260,67 +213,31 @@ model Job {
   @@index([isRemoved])
 }
 
-
-
 enum ApplicationStatus {
   APPLIED
   VIEWED
   SHORTLISTED
-  INTERVIEW_SCHEDULED
   HIRED
   REJECTED
 }
 
 model Application {
-  id           String            @id @default(uuid())
-  jobId        String
-  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  candidateId  String
-  candidate    Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  
-  status       ApplicationStatus @default(APPLIED)
-  
-  resumeFileId String?
-  resumeFile   File?             @relation("ApplicationResume", fields: [resumeFileId], references: [id])
-  
-  interview    Interview?
-  
-  selectedSkills Skill[]             @relation("ApplicationSkills")
-  
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id          String    @id @default(uuid())
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  status ApplicationStatus @default(APPLIED)
+  selectedSkills Skill[] @relation("ApplicationSkills")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([jobId, candidateId]) // Prevent duplicate applications
   @@index([jobId])
   @@index([candidateId])
   @@index([status])
-}
-
-enum InterviewMode {
-  ONLINE
-  OFFLINE
-}
-
-enum InterviewStatus {
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-}
-
-model Interview {
-  id            String          @id @default(uuid())
-  applicationId String          @unique
-  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  
-  date          DateTime
-  duration      Int?            // in minutes
-  mode          InterviewMode   @default(ONLINE)
-  location      String?         // Meeting link or physical address
-  notes         String?
-  status        InterviewStatus @default(SCHEDULED)
-  
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
 }
 
 
@@ -333,23 +250,23 @@ model Designation {
 }
 
 model Skill {
-  id                String             @id @default(uuid())
-  name              String             @unique
-  category          String?            // e.g. "IT", "Non-IT", "Healthcare"
-  
+  id       String  @id @default(uuid())
+  name     String  @unique
+  category String? // e.g. "IT", "Non-IT", "Healthcare"
+
   jobs              Job[]              @relation("JobSkills")
   applications      Application[]      @relation("ApplicationSkills")
   candidateProfiles CandidateProfile[] @relation("CandidateSkills")
 
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Notification {
-  id          String   @id @default(uuid())
-  type        String   // SUBSCRIPTION_EXPIRING | SUBSCRIPTION_EXPIRED
-  message     String
-  isRead      Boolean  @default(false)
+  id      String  @id @default(uuid())
+  type    String // SUBSCRIPTION_EXPIRING | SUBSCRIPTION_EXPIRED
+  message String
+  isRead  Boolean @default(false)
 
   candidateId String?
   candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
@@ -357,7 +274,7 @@ model Notification {
   recruiterId String?
   recruiter   Recruiter? @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([candidateId])
   @@index([recruiterId])

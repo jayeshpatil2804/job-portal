@@ -5,9 +5,6 @@ import RecruiterLayout from '../../../../components/RecruiterLayout'
 import { Search, Download, Mail, CheckCircle, XCircle, Calendar, Filter, User, MapPin, Briefcase } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getJobApplicants, updateApplicationStatus } from '../../../../redux/actions/applicationActions'
-import { scheduleInterview } from '../../../../redux/actions/interviewActions'
-import { clearInterviewStates } from '../../../../redux/slices/interviewSlice'
-import ScheduleInterviewModal from '../../../../components/ScheduleInterviewModal'
 import { toast } from 'react-hot-toast'
 
 const SummaryCard = ({ label, count, color, icon: Icon }) => (
@@ -29,13 +26,12 @@ const Applicants = () => {
     const navigate = useNavigate()
     
     const { applicants, loading } = useSelector(state => state.application)
-    const { loading: interviewLoading, success: interviewSuccess } = useSelector(state => state.interview)
+
     const { isActive } = useSelector(state => state.recruiterProfile)
     
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState('ALL')
     const [selectedApplicant, setSelectedApplicant] = useState(null)
-    const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false)
 
     useEffect(() => {
         if (jobId) {
@@ -43,15 +39,7 @@ const Applicants = () => {
         }
     }, [dispatch, jobId])
 
-    useEffect(() => {
-        if (interviewSuccess) {
-            toast.success('Interview scheduled successfully!')
-            setIsInterviewModalOpen(false)
-            dispatch(clearInterviewStates())
-            // Re-fetch to update status in UI if needed, though slice handles it
-            if (jobId) dispatch(getJobApplicants(jobId))
-        }
-    }, [interviewSuccess, dispatch, jobId])
+
 
     const handleStatusUpdate = async (id, status, label) => {
         const result = await dispatch(updateApplicationStatus({ id, status }))
@@ -62,24 +50,14 @@ const Applicants = () => {
         }
     }
 
-    const handleOpenInterviewModal = (applicant) => {
-        setSelectedApplicant(applicant)
-        setIsInterviewModalOpen(true)
-    }
 
-    const handleConfirmInterview = (data) => {
-        dispatch(scheduleInterview({
-            applicationId: selectedApplicant.id,
-            ...data
-        }))
-    }
 
     const getStatusStyle = (status) => {
         switch (status) {
             case 'APPLIED': return 'bg-blue-100 text-blue-700'
             case 'VIEWED': return 'bg-yellow-100 text-yellow-700'
             case 'SHORTLISTED': return 'bg-purple-100 text-purple-700'
-            case 'INTERVIEW_SCHEDULED': return 'bg-green-100 text-green-700'
+
             case 'REJECTED': return 'bg-red-100 text-red-700'
             case 'HIRED': return 'bg-emerald-100 text-emerald-700'
             default: return 'bg-gray-100 text-gray-700'
@@ -97,20 +75,12 @@ const Applicants = () => {
     const stats = {
         total: applicants.length,
         shortlisted: applicants.filter(a => a.status === 'SHORTLISTED').length,
-        interviews: applicants.filter(a => a.status === 'INTERVIEW_SCHEDULED').length,
+        rejected: applicants.filter(a => a.status === 'REJECTED').length
         rejected: applicants.filter(a => a.status === 'REJECTED').length
     }
 
     return (
         <RecruiterLayout>
-
-            <ScheduleInterviewModal 
-                isOpen={isInterviewModalOpen}
-                onClose={() => setIsInterviewModalOpen(false)}
-                onConfirm={handleConfirmInterview}
-                applicantName={selectedApplicant?.candidate?.fullName}
-                loading={interviewLoading}
-            />
 
             <div className="max-w-[1400px] mx-auto space-y-10 pb-20">
                 {/* Header Section */}
@@ -133,7 +103,7 @@ const Applicants = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <SummaryCard label="Total Applied" count={stats.total} color="text-gray-900" icon={User} />
                     <SummaryCard label="Shortlisted" count={stats.shortlisted} color="text-purple-600" icon={CheckCircle} />
-                    <SummaryCard label="Interviews" count={stats.interviews} color="text-green-600" icon={Calendar} />
+
                     <SummaryCard label="Rejected" count={stats.rejected} color="text-red-500" icon={XCircle} />
                 </div>
 
@@ -160,7 +130,7 @@ const Applicants = () => {
                                 <option value="ALL">All Statuses</option>
                                 <option value="APPLIED">Applied</option>
                                 <option value="SHORTLISTED">Shortlisted</option>
-                                <option value="INTERVIEW_SCHEDULED">Interview Set</option>
+
                                 <option value="REJECTED">Rejected</option>
                             </select>
                         </div>
@@ -268,35 +238,13 @@ const Applicants = () => {
                                         </td>
                                         <td className="px-10 py-8">
                                             <div className="flex items-center justify-center gap-3">
-                                                <a 
-                                                    href={app.resumeFile?.fileUrl || app.candidate.profile?.resumeFile?.fileUrl || '#'} 
-                                                    target="_blank" 
-                                                    rel="noreferrer"
-                                                    title="View Resume" 
-                                                    className="p-3 bg-white border-2 border-gray-100 text-[#1a3c8f] rounded-2xl hover:border-[#1a3c8f] hover:shadow-lg hover:shadow-blue-900/10 transition-all active:scale-95"
-                                                >
-                                                    <Download size={18} />
-                                                </a>
-                                                
-                                                {app.status !== 'REJECTED' && app.status !== 'HIRED' && (
-                                                    <>
-                                                        {app.status !== 'SHORTLISTED' && app.status !== 'INTERVIEW_SCHEDULED' && (
+                                                        {app.status !== 'SHORTLISTED' && (
                                                             <button 
                                                                 onClick={() => handleStatusUpdate(app.id, 'SHORTLISTED', 'Shortlist')}
                                                                 title="Shortlist" 
                                                                 className="p-3 bg-white border-2 border-purple-100 text-purple-600 rounded-2xl hover:bg-purple-600 hover:text-white hover:border-purple-600 hover:shadow-lg hover:shadow-purple-900/10 transition-all active:scale-95"
                                                             >
                                                                 <CheckCircle size={18} />
-                                                            </button>
-                                                        )}
-                                                        
-                                                        {(app.status === 'SHORTLISTED' || app.status === 'INTERVIEW_SCHEDULED') && (
-                                                            <button 
-                                                                onClick={() => handleOpenInterviewModal(app)}
-                                                                title="Schedule Interview" 
-                                                                className="p-3 bg-white border-2 border-green-100 text-green-600 rounded-2xl hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-lg hover:shadow-green-900/10 transition-all active:scale-95"
-                                                            >
-                                                                <Calendar size={18} />
                                                             </button>
                                                         )}
 

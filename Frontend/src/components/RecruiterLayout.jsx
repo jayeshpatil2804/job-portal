@@ -15,7 +15,7 @@ const RecruiterLayout = () => {
     const dispatch = useDispatch();
     const { skills, designations } = useSelector(state => state.meta);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const { isActive, isPaid, status: profileStatus } = useSelector(state => state.recruiterProfile)
+    const { isActive, status: profileStatus } = useSelector(state => state.recruiterProfile)
     const { user } = useSelector(state => state.auth)
 
     useEffect(() => {
@@ -31,16 +31,6 @@ const RecruiterLayout = () => {
         }
     }, [dispatch, profileStatus, user])
 
-    // Show warning toast for unpaid recruiters instead of blocking the dashboard
-    useEffect(() => {
-        if (profileStatus === 'succeeded' && !isActive && !toastShown.current) {
-            toast.error('Payment not paid yet. Full features locked.', { duration: 5000 })
-            toastShown.current = true
-        }
-        if (isActive) {
-            toastShown.current = false
-        }
-    }, [profileStatus, isActive])
 
     // Real-time activation via Socket.IO
     useEffect(() => {

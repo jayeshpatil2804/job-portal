@@ -13,7 +13,7 @@ const AppliedJobsPage = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { myApplications: applications, loading } = useSelector(state => state.application)
-    const { isActive, isPaid } = useSelector(state => state.profile)
+    const { isActive } = useSelector(state => state.profile)
     const [statusFilter, setStatusFilter] = useState('ALL')
     const [searchQuery, setSearchQuery] = useState('')
     useEffect(() => {
@@ -23,7 +23,7 @@ const AppliedJobsPage = () => {
     const filters = [
         { label: 'All Jobs', value: 'ALL' },
         { label: 'Shortlisted', value: 'SHORTLISTED', color: 'bg-purple-100 text-purple-700' },
-        { label: 'Interviews', value: 'INTERVIEW_SCHEDULED', color: 'bg-green-100 text-green-700' },
+
         { label: 'Rejected', value: 'REJECTED', color: 'bg-red-100 text-red-700' }
     ]
 
@@ -39,7 +39,7 @@ const AppliedJobsPage = () => {
             case 'APPLIED': return 'bg-blue-50 text-blue-600 border-blue-100'
             case 'VIEWED': return 'bg-yellow-50 text-yellow-600 border-yellow-100'
             case 'SHORTLISTED': return 'bg-purple-50 text-purple-600 border-purple-100'
-            case 'INTERVIEW_SCHEDULED': return 'bg-green-50 text-green-600 border-green-100'
+
             case 'REJECTED': return 'bg-red-50 text-red-600 border-red-100'
             default: return 'bg-gray-50 text-gray-500 border-gray-100'
         }

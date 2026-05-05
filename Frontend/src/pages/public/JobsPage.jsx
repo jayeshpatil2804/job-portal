@@ -100,7 +100,7 @@ const JobsPage = () => {
 
     const { jobs = [], loading = false } = useSelector(state => state.job || {})
     const { user, isAuthenticated } = useSelector(state => state.auth || {})
-    const { isActive, isPaid } = useSelector(state => state.profile || {})
+    const { isActive } = useSelector(state => state.profile || {})
     
 
     

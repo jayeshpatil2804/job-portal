@@ -3,11 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getJobById, closeJob, updateJobStatus } from '../../../../redux/actions/jobActions';
 import { clearSelectedJob } from '../../../../redux/slices/jobSlice';
-import RecruiterLayout from '../../../../components/RecruiterLayout';
 import ConfirmationModal from '../../../../components/ConfirmationModal';
-import { 
-    Calendar, MapPin, Briefcase, DollarSign, 
-    Users, Clock, ArrowLeft, Edit2, CheckCircle, 
+import {
+    Calendar, MapPin, Briefcase, DollarSign,
+    Users, Clock, ArrowLeft, Edit2, CheckCircle,
     XCircle, AlertCircle, PlusCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -47,12 +46,12 @@ const ViewJob = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { selectedJob: job, loading, error } = useSelector(state => state.job);
-    
+
     const [modalConfig, setModalConfig] = React.useState({
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         confirmText: '',
         variant: 'warning',
         loading: false
@@ -62,6 +61,66 @@ const ViewJob = () => {
         dispatch(getJobById(id));
         return () => dispatch(clearSelectedJob());
     }, [dispatch, id]);
+
+    const statusConfigs = {
+        OPEN: {
+            label: 'Live & Active',
+            icon: CheckCircle,
+            color: 'text-green-600',
+            bg: 'bg-green-50'
+        },
+        CLOSED: {
+            label: 'Hiring Closed',
+            icon: XCircle,
+            color: 'text-red-600',
+            bg: 'bg-red-50'
+        },
+        DRAFT: {
+            label: 'Draft Mode',
+            icon: AlertCircle,
+            color: 'text-amber-600',
+            bg: 'bg-amber-50'
+        }
+    };
+
+    const currentStatus = job ? (statusConfigs[job.status] || {
+        label: job.status,
+        icon: AlertCircle,
+        color: 'text-gray-600',
+        bg: 'bg-gray-50'
+    }) : null;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 border-4 border-blue-50 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-[#1a3c8f] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mb-6">
+                    <AlertCircle size={40} />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to load job</h2>
+                <p className="text-gray-500 mb-8 max-w-md">{error}</p>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-[#1a3c8f] text-white rounded-2xl font-bold hover:bg-[#153073] transition-all"
+                >
+                    <ArrowLeft size={18} />
+                    Go Back
+                </button>
+            </div>
+        );
+    }
+
+    if (!job) return null;
 
     const handlePublishClick = () => {
         setModalConfig({
@@ -114,12 +173,12 @@ const ViewJob = () => {
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-5xl mx-auto space-y-6 pb-20 relative"
         >
-            <ConfirmationModal 
+            <ConfirmationModal
                 {...modalConfig}
                 onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
             />
@@ -127,10 +186,10 @@ const ViewJob = () => {
             {/* Header Card */}
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl -mr-32 -mt-32" />
-                
+
                 <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="space-y-4">
-                        <button 
+                        <button
                             onClick={() => navigate(-1)}
                             className="inline-flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-[#1a3c8f] transition-colors"
                         >
@@ -150,9 +209,9 @@ const ViewJob = () => {
                             </p>
                         </div>
                     </div>
-                    
+
                     <div className="flex gap-3 w-full md:w-auto">
-                        <button 
+                        <button
                             onClick={() => navigate(`/recruiter/edit-job/${job.id}`)}
                             className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl font-bold hover:border-[#1a3c8f] hover:text-[#1a3c8f] transition-all active:scale-95"
                         >
@@ -216,7 +275,7 @@ const ViewJob = () => {
                             <p className="text-green-50 text-sm mb-6 leading-relaxed">
                                 This job is currently a draft. Publish it now to start receiving applications from qualified candidates.
                             </p>
-                            <button 
+                            <button
                                 onClick={handlePublishClick}
                                 className="w-full py-3 bg-white text-green-600 rounded-2xl font-bold hover:bg-green-50 transition-colors flex items-center justify-center gap-2"
                             >
@@ -232,7 +291,7 @@ const ViewJob = () => {
                             <p className="text-blue-100 text-sm mb-6 leading-relaxed">
                                 Once you have found the right candidate, you can close this job posting to stop receiving new applications.
                             </p>
-                            <button 
+                            <button
                                 onClick={handleCloseClick}
                                 className="w-full py-3 bg-white text-[#1a3c8f] rounded-2xl font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
                             >
@@ -248,7 +307,7 @@ const ViewJob = () => {
                             <p className="text-blue-50 text-sm mb-6 leading-relaxed">
                                 Need more candidates? You can re-open this closed job posting at any time to start receiving applications again.
                             </p>
-                            <button 
+                            <button
                                 onClick={handleReopenClick}
                                 className="w-full py-3 bg-white text-blue-600 rounded-2xl font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
                             >
@@ -260,7 +319,7 @@ const ViewJob = () => {
                 </div>
             </div>
         </motion.div>
- );
+    );
 };
 
 export default ViewJob;

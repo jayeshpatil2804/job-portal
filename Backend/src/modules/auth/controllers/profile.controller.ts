@@ -10,7 +10,6 @@ export const getProfileStatus = async (req: Request, res: Response) => {
             where: { id: candidateId },
             select: {
                 isProfileCompleted: true,
-                isPaid: true,
                 isActive: true
             }
         })
@@ -22,7 +21,6 @@ export const getProfileStatus = async (req: Request, res: Response) => {
         return res.json({
             currentStep: 1, // Defaulting to 1 as onboarding is removed
             isProfileCompleted: candidate.isProfileCompleted,
-            isPaid: candidate.isPaid,
             isActive: candidate.isActive,
             data: {}
         })
@@ -42,13 +40,11 @@ export const completeCandidateProfile = async (req: Request, res: Response) => {
             candidate, 
             createdAt, 
             updatedAt, 
-            resumeFile,
             // Exclude Candidate-model fields that don't belong in CandidateProfile
             email,
             role,
             isActive,
             isVerified,
-            isPaid,
             mobile,
             fullName,
             address,
@@ -111,8 +107,7 @@ export const getProfile = async (req: Request, res: Response) => {
         let profile = await (prisma as any).candidateProfile.findUnique({
             where: { candidateId },
             include: {
-                candidate: true,
-                resumeFile: true
+                candidate: true
             }
         })
 
@@ -184,8 +179,6 @@ export const updateCandidateProfile = async (req: Request, res: Response) => {
             email,
             mobile,
             createdAt, 
-            updatedAt, 
-            resumeFile,
             ...profileData 
         } = req.body
 

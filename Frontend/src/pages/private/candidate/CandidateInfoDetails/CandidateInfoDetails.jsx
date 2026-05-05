@@ -13,7 +13,7 @@ import {
   fetchProfileStatus, 
   updateProfile 
 } from '../../../../redux/actions/profileActions';
-import { uploadResume } from '../../../../redux/actions/fileActions';
+
 import { setStep } from '../../../../redux/slices/profileSlice';
 
 const CandidateInfoDetails = () => {
@@ -27,7 +27,6 @@ const CandidateInfoDetails = () => {
     data: savedData, 
     currentStep: reduxStep, 
     isProfileCompleted, 
-    isPaid,
     loading: reduxLoading,
     status: profileStatus 
   } = useSelector(state => state.profile);
@@ -56,8 +55,7 @@ const CandidateInfoDetails = () => {
   const steps = [
     { title: 'Personal', icon: User, desc: 'Contact Info' },
     { title: 'Education', icon: GraduationCap, desc: 'Academic History' },
-    { title: 'Experience', icon: Briefcase, desc: 'Work & Skills' },
-    { title: 'Resume', icon: FileText, desc: 'Verification' }
+    { title: 'Experience', icon: Briefcase, desc: 'Work & Skills' }
   ];
 
   // Sync saved data to local form when fetch succeeds
@@ -80,7 +78,7 @@ const CandidateInfoDetails = () => {
 
       // Sync step from URL or Redux
       const urlStep = parseInt(step);
-      if (!urlStep || urlStep < 1 || urlStep > 4) {
+      if (!urlStep || urlStep < 1 || urlStep > 3) {
         navigate(`/candidate/complete-profile/${reduxStep || 1}`, { replace: true });
       }
     }
@@ -89,7 +87,7 @@ const CandidateInfoDetails = () => {
   // Update step in Redux when URL step changes
   useEffect(() => {
     const urlStep = parseInt(step);
-    if (urlStep >= 1 && urlStep <= 4) {
+    if (urlStep >= 1 && urlStep <= 3) {
       dispatch(setStep(urlStep));
     }
   }, [step, dispatch]);
@@ -156,7 +154,7 @@ const CandidateInfoDetails = () => {
     setLocalLoading(true);
     try {
       const { currentSkill, resume, ...submitData } = formData;
-      const nextS = Math.min(reduxStep + 1, 4);
+      const nextS = Math.min(reduxStep + 1, 3);
       
       const result = await dispatch(updateProfile({
         ...submitData,
@@ -173,30 +171,14 @@ const CandidateInfoDetails = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.resume) {
-      return toast.error('Please upload your resume');
-    }
-    
     setLocalLoading(true);
     try {
-      let resumeFileId = savedData?.resumeFileId;
-      let resumeUrl = savedData?.resumeUrl;
-
-      // If resume is a File object, upload it first
-      if (formData.resume instanceof File) {
-        const uploadResult = await dispatch(uploadResume(formData.resume)).unwrap();
-        resumeFileId = uploadResult.file.id;
-        resumeUrl = uploadResult.file.fileUrl;
-      }
-
       const { currentSkill, resume, ...submitData } = formData;
       
       await dispatch(updateProfile({
         ...submitData,
-        resumeFileId,
-        resumeUrl,
         isProfileCompleted: true,
-        onboardingStep: 4
+        onboardingStep: 3
       })).unwrap();
       
       toast.success('Profile saved! Redirecting to dashboard...');
@@ -455,87 +437,6 @@ const CandidateInfoDetails = () => {
           </motion.div>
         );
 
-      case 4:
-        return (
-          <motion.div 
-            key="step4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
-          >
-            <div className={`${cardStyles} text-center`}>
-              <div className="absolute top-0 left-0 w-80 h-80 bg-blue-50 rounded-full -ml-40 -mt-40 opacity-40 blur-3xl" />
-              <div className="relative space-y-10">
-                <div className="space-y-4">
-                  <div className="w-24 h-24 bg-gradient-to-br from-[#1a3c8f] to-blue-600 text-white rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-blue-900/40 relative">
-                    <div className="absolute inset-0 bg-white/20 rounded-[2.5rem] animate-ping opacity-50" />
-                    <Upload size={40} />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-3xl font-black text-gray-900 tracking-tight">Verification</h3>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest max-w-[300px] mx-auto leading-relaxed">Please upload your professional resume in PDF format (Max 2MB)</p>
-                  </div>
-                </div>
-                
-                <div className="relative group max-w-md mx-auto">
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setFormData(prev => ({ ...prev, resume: e.target.files[0] }))}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  <div className={`p-14 border-4 border-dashed rounded-[3rem] transition-all duration-500 ${
-                    formData.resume || savedData?.resumeFile ? 'border-green-400 bg-green-50/50' : 'border-gray-100 group-hover:border-[#1a3c8f] group-hover:bg-blue-50/30 bg-gray-50'
-                  }`}>
-                    {formData.resume || savedData?.resumeFile ? (
-                      <div className="flex flex-col items-center gap-4 text-green-700">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle2 size={32} />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest truncate max-w-[200px]">
-                          {formData.resume instanceof File ? formData.resume.name : savedData?.resumeFile?.fileName || 'Resume.pdf'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="text-[#1a3c8f] font-black uppercase tracking-[0.2em] text-[10px]">Select Document</div>
-                        <p className="text-gray-400 font-bold text-xs">or drag and drop here</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {formData.resume && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="pt-10 border-t border-gray-50 max-w-sm mx-auto"
-                  >
-                    <div className="flex items-center justify-between p-6 bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-blue-900/5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center">
-                          <FileText size={24} />
-                        </div>
-                        <div className="text-left space-y-1">
-                          <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">Selected File</p>
-                          <p className="text-xs font-black text-gray-900 truncate max-w-[150px]">{formData.resume.name}</p>
-                        </div>
-                      </div>
-                      <button 
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, resume: null }))}
-                        className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-xl transition-all active:scale-90"
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        );
 
       default:
         return null;
@@ -649,7 +550,7 @@ const CandidateInfoDetails = () => {
                 <ChevronLeft size={20} /> Back
               </button>
 
-              {reduxStep < 4 ? (
+              {reduxStep < 3 ? (
                 <button
                   type="button"
                   onClick={nextStep}

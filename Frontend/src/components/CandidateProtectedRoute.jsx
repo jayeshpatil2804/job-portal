@@ -7,7 +7,6 @@ const CandidateProtectedRoute = ({ onlyAuth = false }) => {
     const dispatch = useDispatch();
     const { 
         isProfileCompleted, 
-        isPaid,
         status: profileStatus,
         error 
     } = useSelector(state => state.profile);

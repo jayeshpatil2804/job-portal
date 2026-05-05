@@ -4,7 +4,7 @@ import profileReducer from './slices/profileSlice';
 import recruiterProfileReducer from './slices/recruiterProfileSlice';
 import jobReducer from './slices/jobSlice';
 import applicationReducer from './slices/applicationSlice';
-import interviewReducer from './slices/interviewSlice';
+
 import dashboardReducer from './slices/dashboardSlice';
 import metaReducer from './slices/metaSlice';
 
@@ -15,7 +15,7 @@ export const store = configureStore({
     recruiterProfile: recruiterProfileReducer,
     job: jobReducer,
     application: applicationReducer,
-    interview: interviewReducer,
+
     dashboard: dashboardReducer,
     meta: metaReducer,
   },

@@ -11,7 +11,6 @@ export const getProfileStatus = async (req: Request, res: Response) => {
                 recruiter: {
                     select: {
                         isProfileCompleted: true,
-                        isPaid: true,
                         isActive: true
                     }
                 }
@@ -29,7 +28,6 @@ export const getProfileStatus = async (req: Request, res: Response) => {
         return res.json({
             currentStep: 1, // Defaulting to 1 as onboarding is removed
             isProfileCompleted: profile.recruiter.isProfileCompleted,
-            isPaid: profile.recruiter.isPaid,
             isActive: (profile.recruiter as any).isActive,
             data: profile
         })
@@ -55,13 +53,7 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             city,
             state,
             pinCode,
-            gstNumber,
-            gstCertificateUrl,
-            gstCertificateFileId,
-            msmeCertificateUrl,
-            msmeCertificateFileId,
-            registrationCertificateUrl,
-            registrationCertificateFileId
+            gstNumber
         } = req.body
 
         // 1. Update Recruiter basic info if provided
@@ -70,6 +62,8 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
         if (email || workEmail) recruiterUpdateData.email = email || workEmail
         if (mobile) recruiterUpdateData.mobile = mobile
         if (companyName) recruiterUpdateData.companyName = companyName
+        if (address) recruiterUpdateData.address = address
+        if (city) recruiterUpdateData.city = city
         if (state) recruiterUpdateData.state = state
         if (pinCode) recruiterUpdateData.pinCode = pinCode
         if (isProfileCompleted) recruiterUpdateData.isProfileCompleted = true
@@ -85,16 +79,7 @@ export const updateCompanyProfile = async (req: Request, res: Response) => {
             companyName,
             industry,
             website,
-            address,
-            city,
-            state,
-            gstNumber,
-            gstCertificateUrl,
-            gstCertificateFileId,
-            msmeCertificateUrl,
-            msmeCertificateFileId,
-            registrationCertificateUrl,
-            registrationCertificateFileId
+            gstNumber
         }
 
         // 2. Upsert Profile data
@@ -142,10 +127,7 @@ export const getCompanyProfile = async (req: Request, res: Response) => {
         const profile = await (prisma as any).companyProfile.findUnique({
             where: { recruiterId },
             include: {
-                recruiter: true,
-                gstCertificateFile: true,
-                msmeCertificateFile: true,
-                registrationCertificateFile: true
+                recruiter: true
             }
         })
 

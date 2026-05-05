@@ -19,7 +19,6 @@ const VERIFICATION_CHECKLIST = [
     { key: 'companyLogo', label: 'Company Logo', icon: <Image size={14} /> },
     { key: 'documents', label: 'Documents Uploaded', icon: <FileText size={14} /> },
     { key: 'emailVerified', label: 'Email Verified', icon: <Mail size={14} /> },
-    { key: 'payment', label: 'Payment Status', icon: <Shield size={14} /> },
 ]
 
 const RecruiterApproval = () => {
@@ -28,8 +27,6 @@ const RecruiterApproval = () => {
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('ALL')
     const [selected, setSelected] = useState(null)
-    const [renewModal, setRenewModal] = useState(null)
-    const [renewDuration, setRenewDuration] = useState(12)
     const [subscriptionProfile, setSubscriptionProfile] = useState(null)
     const [pagination, setPagination] = useState({
         currentPage: 1,
@@ -76,43 +73,12 @@ const RecruiterApproval = () => {
         setSelected(null)
     }
 
-    const handlePaymentStatusChange = async (id, status) => {
-        try {
-            await api.patch(`/admin/recruiters/${id}/payment-status`, { paymentStatus: status })
-            setRecruiters(prev => prev.map(r => {
-                if (r.id === id) {
-                    if (status === 'PAID') return { ...r, isPaid: true, isActive: true }
-                    if (status === 'UNPAID') return { ...r, isPaid: false, isActive: false }
-                    if (status === 'TEMP_ACTIVATED') return { ...r, isPaid: false, isActive: true }
-                }
-                return r
-            }))
-            toast.success(`Payment status updated to ${status.replace('_', ' ').toLowerCase()}`)
-        } catch (error) {
-            toast.error('Failed to update payment status')
-        }
-    }
-
     const openSubscriptionProfile = async (id) => {
         try {
             const res = await api.get(`/admin/recruiters/${id}`)
             setSubscriptionProfile(res.data.recruiter)
         } catch (error) {
             toast.error('Failed to load recruiter profile')
-        }
-    }
-
-    const handleRenew = async () => {
-        if (!renewModal) return
-
-        try {
-            await api.post(`/admin/recruiters/${renewModal.id}/renew`, { durationMonths: renewDuration })
-            toast.success(`Recruiter subscription renewed for ${renewDuration} months`)
-            setRenewModal(null)
-            setRenewDuration(12)
-            fetchRecruiters()
-        } catch (error) {
-            toast.error('Failed to renew subscription')
         }
     }
 
@@ -193,8 +159,7 @@ const RecruiterApproval = () => {
                         website: r.website ? true : false,
                         companyLogo: r.companyLogo ? true : false,
                         documents: r.documentsUploaded ? true : false,
-                        emailVerified: r.emailVerified ? true : false,
-                        payment: r.isPaid ? true : false
+                        emailVerified: r.emailVerified ? true : false
                     }
                     
                     const completedChecks = Object.values(verificationStatus).filter(Boolean).length
@@ -232,11 +197,6 @@ const RecruiterApproval = () => {
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${s.classes}`}>
                                             {s.icon} {s.label}
-                                        </span>
-                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${
-                                            r.isPaid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
-                                        }`}>
-                                            {r.isPaid ? 'Paid' : 'Unpaid'}
                                         </span>
                                     </div>
                                 </div>
@@ -316,20 +276,6 @@ const RecruiterApproval = () => {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Subscription Info */}
-                            {r.subscriptionExpiryDate && (
-                                <div className="mt-3 flex items-center gap-1 text-xs text-gray-400">
-                                    <Calendar size={10} />
-                                    <span>Expires: {r.subscriptionExpiryDate}</span>
-                                    {r.isExpiringSoon && !r.isExpired && (
-                                        <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">Soon</span>
-                                    )}
-                                    {r.isExpired && (
-                                        <span className="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Expired</span>
-                                    )}
-                                </div>
-                            )}
 
                             {/* Action Buttons */}
                             <div className="mt-4 flex gap-2">
@@ -416,53 +362,6 @@ const RecruiterApproval = () => {
                                 </button>
                             </div>
 
-                            {/* Subscription Info */}
-                            {subscriptionProfile.subscriptionExpiryDate && (
-                                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-5 mb-6 border border-blue-100">
-                                    <h4 className="font-bold text-[#0f172a] mb-3 flex items-center gap-2">
-                                        <Calendar size={18} className="text-[#1a3c8f]" />
-                                        Subscription Details
-                                    </h4>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Start Date</p>
-                                            <p className="font-bold text-gray-900">{subscriptionProfile.subscriptionStartDate || 'N/A'}</p>
-                                        </div>
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Expiry Date</p>
-                                            <p className="font-bold text-gray-900">{subscriptionProfile.subscriptionExpiryDate}</p>
-                                        </div>
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Days Remaining</p>
-                                            <p className={`font-bold ${subscriptionProfile.isExpired ? 'text-red-600' : subscriptionProfile.isExpiringSoon ? 'text-orange-600' : 'text-green-600'
-                                                }`}>
-                                                {subscriptionProfile.subscriptionDaysRemaining !== null
-                                                    ? `${subscriptionProfile.subscriptionDaysRemaining} days`
-                                                    : 'N/A'}
-                                            </p>
-                                        </div>
-                                        <div className="bg-white rounded-xl p-3">
-                                            <p className="text-xs text-gray-500 mb-1">Status</p>
-                                            <p className={`font-bold ${subscriptionProfile.isPaid ? 'text-green-600' : 'text-gray-600'
-                                                }`}>
-                                                {subscriptionProfile.isPaid ? 'PAID' : 'UNPAID'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {subscriptionProfile.isPaid && !subscriptionProfile.isExpired && (
-                                        <button
-                                            onClick={() => {
-                                                setRenewModal({ id: subscriptionProfile.id, name: subscriptionProfile.fullName })
-                                                setSubscriptionProfile(null)
-                                            }}
-                                            className="w-full mt-4 py-2.5 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <RefreshCw size={16} /> Renew Subscription
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-
                             {/* Enhanced Verification Checklist */}
                             <div className="mb-6">
                                 <h4 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2">
@@ -476,9 +375,7 @@ const RecruiterApproval = () => {
                                             (check.key === 'contactInfo' && subscriptionProfile.email && subscriptionProfile.mobile) ||
                                             (check.key === 'website' && subscriptionProfile.website) ||
                                             (check.key === 'companyLogo' && subscriptionProfile.companyLogo) ||
-                                            (check.key === 'documents' && subscriptionProfile.documentsUploaded) ||
-                                            (check.key === 'emailVerified' && subscriptionProfile.emailVerified) ||
-                                            (check.key === 'payment' && subscriptionProfile.isPaid)
+                                            (check.key === 'emailVerified' && subscriptionProfile.emailVerified)
                                         
                                         return (
                                             <div
@@ -647,29 +544,6 @@ const RecruiterApproval = () => {
                                 </div>
                             </div>
 
-                            {/* Payment History */}
-                            {subscriptionProfile.paymentHistory && subscriptionProfile.paymentHistory.length > 0 && (
-                                <div className="mb-6">
-                                    <h4 className="font-bold text-[#0f172a] mb-3">Payment History</h4>
-                                    <div className="space-y-2">
-                                        {subscriptionProfile.paymentHistory.map(payment => (
-                                            <div key={payment.id} className="bg-gray-50 rounded-xl p-4 flex justify-between items-center">
-                                                <div>
-                                                    <p className="text-sm font-semibold">₹{payment.amount}</p>
-                                                    <p className="text-xs text-gray-500">{payment.createdAt}</p>
-                                                </div>
-                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold ${payment.status === 'COMPLETED'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
-                                                    }`}>
-                                                    {payment.status}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
                             <button
                                 onClick={() => setSubscriptionProfile(null)}
                                 className="w-full py-2.5 bg-[#1a3c8f] text-white font-bold rounded-xl hover:bg-[#153275] transition-colors"
@@ -681,70 +555,7 @@ const RecruiterApproval = () => {
                 )}
             </AnimatePresence>
 
-            {/* Renew Modal */}
-            <AnimatePresence>
-                {renewModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-                        onClick={() => setRenewModal(null)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            onClick={e => e.stopPropagation()}
-                            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
-                        >
-                            <div className="mb-6">
-                                <h3 className="font-bold text-xl text-[#0f172a] mb-1">Renew Subscription</h3>
-                                <p className="text-sm text-gray-500">
-                                    {renewModal.name} (Recruiter)
-                                </p>
-                            </div>
 
-                            <div className="space-y-4 mb-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Duration (months)
-                                    </label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {[3, 6, 12, 18, 24, 36].map(months => (
-                                            <button
-                                                key={months}
-                                                onClick={() => setRenewDuration(months)}
-                                                className={`py-2.5 rounded-xl text-sm font-bold transition-all ${renewDuration === months
-                                                    ? 'bg-[#1a3c8f] text-white shadow-md'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                    }`}
-                                            >
-                                                {months} mo
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setRenewModal(null)}
-                                    className="flex-1 py-2.5 border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleRenew}
-                                    className="flex-1 py-2.5 bg-[#1a3c8f] text-white font-bold rounded-xl hover:bg-[#153275] transition-colors"
-                                >
-                                    Confirm Renew
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </AdminLayout>
     )
 }

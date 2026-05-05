@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import RecruiterLayout from '../../../../components/RecruiterLayout';
 import { 
     Building2, MapPin, Globe, CreditCard, 
     FileCheck, CheckCircle2, AlertCircle, 

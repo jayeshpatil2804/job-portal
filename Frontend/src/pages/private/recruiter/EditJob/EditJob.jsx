@@ -6,7 +6,7 @@ import { clearSelectedJob } from '../../../../redux/slices/jobSlice';
 import { fetchSkills, fetchDesignations } from '../../../../redux/slices/metaSlice';
 import { 
     Briefcase, Building2, MapPin, DollarSign, 
-    Users, FileText, ArrowLeft, Save, Clock
+    Users, FileText, ArrowLeft, Save, Clock, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -53,7 +53,7 @@ const EditJob = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { selectedJob, loading, success } = useSelector((state) => state.job);
+    const { selectedJob, loading, error, success } = useSelector((state) => state.job);
     const { skills: availableSkills, designations } = useSelector(state => state.meta);
 
     const [formData, setFormData] = useState({
@@ -177,9 +177,40 @@ const EditJob = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 border-4 border-blue-50 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-[#1a3c8f] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mb-6">
+                    <AlertCircle size={40} />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to load job</h2>
+                <p className="text-gray-500 mb-8 max-w-md">{error}</p>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-[#1a3c8f] text-white rounded-2xl font-bold hover:bg-[#153073] transition-all"
+                >
+                    <ArrowLeft size={18} />
+                    Go Back
+                </button>
+            </div>
+        );
+    }
+
+    if (!selectedJob) return null;
+
     return (
-        <RecruiterLayout>
-            <div className="max-w-4xl mx-auto space-y-6 pb-20">
+        <div className="max-w-4xl mx-auto space-y-6 pb-20">
                 <button 
                     onClick={() => navigate(-1)}
                     className="inline-flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-[#1a3c8f] transition-colors"
@@ -411,8 +442,7 @@ const EditJob = () => {
                         </div>
                     </form>
                 </div>
-            </div>
-        </RecruiterLayout>
+        </div>
     );
 };
 
