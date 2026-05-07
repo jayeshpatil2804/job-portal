@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown, Calendar, RefreshCw, Mail, Phone, FileText, Shield, AlertCircle, CheckSquare, Square, User, MapPin, Briefcase, Image, Upload, Camera } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown, Calendar, RefreshCw, Mail, Phone, FileText, Shield, AlertCircle, CheckSquare, Square, User, MapPin, Briefcase, Image, Upload, Camera, Key } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Swal from 'sweetalert2'
 import api from '../../../utils/api'
 import AdminLayout from '../../../components/admin/AdminLayout'
 import Pagination from '../../../components/common/Pagination'
@@ -28,6 +29,8 @@ const RecruiterApproval = () => {
     const [filter, setFilter] = useState('ALL')
     const [selected, setSelected] = useState(null)
     const [subscriptionProfile, setSubscriptionProfile] = useState(null)
+    const [otpData, setOtpData] = useState(null)
+    const [fetchingOtp, setFetchingOtp] = useState(false)
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalPages: 1,
@@ -79,6 +82,50 @@ const RecruiterApproval = () => {
             setSubscriptionProfile(res.data.recruiter)
         } catch (error) {
             toast.error('Failed to load recruiter profile')
+        }
+    }
+
+    const fetchRecruiterOtp = async (email) => {
+        try {
+            setFetchingOtp(true)
+            const res = await api.get(`/admin/recruiters/${email}/otp`)
+            Swal.fire({
+                title: 'Recruiter OTP',
+                html: `
+                    <div class="p-4 bg-amber-50 rounded-2xl border-2 border-amber-200">
+                        <p class="text-amber-800 text-sm font-bold mb-1 uppercase tracking-widest">Verification Code</p>
+                        <h2 class="text-4xl font-black text-[#1a3c8f] tracking-widest">${res.data.otp}</h2>
+                    </div>
+                `,
+                confirmButtonText: 'Copy & Close',
+                confirmButtonColor: '#1a3c8f',
+                customClass: {
+                    popup: 'rounded-[2rem]',
+                    confirmButton: 'rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigator.clipboard.writeText(res.data.otp)
+                    toast.success('OTP copied to clipboard!')
+                }
+            })
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to fetch OTP')
+        } finally {
+            setFetchingOtp(false)
+        }
+    }
+
+    const regenerateOtp = async (email) => {
+        try {
+            setFetchingOtp(true)
+            const res = await api.post(`/admin/recruiters/${email}/otp/regenerate`)
+            setOtpData({ email, otp: res.data.otp, expiresAt: new Date(Date.now() + 10 * 60 * 1000) })
+            toast.success('New OTP generated')
+        } catch (error) {
+            toast.error('Failed to regenerate OTP')
+        } finally {
+            setFetchingOtp(false)
         }
     }
 
@@ -281,25 +328,25 @@ const RecruiterApproval = () => {
                             <div className="mt-4 flex gap-2">
                                 <button
                                     onClick={() => openSubscriptionProfile(r.id)}
-                                    className="flex-[0.5] flex items-center justify-center gap-1.5 py-2 border border-[#1a3c8f] text-[#1a3c8f] text-xs font-bold rounded-xl hover:bg-[#1a3c8f] hover:text-white transition-all duration-200"
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-blue-100 text-[#1a3c8f] text-xs font-black uppercase tracking-wider rounded-xl hover:bg-blue-50 transition-all active:scale-95"
                                 >
                                     <Eye size={14} /> View
                                 </button>
+                                {r.status !== 'APPROVED' && (
+                                    <button
+                                        onClick={() => fetchRecruiterOtp(r.email)}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-200 active:scale-95"
+                                    >
+                                        <Key size={14} /> OTP
+                                    </button>
+                                )}
                                 {r.status === 'PENDING' && (
-                                    <>
-                                        <button
-                                            onClick={() => handleAction(r.id, 'APPROVED')}
-                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
-                                        >
-                                            <CheckCircle size={12} /> Approve
-                                        </button>
-                                        <button
-                                            onClick={() => handleAction(r.id, 'REJECTED')}
-                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
-                                        >
-                                            <XCircle size={12} /> Reject
-                                        </button>
-                                    </>
+                                    <button
+                                        onClick={() => handleAction(r.id, 'APPROVED')}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
+                                    >
+                                        <CheckCircle size={12} /> Approve
+                                    </button>
                                 )}
                                 {r.status !== 'PENDING' && (
                                     <button
@@ -555,6 +602,58 @@ const RecruiterApproval = () => {
                 )}
             </AnimatePresence>
 
+            {/* OTP Modal */}
+            <AnimatePresence>
+                {otpData && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+                        onClick={() => setOtpData(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden p-10 text-center"
+                        >
+                            <div className="w-20 h-20 bg-amber-50 rounded-[2rem] flex items-center justify-center text-amber-600 mx-auto mb-6 shadow-inner">
+                                <Key size={36} />
+                            </div>
+                            
+                            <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Verification Code</h3>
+                            <p className="text-gray-500 font-bold text-sm mb-8 px-4">Provide this code to <span className="text-[#1a3c8f]">{otpData.email}</span> for account activation.</p>
+
+                            <div className="bg-gray-50 rounded-[2rem] p-8 mb-8 border border-gray-100 shadow-inner group relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-200/20 rounded-full -mr-12 -mt-12 blur-2xl"></div>
+                                <div className="text-5xl font-black text-[#1a3c8f] tracking-[0.2em] relative z-10">
+                                    {otpData.otp}
+                                </div>
+                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mt-4">Expires: {new Date(otpData.expiresAt).toLocaleTimeString()}</p>
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => regenerateOtp(otpData.email)}
+                                    disabled={fetchingOtp}
+                                    className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-gray-900/10 hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                                >
+                                    <RefreshCw size={16} className={fetchingOtp ? 'animate-spin' : ''} />
+                                    {fetchingOtp ? 'Generating...' : 'Regenerate OTP'}
+                                </button>
+                                <button
+                                    onClick={() => setOtpData(null)}
+                                    className="w-full py-4 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:text-gray-600 transition-all"
+                                >
+                                    Dismiss
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
         </AdminLayout>
     )

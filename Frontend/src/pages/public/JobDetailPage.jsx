@@ -4,8 +4,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import DashboardLayout from '../../components/DashboardLayout'
 import Navbar from '../../components/Navbar'
 import Footer from '../../components/Footer'
-import { MapPin, Briefcase, Calendar, DollarSign, Clock, Users, ChevronLeft, Send, CheckCircle2, AlertCircle, Building2, Award, Zap, ShieldCheck } from 'lucide-react'
+import { MapPin, Briefcase, Calendar, DollarSign, Clock, Users, ChevronLeft, Send, CheckCircle2, AlertCircle, Building2, Award, Zap, ShieldCheck, Bookmark } from 'lucide-react'
 import { getJobById } from '../../redux/actions/jobActions'
+import { toggleSaveJob, checkIfJobSaved } from '../../redux/actions/savedJobActions'
 import { applyToJob } from '../../redux/actions/applicationActions'
 import { clearApplicationStates } from '../../redux/slices/applicationSlice'
 import { toast } from 'react-hot-toast'
@@ -23,13 +24,40 @@ const JobDetailPage = () => {
     const { loading: applying, success: applySuccess, error: applyError } = useSelector(state => state.application)
     const { user, isAuthenticated } = useSelector(state => state.auth)
     const { isActive } = useSelector(state => state.profile)
+    const [isSaved, setIsSaved] = useState(false)
+    const [checkingSave, setCheckingSave] = useState(false)
 
     useEffect(() => {
         dispatch(getJobById(id))
+        if (isAuthenticated && user?.role === 'CANDIDATE') {
+            checkSaveStatus()
+        }
         return () => {
             dispatch(clearApplicationStates())
         }
-    }, [dispatch, id])
+    }, [dispatch, id, isAuthenticated, user])
+
+    const checkSaveStatus = async () => {
+        setCheckingSave(true)
+        const saved = await dispatch(checkIfJobSaved(id))
+        setIsSaved(saved)
+        setCheckingSave(false)
+    }
+
+    const handleSaveToggle = async () => {
+        if (!isAuthenticated || user?.role !== 'CANDIDATE') {
+            toast.error('Please login as a candidate to save jobs')
+            navigate('/candidate/login')
+            return
+        }
+        try {
+            const saved = await dispatch(toggleSaveJob(id))
+            setIsSaved(saved)
+            toast.success(saved ? 'Job saved!' : 'Job removed from saved')
+        } catch (error) {
+            toast.error('Action failed')
+        }
+    }
 
     useEffect(() => {
         if (applySuccess) {
@@ -144,19 +172,14 @@ const JobDetailPage = () => {
                                     <div className="space-y-2">
                                         <div className="flex flex-wrap items-center gap-3">
                                             <span className="px-4 py-1.5 bg-blue-50 text-[#1a3c8f] text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-100">
-                                                {job.department || 'Premium Role'}
+                                                {job.department ? job.department.name : 'Premium Role'}
                                             </span>
-                                            {job.designation && (
-                                                <span className="px-4 py-1.5 bg-green-50 text-green-700 text-[9px] font-black uppercase tracking-widest rounded-full border border-green-100">
-                                                    {job.designation.name}
-                                                </span>
-                                            )}
                                             <span className="px-4 py-1.5 bg-orange-50 text-orange-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-orange-100">
                                                 {job.jobType.replace('_', ' ')}
                                             </span>
                                         </div>
                                         <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
-                                            {job.designation ? job.designation.name : job.title}
+                                            {job.title}
                                         </h1>
                                         <p className="text-xl font-bold text-gray-400 flex items-center gap-2">
                                             at <span className="text-[#1a3c8f]">{job.recruiter.companyName}</span>
@@ -237,8 +260,8 @@ const JobDetailPage = () => {
                                 <div className="space-y-5">
                                     {[
                                         { label: 'Published', value: new Date(job.createdAt).toLocaleDateString(), icon: <Calendar size={14} /> },
-                                        { label: 'Department', value: job.department || 'General', icon: <Briefcase size={14} /> },
-                                        { label: 'Availability', value: `${job.totalOpenings || 1} Positions`, icon: <Users size={14} /> },
+                                        { label: 'Department', value: job.department ? job.department.name : 'General', icon: <Briefcase size={14} /> },
+                                        { label: 'Availability', value: `${job.vacancies || 1} Positions`, icon: <Users size={14} /> },
                                         { label: 'Process', value: 'High Response', icon: <Zap size={14} /> }
                                     ].map((stat, i) => (
                                         <div key={i} className="flex items-center justify-between">
@@ -280,14 +303,31 @@ const JobDetailPage = () => {
                                                     <p className="text-[10px] font-black uppercase tracking-widest leading-tight">{applyError}</p>
                                                 </motion.div>
                                             )}
-                                            <button 
-                                                disabled={applying}
-                                                onClick={handleApply}
-                                                className="w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-gray-900/10 hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-                                            >
-                                                <Send size={18} />
-                                                {applying ? 'Transmitting...' : 'Apply Securely'}
-                                            </button>
+                                            <div className="flex flex-col gap-4">
+                                                <button 
+                                                    disabled={applying}
+                                                    onClick={handleApply}
+                                                    className="w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-gray-900/10 hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                                                >
+                                                    <Send size={18} />
+                                                    {applying ? 'Transmitting...' : 'Apply Securely'}
+                                                </button>
+                                                
+                                                {(!isAuthenticated || user?.role === 'CANDIDATE') && (
+                                                    <button 
+                                                        onClick={handleSaveToggle}
+                                                        disabled={checkingSave}
+                                                        className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] transition-all flex items-center justify-center gap-3 active:scale-95 border-2 ${
+                                                            isSaved 
+                                                                ? 'bg-blue-50 text-[#1a3c8f] border-blue-100 shadow-sm' 
+                                                                : 'bg-white text-gray-400 border-gray-100 hover:border-blue-100 hover:text-[#1a3c8f]'
+                                                        }`}
+                                                    >
+                                                        <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />
+                                                        {isSaved ? 'Saved to List' : 'Save for Later'}
+                                                    </button>
+                                                )}
+                                            </div>
                                             <p className="text-[10px] text-center font-bold text-gray-300 leading-relaxed max-w-[220px] mx-auto italic">
                                                 Recipient will receive your complete verified profile and credentials.
                                             </p>

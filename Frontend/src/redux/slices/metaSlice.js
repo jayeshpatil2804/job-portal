@@ -13,21 +13,21 @@ export const fetchSkills = createAsyncThunk(
     }
 );
 
-export const fetchDesignations = createAsyncThunk(
-    'meta/fetchDesignations',
+export const fetchDepartments = createAsyncThunk(
+    'meta/fetchDepartments',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get('/admin/designations');
+            const response = await api.get('/admin/departments');
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch designations');
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch departments');
         }
     }
 );
 
 const initialState = {
     skills: [],
-    designations: [],
+    departments: [],
     loading: false,
     error: null,
     fetched: false, // Flag to prevent re-fetching
@@ -59,16 +59,16 @@ const metaSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // Designations
-            .addCase(fetchDesignations.pending, (state) => {
+            // Departments
+            .addCase(fetchDepartments.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(fetchDesignations.fulfilled, (state, action) => {
+            .addCase(fetchDepartments.fulfilled, (state, action) => {
                 state.loading = false;
-                state.designations = action.payload.designations || [];
+                state.departments = action.payload.departments || [];
                 state.fetched = true;
             })
-            .addCase(fetchDesignations.rejected, (state, action) => {
+            .addCase(fetchDepartments.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

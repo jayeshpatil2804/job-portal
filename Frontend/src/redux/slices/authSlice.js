@@ -32,6 +32,14 @@ export const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
+    updateVerificationStatus: (state, action) => {
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          ...action.payload
+        };
+      }
+    }
   },
   extraReducers: (builder) => {
     builder

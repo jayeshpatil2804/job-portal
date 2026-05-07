@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import AuthLayout from '../../../../components/AuthLayout'
 import api from '../../../../utils/api'
 import toast from 'react-hot-toast'
-import { KeyRound } from 'lucide-react'
+import { KeyRound, MessageCircle, Phone, MessageSquare } from 'lucide-react'
 import { verifyCandidateOtp } from '../../../../redux/actions/authActions'
 
 const CandidateOtpVerify = () => {
@@ -13,6 +13,8 @@ const CandidateOtpVerify = () => {
     const navigate = useNavigate()
     const location = useLocation()
     const dispatch = useDispatch()
+
+    const whatsappLink = "https://wa.me/918140411130?text=Hello%20Admin,%20I%20just%20signed%20up%20on%20Losodhan%20Portal.%20Please%20provide%20my%20OTP%20for%20email:%20" + encodeURIComponent(email || '');
 
     const handleChange = (element, index) => {
         if (isNaN(element.value)) return false
@@ -128,14 +130,42 @@ const CandidateOtpVerify = () => {
                 </div>
             </form>
 
-            <div className="mt-8 text-center text-sm">
-                <p className="text-gray-500 mb-2">Didn't receive the code?</p>
-                <button 
-                    onClick={handleResend}
-                    className="font-medium text-[#1a3c8f] hover:text-[#162f72]"
-                >
-                    Resend Code
-                </button>
+            <div className="mt-8 text-center">
+                <p className="text-sm text-gray-500">
+                    Didn't receive code?{' '}
+                    <button 
+                        type="button"
+                        onClick={handleResend}
+                        className="text-[#1a3c8f] font-bold hover:underline"
+                    >
+                        Resend OTP
+                    </button>
+                </p>
+            </div>
+
+            <div className="mt-8 space-y-4">
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                    <div className="relative flex justify-center"><span className="bg-white px-4 text-[10px] font-black text-gray-300 uppercase tracking-widest">Contact Admin for OTP</span></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                    <a 
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 py-3 bg-green-50 text-green-700 rounded-xl font-bold text-xs hover:bg-green-100 transition-colors border border-green-100"
+                    >
+                        <MessageSquare size={16} />
+                        WhatsApp
+                    </a>
+                    <a 
+                        href="tel:+918140411130"
+                        className="flex items-center justify-center gap-2 py-3 bg-blue-50 text-[#1a3c8f] rounded-xl font-bold text-xs hover:bg-blue-100 transition-colors border border-blue-100"
+                    >
+                        <Phone size={16} />
+                        Call
+                    </a>
+                </div>
             </div>
         </AuthLayout>
     )

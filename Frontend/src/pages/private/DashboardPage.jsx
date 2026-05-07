@@ -1,36 +1,19 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout'
-import { FileText, Bookmark, Eye, Phone, TrendingUp, ArrowRight, Star, Clock } from 'lucide-react'
+import { FileText, Bookmark, Eye, Phone, TrendingUp, ArrowRight, Star, Clock, Briefcase, MapPin, ShieldAlert, MessageSquare } from 'lucide-react'
 import { fetchCandidateStats } from '../../redux/actions/dashboardActions'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { getMySavedJobs } from '../../redux/actions/savedJobActions'
 import { motion } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
-
-// Helpers for Status Styling
-const getStatusClasses = (status) => {
-    switch (status) {
-        case 'INTERVIEW_SCHEDULED':
-            return 'bg-green-100/50 text-green-700 border-green-200'
-        case 'SHORTLISTED':
-            return 'bg-purple-100/50 text-purple-700 border-purple-200'
-        case 'VIEWED':
-            return 'bg-yellow-100/50 text-yellow-700 border-yellow-200'
-        case 'REJECTED':
-            return 'bg-red-100/50 text-red-700 border-red-200'
-        default:
-            return 'bg-blue-50/50 text-blue-700 border-blue-100'
-    }
-}
-
-const formatStatus = (status) => {
-    return status.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
-}
 
 const DashboardPage = () => {
     useMountTimer('DashboardPage')
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const { candidateStats, loading } = useSelector((state) => state.dashboard)
+    const { savedJobs = [] } = useSelector((state) => state.savedJob)
     const { user } = useSelector((state) => state.auth)
     const { stats, recentApplications } = candidateStats
 
@@ -38,23 +21,26 @@ const DashboardPage = () => {
     useEffect(() => {
         if (!fetchStatus.current) {
             dispatch(fetchCandidateStats())
+            if (user?.isVerified) {
+                dispatch(getMySavedJobs())
+            }
             fetchStatus.current = true
         }
-    }, [dispatch])
+    }, [dispatch, user])
 
     const statCards = [
         {
-            title: 'Total Applied',
-            count: stats?.totalApplications || 0,
-            icon: <FileText size={20} />,
+            title: 'Saved Jobs',
+            count: savedJobs.length || 0,
+            icon: <Bookmark size={20} />,
             color: 'text-[#3b82f6]',
             bgColor: 'bg-blue-50',
             borderColor: 'border-blue-100',
         },
         {
-            title: 'Shortlisted',
-            count: stats?.shortlistedCount || 0,
-            icon: <Star size={20} />,
+            title: 'Active Roles',
+            count: stats?.totalApplications || 0,
+            icon: <Briefcase size={20} />,
             color: 'text-[#f97316]',
             bgColor: 'bg-orange-50',
             borderColor: 'border-orange-100',
@@ -68,9 +54,6 @@ const DashboardPage = () => {
             borderColor: 'border-green-100',
         },
     ]
-
-    const chartData = stats?.statusBreakdown || []
-    const COLORS = ['#3b82f6', '#f97316', '#a855f7', '#22c55e', '#ef4444', '#64748b']
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -118,12 +101,15 @@ const DashboardPage = () => {
                             Welcome back, <span className="text-blue-200">{user?.fullName?.split(' ')[0] || 'User'}!</span>
                         </h1>
                         <p className="text-blue-100 text-lg md:text-xl font-medium opacity-90 leading-relaxed mb-8">
-                            Your career journey is looking great. You have {stats?.totalApplications || 0} active applications this month.
+                            Your career journey is looking great. You have {savedJobs.length || 0} saved jobs waiting for your attention.
                         </p>
-                        <div className="flex flex-wrap gap-4">
-                            <button className="bg-white text-[#1a3c8f] px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-50 transition-all shadow-lg active:scale-95">
-                                Search New Jobs
-                            </button>
+                                <div className="flex flex-wrap gap-4">
+                                    <button 
+                                        onClick={() => navigate('/jobs')}
+                                        className="bg-white text-[#1a3c8f] px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-50 transition-all shadow-lg active:scale-95"
+                                    >
+                                        Search New Jobs
+                                    </button>
 
                             <a 
                                 href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api'}/auth/support/whatsapp`}
@@ -161,89 +147,78 @@ const DashboardPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                    {/* ── Chart & Applications ── */}
+                    {/* ── Saved Jobs ── */}
                     <div className="xl:col-span-2 space-y-8">
-                        {/* Application Chart */}
-                        <motion.div 
-                            variants={itemVariants}
-                            className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100"
-                        >
-                            <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-xl font-black text-gray-900 tracking-tight">Application Activity</h2>
-                                <select className="bg-gray-50 border-none rounded-xl text-xs font-bold text-gray-500 px-4 py-2 outline-none">
-                                    <option>Last 6 Months</option>
-                                    <option>Last Year</option>
-                                </select>
-                            </div>
-                            <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis 
-                                            dataKey="status" 
-                                            axisLine={false} 
-                                            tickLine={false} 
-                                            tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
-                                            tickFormatter={formatStatus}
-                                        />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
-                                        <Tooltip 
-                                            cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
-                                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                                            formatter={(value) => [value, 'Applications']}
-                                            labelFormatter={formatStatus}
-                                        />
-                                        <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={32}>
-                                            {chartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </motion.div>
-
-                        {/* Recent Applications List */}
-                        <motion.div 
-                            variants={itemVariants}
-                            className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100"
-                        >
-                            <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-xl font-black text-gray-900 tracking-tight">Recent Applications</h2>
-                                <button className="text-[10px] font-black text-[#1a3c8f] uppercase tracking-widest hover:underline">View All</button>
-                            </div>
-                            <div className="space-y-4">
-                                {recentApplications && recentApplications.length > 0 ? (
-                                    recentApplications.slice(0, 4).map((app) => (
-                                        <div key={app.id} className="group p-4 rounded-[1.5rem] border border-gray-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-[#1a3c8f] group-hover:text-white transition-colors">
-                                                    <FileText size={20} />
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-sm font-black text-gray-900 group-hover:text-[#1a3c8f] transition-colors">{app.jobTitle}</h3>
-                                                    <p className="text-xs font-bold text-gray-400">{app.company}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-6">
-                                                <div className="hidden md:flex items-center gap-2 text-xs font-bold text-gray-400">
-                                                    <Clock size={14} />
-                                                    {app.appliedDate}
-                                                </div>
-                                                <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-full border ${getStatusClasses(app.status)}`}>
-                                                    {formatStatus(app.status)}
-                                                </span>
-                                                <ArrowRight size={18} className="text-gray-300 group-hover:text-[#1a3c8f] group-hover:translate-x-1 transition-all" />
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="py-10 text-center text-gray-400 font-bold text-sm bg-gray-50 rounded-[1.5rem] border border-dashed border-gray-200">
-                                        No recent activity to show
+                        {!user?.isVerified ? (
+                            <motion.div 
+                                variants={itemVariants}
+                                className="bg-white rounded-[2.5rem] p-12 shadow-sm border border-gray-100 text-center space-y-8"
+                            >
+                                <div className="w-20 h-20 bg-rose-50 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto shadow-inner">
+                                    <ShieldAlert size={40} />
+                                </div>
+                                <div className="max-w-md mx-auto space-y-4">
+                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">Account Verification Pending</h3>
+                                    <p className="text-gray-500 font-medium">Your account is waiting for administrator verification. Please contact support to activate your dashboard features.</p>
+                                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                        <a href="https://wa.me/91XXXXXXXXXX" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#25D366] text-white rounded-2xl font-black uppercase tracking-widest text-[10px]">
+                                            <MessageSquare size={16} /> WhatsApp
+                                        </a>
+                                        <a href="tel:+91XXXXXXXXXX" className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#1a3c8f] text-white rounded-2xl font-black uppercase tracking-widest text-[10px]">
+                                            <Phone size={16} /> Call Now
+                                        </a>
                                     </div>
-                                )}
-                            </div>
-                        </motion.div>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            /* Saved Jobs List */
+                            <motion.div 
+                                variants={itemVariants}
+                                className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100"
+                            >
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-xl font-black text-gray-900 tracking-tight">Saved for Later</h2>
+                                    <button 
+                                        onClick={() => navigate('/saved')}
+                                        className="text-[10px] font-black text-[#1a3c8f] uppercase tracking-widest hover:underline"
+                                    >
+                                        View All
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {savedJobs && savedJobs.length > 0 ? (
+                                        savedJobs.slice(0, 4).map((job) => (
+                                            <div 
+                                                key={job.id} 
+                                                onClick={() => navigate(`/job/${job.id}`)}
+                                                className="group cursor-pointer p-4 rounded-[1.5rem] border border-gray-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all flex items-center justify-between gap-4"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-[#1a3c8f] group-hover:text-white transition-colors">
+                                                        <Bookmark size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-sm font-black text-gray-900 group-hover:text-[#1a3c8f] transition-colors">{job.title}</h3>
+                                                        <p className="text-xs font-bold text-gray-400">{job.recruiter?.companyName}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-6">
+                                                    <div className="hidden md:flex items-center gap-2 text-xs font-bold text-gray-400">
+                                                        <MapPin size={14} />
+                                                        {job.location}
+                                                    </div>
+                                                    <ArrowRight size={18} className="text-gray-300 group-hover:text-[#1a3c8f] group-hover:translate-x-1 transition-all" />
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-10 text-center text-gray-400 font-bold text-sm bg-gray-50 rounded-[1.5rem] border border-dashed border-gray-200">
+                                            No saved jobs yet
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
                     </div>
 
                     {/* ── Right Column: Sidebar ── */}

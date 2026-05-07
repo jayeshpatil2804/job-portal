@@ -39,16 +39,3 @@ export const applyToJob = createAsyncThunk(
         }
     }
 );
-
-// For Candidate: Get my applications
-export const getMyApplications = createAsyncThunk(
-    'application/getMyApplications',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await api.get('/applications/candidate/my');
-            return response.data.applications;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch your applications');
-        }
-    }
-);

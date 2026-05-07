@@ -13,6 +13,7 @@ import authRoutes from './modules/auth/routes/auth.routes'
 
 import jobRoutes from './modules/job/routes/job.routes'
 import applicationRoutes from './modules/job/routes/application.routes'
+import savedJobRoutes from './modules/job/routes/savedJob.routes'
 
 import contactRoutes from './modules/contact/routes/contact.routes'
 import path from 'path'
@@ -45,7 +46,7 @@ app.use((req, res, next) => {
 // Socket.io connections
 io.on('connection', (socket) => {
     console.log('Socket client connected:', socket.id)
-    
+
     socket.on('joinRoom', (userId) => {
         socket.join(userId)
         console.log(`User ${userId} joined socket room`)
@@ -74,12 +75,12 @@ app.use(cookieParser())
 app.use((req, res, next) => {
     const startTime = Date.now();
     const timestamp = new Date().toISOString();
-    
+
     res.on('finish', () => {
         const duration = Date.now() - startTime;
         const method = req.method.padEnd(7);
         const url = req.originalUrl;
-        
+
         if (duration > 500) {
             console.warn(`\x1b[33m[SLOW REQUEST] ${timestamp} | ${method} | ${url} | ${duration}ms\x1b[0m`);
         } else {
@@ -99,6 +100,7 @@ app.use('/api/users', googleAuthRoutes) // For Frontend API
 
 app.use('/api/jobs', jobRoutes)
 app.use('/api/applications', applicationRoutes)
+app.use('/api/saved-jobs', savedJobRoutes)
 
 app.use('/api/contact', contactRoutes)
 app.use('/users', googleAuthRoutes)     // For Google Console Redirect
@@ -116,8 +118,19 @@ app.get('/api/debug-auth', (req, res) => {
     })
 })
 
-const PORT = process.env.PORT || 5000
+let PORT = Number(process.env.PORT) || 5000
 
-httpServer.listen(PORT, () => {
-    console.log(`Server and Socket.IO running on port ${PORT}`)
-}) // Trigger restart again
+const startServer = (port: number) => {
+    httpServer.listen(port, () => {
+        console.log(`Server and Socket.IO running on port ${port}`)
+    }).on('error', (error: any) => {
+        if (error.code === 'EADDRINUSE') {
+            console.error(`Port ${port} is already in use. Trying next port...`)
+            startServer(port + 1)
+        } else {
+            console.error('Server error:', error)
+        }
+    })
+}
+
+startServer(PORT)

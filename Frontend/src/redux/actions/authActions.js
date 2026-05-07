@@ -73,6 +73,18 @@ export const logoutCandidate = createAsyncThunk(
   }
 );
 
+export const logoutRecruiter = createAsyncThunk(
+  'auth/logoutRecruiter',
+  async (_, { rejectWithValue }) => {
+    try {
+      await api.post('/recruiter/logout');
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Logout failed');
+    }
+  }
+);
+
 export const logoutAdmin = createAsyncThunk(
   'auth/logoutAdmin',
   async (_, { rejectWithValue }) => {

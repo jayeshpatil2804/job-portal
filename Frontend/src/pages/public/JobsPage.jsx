@@ -1,17 +1,27 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout'
 import Navbar from '../../components/Navbar'
 import Footer from '../../components/Footer'
-import { Search, MapPin, Briefcase, Bookmark, ChevronDown, DollarSign, Filter, RefreshCcw, X, ArrowRight, Zap } from 'lucide-react'
+import { Search, MapPin, Briefcase, Bookmark, ChevronDown, DollarSign, Filter, RefreshCcw, X, ArrowRight, Zap, Clock, Users, Building2 } from 'lucide-react'
 import { getAllOpenJobs } from '../../redux/actions/jobActions'
+import { toggleSaveJob, getMySavedJobs } from '../../redux/actions/savedJobActions'
+import { fetchDepartments } from '../../redux/slices/metaSlice'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMountTimer } from '../../hooks/useMountTimer'
-
 import toast from 'react-hot-toast'
 
-const JobCard = React.forwardRef(({ job, navigate, onJobClick }, ref) => (
+const useDebounce = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value)
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay)
+        return () => clearTimeout(handler)
+    }, [value, delay])
+    return debouncedValue
+}
+
+const JobCard = React.forwardRef(({ job, navigate, onJobClick, isCandidate, isSaved, onSaveToggle }, ref) => (
     <motion.div 
         ref={ref}
         layout
@@ -35,9 +45,26 @@ const JobCard = React.forwardRef(({ job, navigate, onJobClick }, ref) => (
             <div className="flex-1 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
-                        <h3 className="text-2xl font-black text-gray-900 group-hover:text-[#1a3c8f] transition-colors leading-tight tracking-tight">
-                            {job.designation ? job.designation.name : job.title}
-                        </h3>
+                        <div className="flex items-center gap-3">
+                            <h3 className="text-2xl font-black text-gray-900 group-hover:text-[#1a3c8f] transition-colors leading-tight tracking-tight">
+                                {job.title}
+                            </h3>
+                            {isCandidate && (
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSaveToggle(job.id);
+                                    }}
+                                    className={`p-2 rounded-xl transition-all ${
+                                        isSaved 
+                                            ? 'bg-blue-50 text-[#1a3c8f] border border-blue-100' 
+                                            : 'bg-gray-50 text-gray-400 border border-gray-100 hover:bg-blue-50 hover:text-[#1a3c8f]'
+                                    }`}
+                                >
+                                    <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />
+                                </button>
+                            )}
+                        </div>
                         <div className="flex items-center gap-2">
                              <p className="text-sm font-black text-gray-400 uppercase tracking-widest">
                                 {job.recruiter?.companyName || 'Premium Company'}
@@ -47,7 +74,7 @@ const JobCard = React.forwardRef(({ job, navigate, onJobClick }, ref) => (
                     </div>
                     <div className="hidden md:flex gap-2">
                          <span className="bg-blue-50 text-[#1a3c8f] text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-xl">
-                            {job.department || 'General'}
+                            {job.department ? job.department.name : 'General'}
                         </span>
                     </div>
                 </div>
@@ -93,66 +120,104 @@ const JobsPage = () => {
     useMountTimer('JobsPage')
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams()
+    const [searchParams, setSearchParams] = useSearchParams()
     
     const initialKeyword = searchParams.get('keyword') || ''
     const initialLocation = searchParams.get('location') || ''
+    const initialDeptId = searchParams.get('departmentId') || ''
 
-    const { jobs = [], loading = false } = useSelector(state => state.job || {})
+    const { jobs = [], loading = false, pagination } = useSelector(state => state.job || {})
     const { user, isAuthenticated } = useSelector(state => state.auth || {})
-    const { isActive } = useSelector(state => state.profile || {})
-    
+    const { departments = [] } = useSelector(state => state.meta || {})
+    const { savedJobs = [] } = useSelector(state => state.savedJob || {})
 
-    
+    const isCandidate = isAuthenticated && user?.role === 'CANDIDATE'
+    const savedJobIds = savedJobs.map(sj => sj.id)
+
     const [filters, setFilters] = useState({
         location: initialLocation,
         experience: '',
-        department: '',
-        salaryRange: '',
+        departmentId: initialDeptId,
+        jobType: '',
+        minSalary: '',
+        maxSalary: '',
         search: initialKeyword
     })
 
-    const [activeFilters, setActiveFilters] = useState({})
+    const [activeFilters, setActiveFilters] = useState({
+        location: initialLocation,
+        departmentId: initialDeptId,
+        search: initialKeyword
+    })
+
+    const debouncedSearch = useDebounce(filters.search, 500)
+    const observer = useRef()
+    const lastJobElementRef = useCallback(node => {
+        if (loading) return
+        if (observer.current) observer.current.disconnect()
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && pagination?.hasNextPage) {
+                const query = {
+                    ...filters,
+                    search: debouncedSearch,
+                    page: (pagination?.page || 1) + 1
+                }
+                dispatch(getAllOpenJobs(query))
+            }
+        })
+        if (node) observer.current.observe(node)
+    }, [loading, pagination?.hasNextPage, pagination?.page, filters, debouncedSearch, dispatch])
 
     useEffect(() => {
-        const query = {}
-        if (initialLocation) query.location = initialLocation
-        if (initialKeyword) query.search = initialKeyword
-        
-        dispatch(getAllOpenJobs(query))
-        
-        if (initialLocation || initialKeyword) {
-            setActiveFilters({
-                location: initialLocation,
-                search: initialKeyword
-            })
+        dispatch(fetchDepartments())
+        if (isCandidate) {
+            dispatch(getMySavedJobs())
         }
-    }, [dispatch, initialKeyword, initialLocation])
+    }, [dispatch, isCandidate])
+
+    useEffect(() => {
+        const query = {
+            ...filters,
+            search: debouncedSearch,
+            page: 1
+        }
+        dispatch(getAllOpenJobs(query))
+        setActiveFilters({
+            ...filters,
+            search: debouncedSearch
+        })
+    }, [dispatch, debouncedSearch, filters.location, filters.departmentId, filters.experience, filters.jobType, filters.minSalary, filters.maxSalary])
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target
         setFilters(prev => ({ ...prev, [name]: value }))
     }
 
-    const applyFilters = () => {
-        const query = {}
-        if (filters.location) query.location = filters.location
-        if (filters.department) query.department = filters.department
-        if (filters.search) query.search = filters.search
-        
-        dispatch(getAllOpenJobs(query))
-        setActiveFilters({ ...filters })
-    }
-
     const clearFilters = () => {
-        const reset = { location: '', experience: '', department: '', salaryRange: '', search: '' }
+        const reset = {
+            location: '',
+            experience: '',
+            departmentId: '',
+            jobType: '',
+            minSalary: '',
+            maxSalary: '',
+            search: ''
+        }
         setFilters(reset)
-        setActiveFilters({})
-        dispatch(getAllOpenJobs())
+        setActiveFilters(reset)
     }
 
     const handleJobClick = (jobId) => {
         navigate(`/job/${jobId}`)
+    }
+
+    const handleSaveToggle = async (jobId) => {
+        try {
+            const isSavedNow = await dispatch(toggleSaveJob(jobId))
+            toast.success(isSavedNow ? 'Job saved!' : 'Job removed from saved')
+        } catch (error) {
+            toast.error('Action failed')
+        }
     }
 
     const selectClasses = "w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#1a3c8f] focus:bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-500 outline-none appearance-none cursor-pointer transition-all shadow-sm"
@@ -190,6 +255,41 @@ const JobsPage = () => {
                         <p className="text-xl md:text-2xl font-medium text-blue-100/80 leading-relaxed max-w-xl">
                             Join thousands of professionals finding the best roles in textile production and design.
                         </p>
+
+                        {/* Integrated Search Bar */}
+                        <div className="max-w-2xl bg-white/10 backdrop-blur-xl p-2 rounded-[2.5rem] border border-white/20 shadow-2xl mt-12 group focus-within:bg-white/20 transition-all">
+                            <div className="flex flex-col md:flex-row items-center gap-2">
+                                <div className="flex-1 relative w-full">
+                                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-100 group-focus-within:text-white transition-colors" size={20} />
+                                    <input 
+                                        type="text"
+                                        name="search"
+                                        value={filters.search}
+                                        onChange={handleFilterChange}
+                                        placeholder="Search by role, company or skills..."
+                                        className="w-full bg-transparent pl-16 pr-6 py-5 text-lg font-bold text-white placeholder:text-blue-100/50 outline-none"
+                                    />
+                                </div>
+                                <div className="hidden md:block w-[1px] h-10 bg-white/20 mx-2"></div>
+                                <div className="flex-1 relative w-full">
+                                    <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-100 group-focus-within:text-white transition-colors" size={20} />
+                                    <input 
+                                        type="text"
+                                        name="location"
+                                        value={filters.location}
+                                        onChange={handleFilterChange}
+                                        placeholder="City or state..."
+                                        className="w-full bg-transparent pl-16 pr-6 py-5 text-lg font-bold text-white placeholder:text-blue-100/50 outline-none"
+                                    />
+                                </div>
+                                <button 
+                                    onClick={() => setActiveFilters(filters)}
+                                    className="bg-white text-[#1a3c8f] px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-[10px] hover:bg-blue-50 transition-all active:scale-95 shadow-xl"
+                                >
+                                    Search
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -213,64 +313,64 @@ const JobsPage = () => {
 
                             <div className="space-y-8">
                                 <div className="space-y-2">
-                                    <label className={labelClasses}>Deep Search</label>
-                                    <div className="relative group">
-                                        <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1a3c8f] transition-colors" />
-                                        <input 
-                                            name="search"
-                                            value={filters.search}
+                                    <label className={labelClasses}>Job Type</label>
+                                    <div className="relative">
+                                        <select 
+                                            name="jobType"
+                                            value={filters.jobType}
                                             onChange={handleFilterChange}
-                                            placeholder="Keywords, skills, roles..."
-                                            className="w-full pl-14 pr-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#1a3c8f] focus:bg-white rounded-[1.5rem] font-bold text-sm text-gray-700 outline-none transition-all shadow-sm"
+                                            className={selectClasses}
+                                        >
+                                            <option value="">All Types</option>
+                                            <option value="FULL_TIME">Full Time</option>
+                                            <option value="PART_TIME">Part Time</option>
+                                            <option value="CONTRACT">Contract</option>
+                                            <option value="INTERNSHIP">Internship</option>
+                                            <option value="FREELANCE">Freelance</option>
+                                        </select>
+                                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 relative">
+                                    <label className={labelClasses}>Department</label>
+                                    <div className="relative">
+                                        <select 
+                                            name="departmentId"
+                                            value={filters.departmentId}
+                                            onChange={handleFilterChange}
+                                            className={selectClasses}
+                                        >
+                                            <option value="">All Departments</option>
+                                            {departments.map(dept => (
+                                                <option key={dept.id} value={dept.id}>{dept.name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className={labelClasses}>Salary (LPA)</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input 
+                                            type="number" 
+                                            name="minSalary"
+                                            placeholder="Min"
+                                            value={filters.minSalary}
+                                            onChange={handleFilterChange}
+                                            className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#1a3c8f] focus:bg-white rounded-2xl font-black text-[10px] outline-none transition-all shadow-sm"
+                                        />
+                                        <input 
+                                            type="number" 
+                                            name="maxSalary"
+                                            placeholder="Max"
+                                            value={filters.maxSalary}
+                                            onChange={handleFilterChange}
+                                            className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#1a3c8f] focus:bg-white rounded-2xl font-black text-[10px] outline-none transition-all shadow-sm"
                                         />
                                     </div>
                                 </div>
-
-                                <div className="space-y-2 relative">
-                                    <label className={labelClasses}>Location</label>
-                                    <div className="relative">
-                                        <select 
-                                            name="location"
-                                            value={filters.location}
-                                            onChange={handleFilterChange}
-                                            className={selectClasses}
-                                        >
-                                            <option value="">All Regions</option>
-                                            <option value="Mumbai">Mumbai</option>
-                                            <option value="Ahmedabad">Ahmedabad</option>
-                                            <option value="Surat">Surat</option>
-                                            <option value="Coimbatore">Coimbatore</option>
-                                        </select>
-                                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2 relative">
-                                    <label className={labelClasses}>Primary Category</label>
-                                    <div className="relative">
-                                        <select 
-                                            name="department"
-                                            value={filters.department}
-                                            onChange={handleFilterChange}
-                                            className={selectClasses}
-                                        >
-                                            <option value="">All Specialties</option>
-                                            <option value="Design">Design</option>
-                                            <option value="Production">Production</option>
-                                            <option value="Merchandising">Merchandising</option>
-                                            <option value="Quality Control">Quality Control</option>
-                                        </select>
-                                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
-                                    </div>
-                                </div>
-
-                                <button 
-                                    onClick={applyFilters}
-                                    className="w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-2xl shadow-gray-900/10 hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-3"
-                                >
-                                    <Filter size={16} />
-                                    Search Jobs
-                                </button>
                             </div>
                         </div>
                     </aside>
@@ -286,34 +386,64 @@ const JobsPage = () => {
                                     )}
                                 </p>
                              </div>
-                             {Object.values(activeFilters).some(v => v) && (
+                             {Object.entries(activeFilters).some(([k, v]) => v && ['search', 'location', 'jobType', 'departmentId'].includes(k)) && (
                                 <div className="flex flex-wrap gap-2">
-                                    {Object.entries(activeFilters).map(([key, val]) => val && (
-                                        <div key={key} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-[#1a3c8f] rounded-xl font-black text-[9px] uppercase tracking-wider border border-blue-100">
-                                            {val}
-                                            <X 
-                                                size={12} 
-                                                className="cursor-pointer hover:text-red-500 transition-colors" 
-                                                onClick={() => {
-                                                    const next = { ...filters, [key]: '' }
-                                                    setFilters(next)
-                                                    setActiveFilters(next)
-                                                    dispatch(getAllOpenJobs(next))
-                                                }}
-                                            />
-                                        </div>
-                                    ))}
+                                    {Object.entries(activeFilters)
+                                        .filter(([key, val]) => val && ['search', 'location', 'jobType', 'departmentId'].includes(key))
+                                        .map(([key, val]) => {
+                                            let displayVal = val;
+                                            if (key === 'departmentId') {
+                                                displayVal = departments.find(d => d.id === val)?.name || 'Dept';
+                                            }
+                                            if (key === 'jobType') {
+                                                displayVal = val.replace('_', ' ');
+                                            }
+                                            
+                                            return (
+                                                <div key={key} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-[#1a3c8f] rounded-xl font-black text-[9px] uppercase tracking-wider border border-blue-100">
+                                                    <span className="text-blue-300 mr-1">{key.replace('Id', '')}:</span>
+                                                    {displayVal}
+                                                    <X 
+                                                        size={12} 
+                                                        className="ml-1 cursor-pointer hover:text-red-500 transition-colors" 
+                                                        onClick={() => {
+                                                            const next = { ...filters, [key]: '' }
+                                                            setFilters(next)
+                                                        }}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
                                 </div>
                             )}
                         </div>
 
                         {/* Job List */}
                         <div className="grid grid-cols-1 gap-8">
-                            {loading ? (
-                                Array.from({ length: 4 }).map((_, i) => (
-                                    <div key={i} className="bg-white rounded-[3rem] p-10 h-56 animate-pulse border border-gray-100 shadow-sm" />
-                                ))
-                            ) : jobs.length === 0 ? (
+                            <AnimatePresence mode="popLayout">
+                                {jobs.map((job, index) => (
+                                    <JobCard 
+                                        key={job.id} 
+                                        ref={index === jobs.length - 1 ? lastJobElementRef : null}
+                                        job={job} 
+                                        navigate={navigate} 
+                                        onJobClick={handleJobClick} 
+                                        isCandidate={isCandidate}
+                                        isSaved={savedJobIds.includes(job.id)}
+                                        onSaveToggle={handleSaveToggle}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                            
+                            {loading && (
+                                <div className="space-y-8">
+                                    {[1, 2].map(i => (
+                                        <div key={i} className="bg-white rounded-[3rem] p-10 h-56 animate-pulse border border-gray-100 shadow-sm" />
+                                    ))}
+                                </div>
+                            )}
+
+                            {!loading && jobs.length === 0 && (
                                 <motion.div 
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
@@ -333,10 +463,6 @@ const JobsPage = () => {
                                         Reset and refresh
                                     </button>
                                 </motion.div>
-                            ) : (
-                                <AnimatePresence mode="popLayout">
-                                    {jobs.map(job => <JobCard key={job.id} job={job} navigate={navigate} onJobClick={handleJobClick} />)}
-                                </AnimatePresence>
                             )}
                         </div>
                     </div>

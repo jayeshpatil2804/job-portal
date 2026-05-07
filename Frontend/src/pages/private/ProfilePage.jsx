@@ -133,9 +133,9 @@ const ProfilePage = () => {
                             <h2 className="text-3xl font-black text-gray-900 leading-tight">
                                 {profile?.candidate?.fullName || user?.fullName || 'Candidate'}
                             </h2>
-                            {profile?.designation && (
+                            {profile?.department && (
                                 <p className="text-[#1a3c8f] font-black text-xs uppercase tracking-widest opacity-80">
-                                    {profile.designation}
+                                    {profile.department}
                                 </p>
                             )}
                             <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4 pt-2 border-t border-gray-50">

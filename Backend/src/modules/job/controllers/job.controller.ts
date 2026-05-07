@@ -6,11 +6,11 @@ export const createJob = async (req: Request, res: Response) => {
     try {
         const recruiterId = (req as any).user.id
         const { 
-            title, department, jobType, experience, 
+            title, departmentId, jobType, experience, 
             salaryMin, salaryMax, location, vacancies, 
             description, responsibilities, requirements, 
             skills, benefits, deadline, isFeatured, isRemote,
-            status, designationId, skillIds
+            status, skillIds
         } = req.body
 
 
@@ -19,7 +19,6 @@ export const createJob = async (req: Request, res: Response) => {
             data: {
                 recruiterId,
                 title,
-                department,
                 jobType,
                 experience,
                 salaryMin: salaryMin ? parseInt(salaryMin) : null,
@@ -35,7 +34,7 @@ export const createJob = async (req: Request, res: Response) => {
                 isFeatured: isFeatured === true || isFeatured === 'true',
                 isRemote: isRemote === true || isRemote === 'true',
                 status: status || 'OPEN',
-                designationId: designationId || null,
+                departmentId: departmentId || null,
                 skillsReq: skillIds ? {
                     connect: (Array.isArray(skillIds) ? skillIds : [skillIds]).map((id: string) => ({ id }))
                 } : undefined
@@ -87,7 +86,7 @@ export const getJobById = async (req: Request, res: Response) => {
             where: { id },
             include: { 
                 recruiter: { select: { fullName: true, companyName: true, email: true } },
-                designation: true,
+                department: true,
                 skillsReq: true,
                 _count: {
                     select: { applications: true }
@@ -112,11 +111,11 @@ export const editJob = async (req: Request, res: Response) => {
         const recruiterId = (req as any).user.id
         const id = req.params.id as string
         const { 
-            title, department, jobType, experience, 
+            title, departmentId, jobType, experience, 
             salaryMin, salaryMax, location, vacancies, 
             description, responsibilities, requirements, 
             skills, benefits, deadline, isFeatured, isRemote,
-            designationId, skillIds
+            skillIds
         } = req.body
 
         // Ensure the job belongs to this recruiter
@@ -133,7 +132,6 @@ export const editJob = async (req: Request, res: Response) => {
             where: { id },
             data: {
                 title,
-                department,
                 jobType,
                 experience,
                 salaryMin: salaryMin ? parseInt(salaryMin) : null,
@@ -148,7 +146,7 @@ export const editJob = async (req: Request, res: Response) => {
                 deadline: deadline ? new Date(deadline) : null,
                 isFeatured: isFeatured === true || isFeatured === 'true',
                 isRemote: isRemote === true || isRemote === 'true',
-                designationId: designationId || undefined,
+                departmentId: departmentId || undefined,
                 skillsReq: skillIds ? {
                     set: (Array.isArray(skillIds) ? skillIds : [skillIds]).map((id: string) => ({ id }))
                 } : undefined
@@ -254,25 +252,75 @@ export const deleteJob = async (req: Request, res: Response) => {
 // GET /api/jobs - Get all OPEN jobs (for candidates / public listing)
 export const getAllOpenJobs = async (req: Request, res: Response) => {
     try {
-        const { search, location, department, experience } = req.query
+        const { search, location, departmentId, experience, jobType, minSalary, maxSalary, page, limit } = req.query
+        
+        const currentPage = parseInt(page as string) || 1
+        const itemsPerPage = parseInt(limit as string) || 10
+        const skip = (currentPage - 1) * itemsPerPage
 
-        const jobs = await prisma.job.findMany({
-            where: {
-                status: 'OPEN',
-                ...(search ? { title: { contains: search as string, mode: 'insensitive' } } : {}),
-                ...(location ? { location: { contains: location as string, mode: 'insensitive' } } : {}),
-                ...(department ? { department: { contains: department as string, mode: 'insensitive' } } : {}),
-                ...(experience ? { experience: { contains: experience as string, mode: 'insensitive' } } : {}),
-            },
-            include: {
-                recruiter: { select: { fullName: true, companyName: true } },
-                designation: true,
-                skillsReq: true
-            },
-            orderBy: { createdAt: 'desc' }
+        const where: any = {
+            status: 'OPEN',
+            isRemoved: false,
+            isFlagged: false,
+        }
+
+        if (search) {
+            where.OR = [
+                { title: { contains: search as string, mode: 'insensitive' } },
+                { description: { contains: search as string, mode: 'insensitive' } },
+                { recruiter: { companyName: { contains: search as string, mode: 'insensitive' } } }
+            ]
+        }
+
+        if (location) {
+            where.location = { contains: location as string, mode: 'insensitive' }
+        }
+
+        if (departmentId) {
+            where.departmentId = departmentId as string
+        }
+
+        if (experience) {
+            where.experience = experience as string
+        }
+
+        if (jobType) {
+            where.jobType = jobType as any
+        }
+
+        if (minSalary || maxSalary) {
+            where.salaryMax = {
+                ...(minSalary ? { gte: parseInt(minSalary as string) } : {}),
+                ...(maxSalary ? { lte: parseInt(maxSalary as string) } : {})
+            }
+        }
+
+        const [jobs, total] = await Promise.all([
+            prisma.job.findMany({
+                where,
+                include: {
+                    recruiter: { select: { fullName: true, companyName: true } },
+                    department: true,
+                    skillsReq: true
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: itemsPerPage
+            }),
+            prisma.job.count({ where })
+        ])
+
+        return res.status(200).json({ 
+            success: true, 
+            jobs,
+            pagination: {
+                total,
+                page: currentPage,
+                limit: itemsPerPage,
+                totalPages: Math.ceil(total / itemsPerPage),
+                hasNextPage: currentPage * itemsPerPage < total
+            }
         })
-
-        return res.status(200).json({ success: true, jobs })
     } catch (error) {
         console.error('[getAllOpenJobs]', error)
         return res.status(500).json({ message: 'Server error while fetching jobs' })

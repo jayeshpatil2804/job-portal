@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { createJob } from '../../../../redux/actions/jobActions'
-import { fetchSkills, fetchDesignations, addSkill } from '../../../../redux/slices/metaSlice'
+import { fetchSkills, fetchDepartments, addSkill } from '../../../../redux/slices/metaSlice'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import api from '../../../../utils/api'
@@ -15,7 +15,6 @@ const PostJob = () => {
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         jobTitle: '',
-        department: '',
         jobType: '',
         experience: '',
         minSalary: '',
@@ -29,17 +28,17 @@ const PostJob = () => {
         deadline: '',
         isFeatured: false,
         isRemote: false,
-        designationId: '',
+        departmentId: '',
         skillIds: []
     })
 
-    const { skills: availableSkills, designations } = useSelector(state => state.meta);
+    const { skills: availableSkills, departments } = useSelector(state => state.meta);
     const [customSkill, setCustomSkill] = useState('')
 
     useEffect(() => {
         if (availableSkills.length === 0) dispatch(fetchSkills());
-        if (designations.length === 0) dispatch(fetchDesignations());
-    }, [dispatch, availableSkills.length, designations.length]);
+        if (departments.length === 0) dispatch(fetchDepartments());
+    }, [dispatch, availableSkills.length, departments.length]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
@@ -74,8 +73,8 @@ const PostJob = () => {
     const handleSubmit = async (e, status = 'OPEN') => {
         e.preventDefault();
         
-        if (!formData.jobTitle || !formData.department || !formData.experience || !formData.location || !formData.description) {
-            toast.error("Please fill all required fields (Title, Dept, Exp, Location, Description)");
+        if (!formData.jobTitle || !formData.departmentId || !formData.experience || !formData.location || !formData.description) {
+            toast.error("Please fill all required fields (Title, Department, Exp, Location, Description)");
             return;
         }
         
@@ -83,9 +82,8 @@ const PostJob = () => {
             setLoading(true);
             const payload = {
                 title: formData.jobTitle,
-                designationId: formData.designationId,
+                departmentId: formData.departmentId,
                 skillIds: formData.skillIds,
-                department: formData.department,
                 jobType: formData.jobType,
                 experience: formData.experience,
                 salaryMin: formData.minSalary,
@@ -140,34 +138,21 @@ const PostJob = () => {
                                 required
                             />
 
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Designation category *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Department *</label>
                             <div className="flex gap-2">
                                 <select 
-                                    name="designationId"
-                                    value={formData.designationId}
+                                    name="departmentId"
+                                    value={formData.departmentId}
                                     onChange={handleChange}
-                                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-6"
                                     required
                                 >
-                                    <option value="">Select Designation Category</option>
-                                    {designations.map(d => (
+                                    <option value="">Select Department</option>
+                                    {departments.map(d => (
                                         <option key={d.id} value={d.id}>{d.name}</option>
                                     ))}
                                 </select>
                             </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Department *</label>
-                            <select name="department" value={formData.department} onChange={handleChange} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
-                                <option value="">Select Department</option>
-                                <option value="Design">Design</option>
-                                <option value="Production">Production</option>
-                                <option value="Sales">Sales</option>
-                                <option value="IT">IT</option>
-                                <option value="HR">HR</option>
-                                <option value="Marketing">Marketing</option>
-                            </select>
                         </div>
 
                         <div>

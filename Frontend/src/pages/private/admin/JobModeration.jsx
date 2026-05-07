@@ -17,8 +17,8 @@ const JobModeration = () => {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('ALL')
-    const [designations, setDesignations] = useState([])
-    const [selectedDesignation, setSelectedDesignation] = useState('ALL')
+    const [departments, setDepartments] = useState([])
+    const [selectedDepartment, setSelectedDepartment] = useState('ALL')
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalPages: 1,
@@ -33,14 +33,14 @@ const JobModeration = () => {
     const fetchJobs = async () => {
         try {
             setLoading(true)
-            const [jobsRes, desigRes] = await Promise.all([
+            const [jobsRes, deptRes] = await Promise.all([
                 api.get('/admin/jobs', {
                     params: {
                         page: pagination.currentPage,
                         limit: pagination.itemsPerPage
                     }
                 }),
-                api.get('/admin/designations')
+                api.get('/admin/departments')
             ])
             setJobs(jobsRes.data.jobs)
             if (jobsRes.data.pagination) {
@@ -49,7 +49,7 @@ const JobModeration = () => {
                     ...jobsRes.data.pagination
                 }))
             }
-            setDesignations(desigRes.data.designations)
+            setDepartments(deptRes.data.departments)
         } catch (error) {
             toast.error('Failed to load data')
         } finally {
@@ -105,13 +105,13 @@ const JobModeration = () => {
     const filtered = jobs.filter(j => {
         const matchSearch = j.title.toLowerCase().includes(search.toLowerCase()) || 
                            j.company.toLowerCase().includes(search.toLowerCase()) ||
-                           (j.designation?.name || '').toLowerCase().includes(search.toLowerCase())
+                           (j.department?.name || '').toLowerCase().includes(search.toLowerCase())
         
-        const matchDesignation = selectedDesignation === 'ALL' || j.designationId === selectedDesignation
+        const matchDepartment = selectedDepartment === 'ALL' || j.departmentId === selectedDepartment
         
         const matchStatus = filter === 'ALL' ? true : (filter === 'FLAGGED' ? j.flagged : j.status === filter)
         
-        return matchSearch && matchDesignation && matchStatus
+        return matchSearch && matchDepartment && matchStatus
     })
 
     return (
@@ -142,12 +142,12 @@ const JobModeration = () => {
                 <div className="h-8 w-px bg-gray-200 mx-2 hidden md:block" />
 
                 <select 
-                    value={selectedDesignation}
-                    onChange={e => setSelectedDesignation(e.target.value)}
+                    value={selectedDepartment}
+                    onChange={e => setSelectedDepartment(e.target.value)}
                     className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:border-[#1a3c8f] focus:ring-2 focus:ring-blue-100 transition min-w-[180px]"
                 >
-                    <option value="ALL">All Designations</option>
-                    {designations.map(d => (
+                    <option value="ALL">All Departments</option>
+                    {departments.map(d => (
                         <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                 </select>
@@ -189,9 +189,9 @@ const JobModeration = () => {
                                     <div>
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <h4 className="font-bold text-gray-900 text-sm">
-                                                {job.designation ? job.designation.name : job.title}
+                                                {job.department ? job.department.name : job.title}
                                             </h4>
-                                            {job.designation && (
+                                            {job.department && (
                                                 <span className="px-2 py-0.5 bg-blue-100 text-[#1a3c8f] text-[9px] font-black uppercase tracking-widest rounded-lg">
                                                     {job.title}
                                                 </span>

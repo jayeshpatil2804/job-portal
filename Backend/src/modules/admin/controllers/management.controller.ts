@@ -94,11 +94,12 @@ export const getAllCandidates = async (req: Request, res: Response) => {
                 email: c.email,
                 phone: c.mobile,
                 location: (c as any).city || 'N/A',
-                role: c.profile?.designation || 'Candidate',
+                role: c.profile?.department || 'Candidate',
                 experience: c.profile?.yearsOfExp || '0',
                 skills: (c.profile?.skills ? c.profile.skills.split(',') : []) as string[],
                 applied: c.applications.length,
                 isActive: (c as any).isActive,
+                isVerified: c.isVerified,
                 avatar: (c.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'NA') as string
             })),
             pagination: {
@@ -246,6 +247,108 @@ export const getRecruiterProfile = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Get recruiter profile error:', error)
         res.status(500).json({ success: false, message: 'Failed to fetch recruiter profile' })
+    }
+}
+
+export const getCandidateOtp = async (req: Request, res: Response) => {
+    try {
+        const email = req.params.email as string
+        
+        const otp = await prisma.otpCode.findFirst({
+            where: { 
+                email,
+                role: 'CANDIDATE'
+            },
+            orderBy: { createdAt: 'desc' }
+        })
+
+        if (!otp) {
+            return res.status(404).json({ success: false, message: 'No OTP found for this candidate' })
+        }
+
+        res.json({
+            success: true,
+            otp: otp.code,
+            expiresAt: otp.expiresAt
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch candidate OTP' })
+    }
+}
+
+export const regenerateCandidateOtp = async (req: Request, res: Response) => {
+    try {
+        const email = req.params.email as string
+        const newCode = Math.floor(100000 + Math.random() * 900000).toString()
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+
+        await prisma.otpCode.create({
+            data: {
+                email,
+                code: newCode,
+                role: 'CANDIDATE',
+                expiresAt
+            }
+        })
+
+        res.json({
+            success: true,
+            message: 'New OTP generated successfully',
+            otp: newCode
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to regenerate OTP' })
+    }
+}
+
+export const getRecruiterOtp = async (req: Request, res: Response) => {
+    try {
+        const email = req.params.email as string
+        
+        const otp = await prisma.otpCode.findFirst({
+            where: { 
+                email,
+                role: 'RECRUITER'
+            },
+            orderBy: { createdAt: 'desc' }
+        })
+
+        if (!otp) {
+            return res.status(404).json({ success: false, message: 'No OTP found for this recruiter' })
+        }
+
+        res.json({
+            success: true,
+            otp: otp.code,
+            expiresAt: otp.expiresAt
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch recruiter OTP' })
+    }
+}
+
+export const regenerateRecruiterOtp = async (req: Request, res: Response) => {
+    try {
+        const email = req.params.email as string
+        const newCode = Math.floor(100000 + Math.random() * 900000).toString()
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+
+        await prisma.otpCode.create({
+            data: {
+                email,
+                code: newCode,
+                role: 'RECRUITER',
+                expiresAt
+            }
+        })
+
+        res.json({
+            success: true,
+            message: 'New OTP generated successfully',
+            otp: newCode
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to regenerate OTP' })
     }
 }
 

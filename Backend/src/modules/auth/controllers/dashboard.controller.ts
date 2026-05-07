@@ -5,63 +5,28 @@ export const getCandidateStats = async (req: any, res: Response) => {
     try {
         const candidateId = req.user.id;
 
-        // 1. Total Applications
+        // 1. Total Saved Jobs
+        const totalSavedJobs = await (prisma as any).savedJob.count({
+            where: { candidateId }
+        });
+
+        // 2. Total Applications (keeping it for success rate calculation if needed, or just for internal stats)
         const totalApplications = await (prisma as any).application.count({
             where: { candidateId }
         });
 
-        // 2. Status Breakdown for Chart
-        const statusCounts = await (prisma as any).application.groupBy({
-            by: ['status'],
-            where: { candidateId },
-            _count: {
-                status: true
-            }
-        });
-
-
         const shortlistedCount = await (prisma as any).application.count({
             where: { candidateId, status: 'SHORTLISTED' }
-        });
-
-        // 4. Recent Applications
-        const recentApplications = await (prisma as any).application.findMany({
-            where: { candidateId },
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            include: {
-                job: {
-                    select: {
-                        title: true,
-                        recruiter: {
-                            select: {
-                                companyName: true
-                            }
-                        },
-                        location: true
-                    }
-                }
-            }
         });
 
         res.status(200).json({
             status: 'success',
             data: {
                 stats: {
+                    totalSavedJobs,
                     totalApplications,
                     shortlistedCount,
-                    statusBreakdown: statusCounts.map((s: any) => ({
-                        status: s.status,
-                        count: s._count.status
-                    }))
-                },
-                recentApplications: recentApplications.map((app: any) => ({
-                    id: app.id,
-                    jobTitle: app.job.title,
-                    company: app.job.recruiter.companyName,
-                    appliedDate: app.createdAt.toISOString().split('T')[0],
-                    status: app.status
-                }))
+                }
             }
         });
     } catch (error: any) {

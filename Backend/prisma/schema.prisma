@@ -42,6 +42,7 @@ model Candidate {
 
   profile       CandidateProfile?
   applications  Application[]
+  savedJobs     SavedJob[]
   notifications Notification[]
 
   createdAt DateTime @default(now())
@@ -84,7 +85,7 @@ model CandidateProfile {
   // Experience
   isExperienced Boolean @default(false)
   companyName   String?
-  designation   String?
+  department    String?
   yearsOfExp    String?
 
   // Skills
@@ -176,7 +177,6 @@ model Job {
   recruiter   Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
 
   title            String
-  department       String
   jobType          JobType?
   experience       String // e.g. "0-1 years", "2-3 years", "5+ years"
   salaryMin        Int?
@@ -188,9 +188,9 @@ model Job {
   requirements     String?  @db.Text
   skills           String?  @db.Text
 
-  designationId String?
-  designation   Designation? @relation(fields: [designationId], references: [id])
-  skillsReq     Skill[]      @relation("JobSkills")
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  skillsReq    Skill[]     @relation("JobSkills")
 
   benefits   String?   @db.Text
   deadline   DateTime?
@@ -201,6 +201,7 @@ model Job {
 
   status       JobStatus     @default(OPEN)
   applications Application[]
+  savedBy      SavedJob[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -208,9 +209,11 @@ model Job {
   @@index([recruiterId])
   @@index([status])
   @@index([location])
-  @@index([department])
+  @@index([departmentId])
   @@index([isFlagged])
   @@index([isRemoved])
+  @@index([createdAt])
+  @@index([title])
 }
 
 enum ApplicationStatus {
@@ -241,7 +244,7 @@ model Application {
 }
 
 
-model Designation {
+model Department {
   id        String   @id @default(uuid())
   name      String   @unique
   jobs      Job[]
@@ -278,4 +281,19 @@ model Notification {
 
   @@index([candidateId])
   @@index([recruiterId])
+}
+
+model SavedJob {
+  id          String    @id @default(uuid())
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([createdAt])
 }

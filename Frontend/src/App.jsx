@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
+import { Toaster, toast } from 'react-hot-toast'
 
 // UI Components
 const PageLoader = () => (
@@ -48,7 +48,7 @@ const AdminResetPassword = lazy(() => import('./pages/public/auth/admin/AdminRes
 // Private Pages
 const ProfilePage = lazy(() => import('./pages/private/ProfilePage'))
 const DashboardPage = lazy(() => import('./pages/private/DashboardPage'))
-const AppliedJobsPage = lazy(() => import('./pages/private/AppliedJobsPage'))
+const SavedJobsPage = lazy(() => import('./pages/private/SavedJobsPage'))
 const CandidateInfoDetails = lazy(() => import('./pages/private/candidate/CandidateInfoDetails/CandidateInfoDetails'))
 const RecruiterInfoDetails = lazy(() => import('./pages/private/recruiter/RecruiterInfoDetails/RecruiterInfoDetails'))
 
@@ -63,8 +63,9 @@ const AdminDashboard = lazy(() => import('./pages/private/admin/AdminDashboard')
 const RecruiterApproval = lazy(() => import('./pages/private/admin/RecruiterApproval'))
 const CandidateManagement = lazy(() => import('./pages/private/admin/CandidateManagement'))
 const JobManagement = lazy(() => import('./pages/private/admin/JobManagement'))
+const SkillManagement = lazy(() => import('./pages/private/admin/SkillManagement'))
+const DepartmentManagement = lazy(() => import('./pages/private/admin/DepartmentManagement'))
 const SubAdminManagement = lazy(() => import('./pages/private/admin/SubAdminManagement'))
-const DesignationManagement = lazy(() => import('./pages/private/admin/DesignationManagement'))
 
 
 // Auth Wrappers
@@ -73,15 +74,34 @@ import RecruiterProtectedRoute from './components/RecruiterProtectedRoute'
 import AdminProtectedRoute from './components/AdminProtectedRoute'
 import RecruiterLayout from './components/RecruiterLayout'
 import { checkAuth } from './redux/actions/authActions'
-
+import { connectSocket, disconnectSocket } from './utils/socket'
+import socket from './utils/socket'
+import { authSlice } from './redux/slices/authSlice'
+import VerificationOverlay from './components/VerificationOverlay'
 
 function App() {
     const dispatch = useDispatch()
-    const { isCheckingAuth } = useSelector((state) => state.auth)
+    const { isCheckingAuth, user, isAuthenticated } = useSelector((state) => state.auth)
 
     useEffect(() => {
         dispatch(checkAuth())
     }, [dispatch])
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            connectSocket(user.id)
+
+            socket.on('accountVerified', (data) => {
+                dispatch(authSlice.actions.updateVerificationStatus(data.user))
+                toast.success('Account verified successfully!')
+            })
+
+            return () => {
+                socket.off('accountVerified')
+                disconnectSocket()
+            }
+        }
+    }, [isAuthenticated, user, dispatch])
 
     if (isCheckingAuth) {
         return (
@@ -95,6 +115,7 @@ function App() {
     return (
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Toaster position="top-center" reverseOrder={false} />
+            <VerificationOverlay />
             <Suspense fallback={<PageLoader />}>
                 <Routes>
                     {/* Main App Routes */}
@@ -116,7 +137,7 @@ function App() {
                     <Route element={<CandidateProtectedRoute />}>
 
                         <Route path="/profile" element={<ProfilePage />} />
-                        <Route path="/applied" element={<AppliedJobsPage />} />
+                        <Route path="/saved" element={<SavedJobsPage />} />
                     </Route>
 
                     {/* Candidate Onboarding */}
@@ -168,9 +189,9 @@ function App() {
                         <Route path="/admin/recruiters" element={<RecruiterApproval />} />
                         <Route path="/admin/candidates" element={<CandidateManagement />} />
                         <Route path="/admin/jobs" element={<JobManagement />} />
-
+                        <Route path="/admin/skills" element={<SkillManagement />} />
+                        <Route path="/admin/departments" element={<DepartmentManagement />} />
                         <Route path="/admin/sub-admins" element={<SubAdminManagement />} />
-                        <Route path="/admin/designations" element={<DesignationManagement />} />
                     </Route>
 
                     {/* Admin Auth Routes (Secure) */}

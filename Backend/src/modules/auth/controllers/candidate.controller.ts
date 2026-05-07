@@ -44,11 +44,11 @@ export const signup = async (req: Request, res: Response) => {
         })
 
         // Send Email (Mocked)
-        await sendOtpEmail(email, otp)
+        // await sendOtpEmail(email, otp) // OTP will be provided by Admin
 
         res.status(201).json({
             success: true,
-            message: 'User registered successfully. Please verify the OTP sent to your email to complete registration.',
+            message: 'User registered successfully. Please contact the administrator to receive your account verification OTP.',
             user: {
                 id: candidate.id,
                 email: candidate.email,
@@ -79,29 +79,16 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid credentials' })
         }
 
+        /* 
         // Require verification before login
         if (!candidate.isVerified) {
-            // Generate OTP
-            const otp = generateOtp()
-            const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
-
-            await prisma.otpCode.create({
-                data: {
-                    email,
-                    code: otp,
-                    role: 'CANDIDATE',
-                    expiresAt
-                }
-            })
-
-            await sendOtpEmail(email, otp)
-
             return res.status(403).json({ 
                 success: false,
                 requiresVerification: true,
-                message: 'Email not verified. A new OTP has been sent to your email.' 
+                message: 'Account not verified. Please contact administrator to receive your verification OTP.' 
             })
         }
+        */
 
         const token = generateToken(candidate.id, candidate.role)
 
@@ -122,7 +109,8 @@ export const login = async (req: Request, res: Response) => {
                 mobile: candidate.mobile,
                 role: candidate.role,
                 isProfileCompleted: candidate.isProfileCompleted,
-                isActive: (candidate as any).isActive
+                isActive: (candidate as any).isActive,
+                isVerified: candidate.isVerified
             }
         })
     } catch (error) {
@@ -195,6 +183,20 @@ export const verifyOtp = async (req: Request, res: Response) => {
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
 
+        await prisma.otpCode.deleteMany({
+            where: { email }
+        })
+
+        // Notify via WebSocket for instant update
+        if ((req as any).io) {
+            (req as any).io.to(candidate.id).emit('accountVerified', {
+                user: {
+                    ...candidate,
+                    isVerified: true
+                }
+            })
+        }
+
         res.json({
             success: true,
             message: 'OTP verified successfully and logged in',
@@ -203,7 +205,8 @@ export const verifyOtp = async (req: Request, res: Response) => {
                 email: candidate.email,
                 role: candidate.role,
                 isProfileCompleted: candidate.isProfileCompleted,
-                isActive: (candidate as any).isActive
+                isActive: (candidate as any).isActive,
+                isVerified: candidate.isVerified
             }
         })
     } catch (error) {

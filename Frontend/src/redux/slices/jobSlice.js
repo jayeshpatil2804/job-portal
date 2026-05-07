@@ -4,6 +4,13 @@ import { createJob, getMyJobs, getAllOpenJobs, getJobById, deleteJob, closeJob, 
 const initialState = {
     jobs: [],
     myJobs: [],
+    pagination: {
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+        hasNextPage: false
+    },
     selectedJob: null,
     loading: false,
     error: null,
@@ -54,13 +61,22 @@ const jobSlice = createSlice({
                 state.error = action.payload;
             })
             // Get All Open Jobs
-            .addCase(getAllOpenJobs.pending, (state) => {
+            .addCase(getAllOpenJobs.pending, (state, action) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(getAllOpenJobs.fulfilled, (state, action) => {
                 state.loading = false;
-                state.jobs = action.payload.jobs;
+                const { jobs, pagination } = action.payload;
+                if (pagination.page === 1) {
+                    state.jobs = jobs;
+                } else {
+                    // Filter out duplicates if any (e.g. from real-time updates)
+                    const existingIds = new Set(state.jobs.map(j => j.id));
+                    const newJobs = jobs.filter(j => !existingIds.has(j.id));
+                    state.jobs = [...state.jobs, ...newJobs];
+                }
+                state.pagination = pagination;
             })
             .addCase(getAllOpenJobs.rejected, (state, action) => {
                 state.loading = false;

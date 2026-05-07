@@ -43,7 +43,7 @@ const CandidateInfoDetails = () => {
     // Experience
     isExperienced: false,
     companyName: '',
-    designation: '',
+    department: '',
     yearsOfExp: '',
     // Skills
     skills: [],
@@ -134,7 +134,7 @@ const CandidateInfoDetails = () => {
         }
         return true;
       case 3:
-        if (formData.isExperienced && (!formData.companyName || !formData.designation || !formData.yearsOfExp)) {
+        if (formData.isExperienced && (!formData.companyName || !formData.department || !formData.yearsOfExp)) {
           toast.error('Please fill in your experience details');
           return false;
         }
@@ -361,10 +361,10 @@ const CandidateInfoDetails = () => {
                       />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <FormInput
-                          label="Designation"
-                          name="designation"
-                          placeholder="e.g. Software Engineer"
-                          value={formData.designation}
+                          label="Department"
+                          name="department"
+                          placeholder="e.g. IT or Production"
+                          value={formData.department}
                           onChange={handleInputChange}
                         />
                         <FormInput

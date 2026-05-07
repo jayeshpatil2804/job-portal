@@ -2,15 +2,13 @@ import { createSlice } from '@reduxjs/toolkit';
 import {
     getJobApplicants,
     updateApplicationStatus,
-    applyToJob,
-    getMyApplications
+    applyToJob
 } from '../actions/applicationActions';
 
 const applicationSlice = createSlice({
     name: 'application',
     initialState: {
         applicants: [], // For recruiter viewing a specific job's applicants
-        myApplications: [], // For candidate viewing their applications
         loading: false,
         error: null,
         success: false
@@ -69,20 +67,6 @@ const applicationSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
                 state.success = false;
-            })
-
-            // Get My Applications
-            .addCase(getMyApplications.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(getMyApplications.fulfilled, (state, action) => {
-                state.loading = false;
-                state.myApplications = action.payload;
-            })
-            .addCase(getMyApplications.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
             });
     }
 });

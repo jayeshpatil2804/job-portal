@@ -37,7 +37,19 @@ const CandidateSignup = () => {
 
             const response = await api.post('/candidate/signup', sanitizedData);
             toast.success(response.data.message || 'Signup successful!');
-            navigate(`/candidate/verify-otp/${formData.email}`);
+            
+            // Auto-login after signup to trigger the verification overlay
+            const loginRes = await api.post('/candidate/login', {
+                email: sanitizedData.email,
+                password: sanitizedData.password
+            });
+            
+            if (loginRes.data.success) {
+                // The App.jsx useEffect will catch the auth state change
+                window.location.href = '/profile';
+            } else {
+                navigate(`/candidate/verify-otp/${formData.email}`);
+            }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
         }

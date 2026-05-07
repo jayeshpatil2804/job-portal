@@ -19,7 +19,7 @@ export const applyToJob = async (req: Request, res: Response) => {
 
 
         // Check for existing application
-        const existing = await (prisma as any).application.findUnique({
+        const existing = await prisma.application.findUnique({
             where: {
                 jobId_candidateId: { jobId, candidateId }
             }
@@ -32,7 +32,7 @@ export const applyToJob = async (req: Request, res: Response) => {
 
         const { selectedSkillIds } = req.body
 
-        const application = await (prisma as any).application.create({
+        const application = await prisma.application.create({
             data: {
                 jobId,
                 candidateId,
@@ -59,7 +59,7 @@ export const getMyApplications = async (req: Request, res: Response) => {
     try {
         const candidateId = (req as any).user.id as string
 
-        const applications = await (prisma as any).application.findMany({
+        const applications = await prisma.application.findMany({
             where: { candidateId },
             include: {
                 job: {
@@ -103,7 +103,7 @@ export const getJobApplicants = async (req: Request, res: Response) => {
 
         console.log(`[getJobApplicants] Fetching for jobId: ${jobId} by recruiterId: ${recruiterId}`)
 
-        const applicants = await (prisma as any).application.findMany({
+        const applicants = await prisma.application.findMany({
             where: { jobId },
             include: {
                 candidate: {
@@ -151,7 +151,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid status update' })
         }
 
-        const application = await (prisma as any).application.findUnique({
+        const application = await prisma.application.findUnique({
             where: { id },
             include: { job: true }
         })
@@ -160,7 +160,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
             return res.status(403).json({ message: 'Unauthorized' })
         }
 
-        const updated = await (prisma as any).application.update({
+        const updated = await prisma.application.update({
             where: { id },
             data: { status }
         })

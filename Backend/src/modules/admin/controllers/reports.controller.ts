@@ -57,14 +57,14 @@ export const getReportsMetadata = async (req: Request, res: Response) => {
                 rows: `${await prisma.job.count({ where: { OR: [{ isFlagged: true }, { isRemoved: true }] } })} jobs`,
             },
             {
-                id: 'designations',
-                title: 'Designation-wise Applications',
-                description: 'Breakdown of applications received for each job designation',
+                id: 'departments',
+                title: 'Department-wise Applications',
+                description: 'Breakdown of applications received for each job department',
                 icon: 'BarChart3',
                 iconBg: 'bg-green-50',
                 iconColor: 'text-green-600',
                 category: 'Analytics',
-                rows: `${await prisma.designation.count()} roles`,
+                rows: `${await prisma.department.count()} departments`,
             }
         ]
         res.json({ success: true, reports })
@@ -141,8 +141,8 @@ export const downloadReport = async (req: Request, res: Response) => {
                 }))
                 break
 
-            case 'designations':
-                const allDesignations = await prisma.designation.findMany({
+            case 'departments':
+                const allDepartments = await prisma.department.findMany({
                     include: {
                         jobs: {
                             include: {
@@ -151,8 +151,8 @@ export const downloadReport = async (req: Request, res: Response) => {
                         }
                     }
                 })
-                data = allDesignations.map(d => ({
-                    Designation: d.name,
+                data = allDepartments.map(d => ({
+                    Department: d.name,
                     TotalJobs: d.jobs.length,
                     TotalApplications: d.jobs.reduce((acc, job) => acc + job._count.applications, 0),
                     CreatedAt: d.createdAt

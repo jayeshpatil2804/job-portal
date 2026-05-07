@@ -27,7 +27,8 @@ const navLinks = [
     { path: '/admin/jobs', label: 'Jobs', icon: Briefcase },
 
     { path: '/admin/sub-admins', label: 'Sub Admins', icon: ShieldCheck },
-    { path: '/admin/designations', label: 'Designations', icon: Settings2 },
+    { path: '/admin/departments', label: 'Departments', icon: Settings2 },
+    { path: '/admin/skills', label: 'Skills', icon: ShieldCheck },
 ]
 
 const AdminLayout = ({ children, title = 'Admin Panel' }) => {

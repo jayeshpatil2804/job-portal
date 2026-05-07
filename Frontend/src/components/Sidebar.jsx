@@ -18,9 +18,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     }, [])
 
     const navLinks = [
-
         { path: '/jobs', label: 'Search Jobs', icon: <Search size={20} /> },
-        { path: '/applied', label: 'Applied Jobs', icon: <FileText size={20} /> },
+        { path: '/saved', label: 'Saved Jobs', icon: <FileText size={20} /> },
         { path: '/profile', label: 'Profile', icon: <User size={20} /> },
     ]
 

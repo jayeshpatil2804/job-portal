@@ -13,7 +13,7 @@ router.use(protect)
 
 // Candidate routes
 router.post('/apply/:jobId', restrictTo('CANDIDATE'), applyToJob)
-router.get('/candidate/my', restrictTo('CANDIDATE'), getMyApplications)
+// router.get('/candidate/my', restrictTo('CANDIDATE'), getMyApplications) // Removed as per request
 
 // Recruiter routes
 router.get('/job/:jobId', restrictTo('RECRUITER'), getJobApplicants)
