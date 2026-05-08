@@ -41,18 +41,8 @@ const RecruiterSignup = () => {
             const response = await api.post('/recruiter/signup', sanitizedData);
             toast.success(response.data.message || 'Signup successful!');
             
-            // Auto-login after signup to trigger the verification overlay
-            const loginRes = await api.post('/recruiter/login', {
-                workEmail: sanitizedData.email,
-                password: sanitizedData.password
-            });
-
-            if (loginRes.data.success) {
-                // The App.jsx useEffect will catch the auth state change
-                window.location.href = '/recruiter/profile';
-            } else {
-                navigate(`/recruiter/verify-otp/${formData.workEmail}`);
-            }
+            // Redirect to dedicated verification page instead of profile
+            navigate(`/recruiter/verify-otp/${sanitizedData.workEmail}`);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
         }

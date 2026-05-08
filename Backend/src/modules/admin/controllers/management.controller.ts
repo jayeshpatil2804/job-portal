@@ -5,10 +5,21 @@ export const getAllRecruiters = async (req: Request, res: Response) => {
     try {
         const page = parseInt(req.query.page as string) || 1
         const limit = parseInt(req.query.limit as string) || 10
+        const search = (req.query.search as string) || ''
         const skip = (page - 1) * limit
+
+        const where: any = {}
+        if (search) {
+            where.OR = [
+                { fullName: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { companyName: { contains: search, mode: 'insensitive' } }
+            ]
+        }
 
         const [recruiters, total] = await Promise.all([
             prisma.recruiter.findMany({
+                where,
                 include: {
                     profile: true
                 },
@@ -16,17 +27,16 @@ export const getAllRecruiters = async (req: Request, res: Response) => {
                 skip,
                 take: limit
             }),
-            prisma.recruiter.count()
+            prisma.recruiter.count({ where })
         ])
-
-        const now = new Date()
 
         res.json({
             success: true,
             recruiters: recruiters.map(r => ({
                 id: r.id,
                 company: r.companyName,
-                contact: r.fullName,
+                fullName: r.fullName,
+                email: r.email,
                 status: r.verificationStatus,
                 isActive: (r as any).isActive,
                 appliedOn: r.createdAt.toLocaleDateString(),
@@ -69,10 +79,21 @@ export const getAllCandidates = async (req: Request, res: Response) => {
     try {
         const page = parseInt(req.query.page as string) || 1
         const limit = parseInt(req.query.limit as string) || 10
+        const search = (req.query.search as string) || ''
         const skip = (page - 1) * limit
+
+        const where: any = {}
+        if (search) {
+            where.OR = [
+                { fullName: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { mobile: { contains: search, mode: 'insensitive' } }
+            ]
+        }
 
         const [candidates, total] = await Promise.all([
             prisma.candidate.findMany({
+                where,
                 include: {
                     profile: true,
                     applications: true
@@ -81,10 +102,8 @@ export const getAllCandidates = async (req: Request, res: Response) => {
                 skip,
                 take: limit
             }),
-            prisma.candidate.count()
+            prisma.candidate.count({ where })
         ])
-
-        const now = new Date()
 
         res.json({
             success: true,
@@ -159,6 +178,29 @@ export const toggleCandidateActivation = async (req: Request, res: Response) => 
         })
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to update candidate activation status' })
+    }
+}
+
+export const toggleCandidateVerification = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string
+        const { isVerified } = req.body
+
+        await prisma.candidate.update({
+            where: { id },
+            data: { isVerified: Boolean(isVerified) }
+        })
+
+        if ((req as any).io) {
+            (req as any).io.to(id).emit('verificationStatusChanged', { isVerified: Boolean(isVerified) })
+        }
+
+        res.json({
+            success: true,
+            message: `Candidate verification status set to ${isVerified}`
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update candidate verification status' })
     }
 }
 
@@ -294,7 +336,8 @@ export const regenerateCandidateOtp = async (req: Request, res: Response) => {
         res.json({
             success: true,
             message: 'New OTP generated successfully',
-            otp: newCode
+            otp: newCode,
+            expiresAt
         })
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to regenerate OTP' })
@@ -345,7 +388,8 @@ export const regenerateRecruiterOtp = async (req: Request, res: Response) => {
         res.json({
             success: true,
             message: 'New OTP generated successfully',
-            otp: newCode
+            otp: newCode,
+            expiresAt
         })
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to regenerate OTP' })

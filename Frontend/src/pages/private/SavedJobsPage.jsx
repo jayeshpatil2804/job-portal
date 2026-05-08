@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import DashboardLayout from '../../components/DashboardLayout'
-import { Eye, Briefcase, MapPin, Calendar, Search, Trash2, ExternalLink, Bookmark } from 'lucide-react'
+import { Eye, Briefcase, MapPin, Calendar, Search, Trash2, ExternalLink, Bookmark, ShieldAlert } from 'lucide-react'
 import { getMySavedJobs, toggleSaveJob } from '../../redux/actions/savedJobActions'
 import Pagination from '../../components/common/Pagination'
 import { motion, AnimatePresence } from 'framer-motion'

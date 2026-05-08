@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown, Calendar, RefreshCw, Mail, Phone, FileText, Shield, AlertCircle, CheckSquare, Square, User, MapPin, Briefcase, Image, Upload, Camera, Key } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Search, Eye, Building2, Globe, ChevronDown, Calendar, RefreshCw, Mail, Phone, FileText, Shield, AlertCircle, CheckSquare, Square, User, MapPin, Briefcase, Image, Upload, Camera, Key, X, KeyRound, Copy, MessageSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
 import api from '../../../utils/api'
@@ -39,8 +39,12 @@ const RecruiterApproval = () => {
     })
 
     useEffect(() => {
-        fetchRecruiters()
-    }, [pagination.currentPage, pagination.itemsPerPage])
+        const delayDebounceFn = setTimeout(() => {
+            fetchRecruiters()
+        }, 500)
+
+        return () => clearTimeout(delayDebounceFn)
+    }, [pagination.currentPage, pagination.itemsPerPage, search])
 
     const fetchRecruiters = async () => {
         try {
@@ -48,7 +52,8 @@ const RecruiterApproval = () => {
             const res = await api.get('/admin/recruiters', {
                 params: {
                     page: pagination.currentPage,
-                    limit: pagination.itemsPerPage
+                    limit: pagination.itemsPerPage,
+                    search: search
                 }
             })
             setRecruiters(res.data.recruiters)
@@ -76,6 +81,16 @@ const RecruiterApproval = () => {
         setSelected(null)
     }
 
+    const handleActivationToggle = async (id, currentStatus) => {
+        try {
+            await api.patch(`/admin/recruiters/${id}/activate`, { isActive: !currentStatus })
+            setRecruiters(prev => prev.map(r => r.id === id ? { ...r, isActive: !currentStatus } : r))
+            toast.success(`Recruiter account ${!currentStatus ? 'activated' : 'deactivated'}`)
+        } catch (error) {
+            toast.error('Failed to toggle activation status')
+        }
+    }
+
     const openSubscriptionProfile = async (id) => {
         try {
             const res = await api.get(`/admin/recruiters/${id}`)
@@ -89,28 +104,20 @@ const RecruiterApproval = () => {
         try {
             setFetchingOtp(true)
             const res = await api.get(`/admin/recruiters/${email}/otp`)
+            setOtpData({ email, otp: res.data.otp, expiresAt: res.data.expiresAt })
+        } catch (error) {
             Swal.fire({
-                title: 'Recruiter OTP',
-                html: `
-                    <div class="p-4 bg-amber-50 rounded-2xl border-2 border-amber-200">
-                        <p class="text-amber-800 text-sm font-bold mb-1 uppercase tracking-widest">Verification Code</p>
-                        <h2 class="text-4xl font-black text-[#1a3c8f] tracking-widest">${res.data.otp}</h2>
-                    </div>
-                `,
-                confirmButtonText: 'Copy & Close',
+                title: 'No OTP Found',
+                text: 'This recruiter does not have an active OTP. Generate one now?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Generate OTP',
                 confirmButtonColor: '#1a3c8f',
-                customClass: {
-                    popup: 'rounded-[2rem]',
-                    confirmButton: 'rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest'
-                }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    navigator.clipboard.writeText(res.data.otp)
-                    toast.success('OTP copied to clipboard!')
+                    regenerateOtp(email)
                 }
             })
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to fetch OTP')
         } finally {
             setFetchingOtp(false)
         }
@@ -138,7 +145,7 @@ const RecruiterApproval = () => {
     }
 
     const filtered = recruiters.filter(r => {
-        const matchSearch = r.company.toLowerCase().includes(search.toLowerCase()) || r.email.toLowerCase().includes(search.toLowerCase())
+        const matchSearch = r.company?.toLowerCase().includes(search.toLowerCase()) || r.email?.toLowerCase().includes(search.toLowerCase())
         const matchFilter = filter === 'ALL' || r.status === filter
         return matchSearch && matchFilter
     })
@@ -150,7 +157,7 @@ const RecruiterApproval = () => {
         REJECTED: recruiters.filter(r => r.status === 'REJECTED').length,
     }
 
-    if (loading) return (
+    if (loading && recruiters.length === 0) return (
         <AdminLayout title="Recruiter Approval">
             <div className="flex h-64 items-center justify-center">
                 <div className="w-8 h-8 border-4 border-[#1a3c8f] border-t-transparent rounded-full animate-spin" />
@@ -194,12 +201,11 @@ const RecruiterApproval = () => {
                 />
             </div>
 
-            {/* Cards Grid - Similar to Candidate Management */}
+            {/* Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filtered.map((r, i) => {
                     const s = STATUS_MAP[r.status]
                     
-                    // Mock verification status - in real app this would come from API
                     const verificationStatus = {
                         companyInfo: r.company ? true : false,
                         contactInfo: r.contact && r.email ? true : false,
@@ -221,7 +227,6 @@ const RecruiterApproval = () => {
                             transition={{ delay: i * 0.06 }}
                             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all duration-300 group"
                         >
-                            {/* Company Header */}
                             <div className="flex items-start gap-4">
                                 <div className="relative">
                                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
@@ -245,11 +250,13 @@ const RecruiterApproval = () => {
                                         <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${s.classes}`}>
                                             {s.icon} {s.label}
                                         </span>
+                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${r.isActive ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                                            {r.isActive ? 'Active' : 'Inactive'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Contact Information */}
                             <div className="flex gap-3 mt-4 text-xs text-gray-500">
                                 <span className="flex items-center gap-1 truncate">
                                     <Mail size={11} />
@@ -261,7 +268,6 @@ const RecruiterApproval = () => {
                                 </span>
                             </div>
 
-                            {/* Location and Applied Date */}
                             <div className="flex gap-3 mt-2 text-xs text-gray-500">
                                 {r.location && (
                                     <span className="flex items-center gap-1 truncate">
@@ -277,7 +283,6 @@ const RecruiterApproval = () => {
                                 )}
                             </div>
 
-                            {/* Verification Progress */}
                             <div className="mt-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-xs font-semibold text-gray-700">Verification Status</span>
@@ -301,36 +306,18 @@ const RecruiterApproval = () => {
                                 </div>
                             </div>
 
-                            {/* Verification Checklist */}
-                            <div className="flex flex-wrap gap-1 mt-3">
-                                {VERIFICATION_CHECKLIST.slice(0, 4).map(check => (
-                                    <div
-                                        key={check.key}
-                                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-medium ${
-                                            verificationStatus[check.key]
-                                                ? 'bg-green-50 text-green-700 border border-green-200'
-                                                : 'bg-gray-50 text-gray-500 border border-gray-200'
-                                        }`}
-                                        title={check.label}
-                                    >
-                                        {verificationStatus[check.key] ? <CheckCircle size={8} /> : <AlertCircle size={8} />}
-                                        {check.label.split(' ')[0]}
-                                    </div>
-                                ))}
-                                {totalChecks > 4 && (
-                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                        +{totalChecks - 4}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Action Buttons */}
                             <div className="mt-4 flex gap-2">
                                 <button
                                     onClick={() => openSubscriptionProfile(r.id)}
                                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-blue-100 text-[#1a3c8f] text-xs font-black uppercase tracking-wider rounded-xl hover:bg-blue-50 transition-all active:scale-95"
                                 >
                                     <Eye size={14} /> View
+                                </button>
+                                <button
+                                    onClick={() => handleActivationToggle(r.id, r.isActive)}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all active:scale-95 shadow-lg ${r.isActive ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
+                                >
+                                    {r.isActive ? 'Deactivate' : 'Activate'}
                                 </button>
                                 {r.status !== 'APPROVED' && (
                                     <button
@@ -340,37 +327,11 @@ const RecruiterApproval = () => {
                                         <Key size={14} /> OTP
                                     </button>
                                 )}
-                                {r.status === 'PENDING' && (
-                                    <button
-                                        onClick={() => handleAction(r.id, 'APPROVED')}
-                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
-                                    >
-                                        <CheckCircle size={12} /> Approve
-                                    </button>
-                                )}
-                                {r.status !== 'PENDING' && (
-                                    <button
-                                        onClick={() => handleAction(r.id, 'PENDING')}
-                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold rounded-xl transition-all duration-200"
-                                    >
-                                        Reset Status
-                                    </button>
-                                )}
                             </div>
                         </motion.div>
                     )
                 })}
             </div>
-
-            {/* Empty State */}
-            {filtered.length === 0 && (
-                <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <Building2 size={32} className="text-gray-400" />
-                    </div>
-                    <p className="text-gray-400 text-sm">No recruiters found</p>
-                </div>
-            )}
 
             {/* Pagination */}
             <Pagination
@@ -405,11 +366,10 @@ const RecruiterApproval = () => {
                                     onClick={() => setSubscriptionProfile(null)}
                                     className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
                                 >
-                                    <XCircle size={20} />
+                                    <X size={20} />
                                 </button>
                             </div>
 
-                            {/* Enhanced Verification Checklist */}
                             <div className="mb-6">
                                 <h4 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2">
                                     <Shield size={18} className="text-[#1a3c8f]" />
@@ -417,177 +377,24 @@ const RecruiterApproval = () => {
                                 </h4>
                                 <div className="space-y-3">
                                     {VERIFICATION_CHECKLIST.map(check => {
-                                        const isComplete = subscriptionProfile[check.key] || 
-                                            (check.key === 'companyInfo' && subscriptionProfile.companyName) ||
-                                            (check.key === 'contactInfo' && subscriptionProfile.email && subscriptionProfile.mobile) ||
-                                            (check.key === 'website' && subscriptionProfile.website) ||
-                                            (check.key === 'companyLogo' && subscriptionProfile.companyLogo) ||
-                                            (check.key === 'emailVerified' && subscriptionProfile.emailVerified)
-                                        
+                                        const isComplete = subscriptionProfile[check.key]
                                         return (
                                             <div
                                                 key={check.key}
                                                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                                                    isComplete 
-                                                        ? 'bg-green-50 border-green-200' 
-                                                        : 'bg-yellow-50 border-yellow-200'
+                                                    isComplete ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'
                                                 }`}
                                             >
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                    isComplete ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'
-                                                }`}>
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isComplete ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}`}>
                                                     {isComplete ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className={`font-semibold text-sm ${
-                                                        isComplete ? 'text-green-700' : 'text-yellow-700'
-                                                    }`}>
-                                                        {check.label}
-                                                    </p>
-                                                    <p className="text-xs text-gray-600 mt-0.5">
-                                                        {isComplete ? 'Completed' : 'Pending verification'}
-                                                    </p>
+                                                    <p className={`font-semibold text-sm ${isComplete ? 'text-green-700' : 'text-yellow-700'}`}>{check.label}</p>
+                                                    <p className="text-xs text-gray-600 mt-0.5">{isComplete ? 'Completed' : 'Pending'}</p>
                                                 </div>
-                                                {check.icon}
                                             </div>
                                         )
                                     })}
-                                </div>
-                            </div>
-
-                            {/* Enhanced Card-Based User Info */}
-                            <div className="mb-6">
-                                <h4 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2">
-                                    <User size={18} className="text-[#1a3c8f]" />
-                                    Company Profile Card
-                                </h4>
-                                
-                                {/* Main Profile Card */}
-                                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-100 overflow-hidden shadow-lg">
-                                    {/* Card Header with Image */}
-                                    <div className="relative h-32 bg-gradient-to-r from-blue-600 to-purple-600">
-                                        <div className="absolute inset-0 bg-black/10">
-                                            <div className="absolute bottom-4 left-4 right-4">
-                                                <div className="flex items-end gap-4">
-                                                    {/* Company Logo/Image */}
-                                                    <div className="relative">
-                                                        {subscriptionProfile.companyLogo ? (
-                                                            <img 
-                                                                src={subscriptionProfile.companyLogo} 
-                                                                alt="Company Logo"
-                                                                className="w-20 h-20 rounded-xl border-4 border-white shadow-lg object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-20 h-20 rounded-xl border-4 border-white shadow-lg bg-white/90 flex items-center justify-center">
-                                                                <Camera size={24} className="text-gray-400" />
-                                                            </div>
-                                                        )}
-                                                        <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${
-                                                            subscriptionProfile.companyLogo ? 'bg-green-500' : 'bg-yellow-500'
-                                                        }`}>
-                                                            {subscriptionProfile.companyLogo ? 
-                                                                <CheckCircle size={14} className="text-white" /> : 
-                                                                <AlertCircle size={14} className="text-white" />
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {/* Company Info */}
-                                                    <div className="flex-1 pb-2">
-                                                        <h3 className="font-bold text-white text-lg">{subscriptionProfile.companyName}</h3>
-                                                        <p className="text-blue-100 text-sm">{subscriptionProfile.fullName}</p>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                                                subscriptionProfile.status === 'APPROVED' ? 'bg-white/20 text-white' :
-                                                                subscriptionProfile.status === 'PENDING' ? 'bg-yellow-400/80 text-white' :
-                                                                'bg-red-400/80 text-white'
-                                                            }`}>
-                                                                {subscriptionProfile.status}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Card Body */}
-                                    <div className="p-4 space-y-3">
-                                        {/* Contact Information Grid */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <div className="bg-white/80 rounded-xl p-3 border border-white/50">
-                                                <div className="flex items-center gap-2">
-                                                    <Mail size={14} className="text-blue-600" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs text-gray-500">Email</p>
-                                                        <p className="text-sm font-medium text-gray-900 truncate">{subscriptionProfile.email}</p>
-                                                    </div>
-                                                    {subscriptionProfile.emailVerified && (
-                                                        <CheckCircle size={12} className="text-green-500 flex-shrink-0" />
-                                                    )}
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="bg-white/80 rounded-xl p-3 border border-white/50">
-                                                <div className="flex items-center gap-2">
-                                                    <Phone size={14} className="text-blue-600" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs text-gray-500">Phone</p>
-                                                        <p className="text-sm font-medium text-gray-900 truncate">{subscriptionProfile.mobile}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            {subscriptionProfile.website && (
-                                                <div className="bg-white/80 rounded-xl p-3 border border-white/50">
-                                                    <div className="flex items-center gap-2">
-                                                        <Globe size={14} className="text-blue-600" />
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-xs text-gray-500">Website</p>
-                                                            <a href={`https://${subscriptionProfile.website}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 hover:underline truncate block">
-                                                                {subscriptionProfile.website}
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            
-                                            {subscriptionProfile.location && (
-                                                <div className="bg-white/80 rounded-xl p-3 border border-white/50">
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin size={14} className="text-blue-600" />
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-xs text-gray-500">Location</p>
-                                                            <p className="text-sm font-medium text-gray-900 truncate">{subscriptionProfile.location}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        
-                                        {/* Upload Status */}
-                                        <div className="bg-white/80 rounded-xl p-3 border border-white/50">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <Upload size={14} className="text-blue-600" />
-                                                    <span className="text-sm font-medium text-gray-900">Document Upload Status</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    {subscriptionProfile.documentsUploaded ? (
-                                                        <>
-                                                            <CheckCircle size={12} className="text-green-500" />
-                                                            <span className="text-xs font-medium text-green-700">Complete</span>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <AlertCircle size={12} className="text-yellow-500" />
-                                                            <span className="text-xs font-medium text-yellow-700">Pending</span>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -605,56 +412,70 @@ const RecruiterApproval = () => {
             {/* OTP Modal */}
             <AnimatePresence>
                 {otpData && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-                        onClick={() => setOtpData(null)}
-                    >
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
+                            initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            onClick={e => e.stopPropagation()}
-                            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden p-10 text-center"
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden"
                         >
-                            <div className="w-20 h-20 bg-amber-50 rounded-[2rem] flex items-center justify-center text-amber-600 mx-auto mb-6 shadow-inner">
-                                <Key size={36} />
-                            </div>
-                            
-                            <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Verification Code</h3>
-                            <p className="text-gray-500 font-bold text-sm mb-8 px-4">Provide this code to <span className="text-[#1a3c8f]">{otpData.email}</span> for account activation.</p>
-
-                            <div className="bg-gray-50 rounded-[2rem] p-8 mb-8 border border-gray-100 shadow-inner group relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-200/20 rounded-full -mr-12 -mt-12 blur-2xl"></div>
-                                <div className="text-5xl font-black text-[#1a3c8f] tracking-[0.2em] relative z-10">
-                                    {otpData.otp}
-                                </div>
-                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mt-4">Expires: {new Date(otpData.expiresAt).toLocaleTimeString()}</p>
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={() => regenerateOtp(otpData.email)}
-                                    disabled={fetchingOtp}
-                                    className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-gray-900/10 hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-                                >
-                                    <RefreshCw size={16} className={fetchingOtp ? 'animate-spin' : ''} />
-                                    {fetchingOtp ? 'Generating...' : 'Regenerate OTP'}
-                                </button>
-                                <button
+                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-8 text-center text-white relative">
+                                <button 
                                     onClick={() => setOtpData(null)}
-                                    className="w-full py-4 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:text-gray-600 transition-all"
+                                    className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
                                 >
-                                    Dismiss
+                                    <X size={18} />
                                 </button>
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30">
+                                    <KeyRound size={32} />
+                                </div>
+                                <h3 className="text-xl font-black uppercase tracking-tight">Recruiter OTP</h3>
+                                <p className="text-blue-50 text-[10px] font-bold uppercase tracking-widest mt-1 opacity-80">Access Code</p>
+                            </div>
+
+                            <div className="p-8 space-y-6">
+                                <div className="text-center space-y-2">
+                                    <div className="bg-slate-50 py-4 rounded-2xl border-2 border-dashed border-slate-200">
+                                        <span className="text-4xl font-black text-[#1a3c8f] tracking-[0.3em]">{otpData.otp}</span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                        Expires at: {new Date(otpData.expiresAt).toLocaleTimeString()}
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(otpData.otp)
+                                            toast.success('OTP copied to clipboard')
+                                        }}
+                                        className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                                    >
+                                        <Copy size={16} /> Copy Code
+                                    </button>
+
+                                    <a
+                                        href={`https://wa.me/${recruiters.find(r => r.email === otpData.email)?.mobile}?text=Hello, your Losodhan recruiter verification OTP is: ${otpData.otp}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-green-500/20"
+                                    >
+                                        <MessageSquare size={16} /> Send via WhatsApp
+                                    </a>
+
+                                    <button
+                                        onClick={() => regenerateOtp(otpData.email)}
+                                        disabled={fetchingOtp}
+                                        className="w-full py-4 border-2 border-[#1a3c8f] text-[#1a3c8f] hover:bg-blue-50 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                                    >
+                                        <RefreshCw size={16} className={fetchingOtp ? 'animate-spin' : ''} /> Regenerate New OTP
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
-                    </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
-
         </AdminLayout>
     )
 }

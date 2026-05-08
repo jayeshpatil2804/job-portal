@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Eye, MapPin, Briefcase, GraduationCap, Phone, Mail, X, Calendar, RefreshCw, Key, ShieldCheck, ShieldAlert } from 'lucide-react'
+import { Search, Eye, MapPin, Briefcase, GraduationCap, Phone, Mail, X, Calendar, RefreshCw, Key, ShieldCheck, ShieldAlert, KeyRound, Copy, MessageSquare, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
 import api from '../../../utils/api'
@@ -13,7 +13,6 @@ const CandidateManagement = () => {
     const [candidates, setCandidates] = useState([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
-    const [profileOpen, setProfileOpen] = useState(null)
     const [subscriptionProfile, setSubscriptionProfile] = useState(null)
     const [otpData, setOtpData] = useState(null)
     const [fetchingOtp, setFetchingOtp] = useState(false)
@@ -25,8 +24,12 @@ const CandidateManagement = () => {
     })
 
     useEffect(() => {
-        fetchCandidates()
-    }, [pagination.currentPage, pagination.itemsPerPage])
+        const delayDebounceFn = setTimeout(() => {
+            fetchCandidates()
+        }, 500)
+
+        return () => clearTimeout(delayDebounceFn)
+    }, [pagination.currentPage, pagination.itemsPerPage, search])
 
     const fetchCandidates = async () => {
         try {
@@ -34,7 +37,8 @@ const CandidateManagement = () => {
             const res = await api.get('/admin/candidates', {
                 params: {
                     page: pagination.currentPage,
-                    limit: pagination.itemsPerPage
+                    limit: pagination.itemsPerPage,
+                    search: search
                 }
             })
             setCandidates(res.data.candidates)
@@ -61,6 +65,28 @@ const CandidateManagement = () => {
         }
     }
 
+    const handleVerificationToggle = async (id, currentStatus) => {
+        try {
+            const action = !currentStatus ? 'verify' : 'unverify'
+            const result = await Swal.fire({
+                title: `${!currentStatus ? 'Verify' : 'Unverify'} Candidate?`,
+                text: `Are you sure you want to ${!currentStatus ? 'verify' : 'unverify'} this candidate manually?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1a3c8f',
+                confirmButtonText: 'Yes, proceed'
+            })
+
+            if (result.isConfirmed) {
+                await api.patch(`/admin/candidates/${id}/verify`, { isVerified: !currentStatus })
+                setCandidates(prev => prev.map(c => c.id === id ? { ...c, isVerified: !currentStatus } : c))
+                toast.success(`Candidate ${!currentStatus ? 'verified' : 'unverified'} successfully`)
+            }
+        } catch (error) {
+            toast.error('Failed to update verification status')
+        }
+    }
+
     const openSubscriptionProfile = async (id) => {
         try {
             const res = await api.get(`/admin/candidates/${id}`)
@@ -74,28 +100,20 @@ const CandidateManagement = () => {
         try {
             setFetchingOtp(true)
             const res = await api.get(`/admin/candidates/${email}/otp`)
+            setOtpData({ email, otp: res.data.otp, expiresAt: res.data.expiresAt })
+        } catch (error) {
             Swal.fire({
-                title: 'Candidate OTP',
-                html: `
-                    <div class="p-4 bg-amber-50 rounded-2xl border-2 border-amber-200">
-                        <p class="text-amber-800 text-sm font-bold mb-1 uppercase tracking-widest">Verification Code</p>
-                        <h2 class="text-4xl font-black text-[#1a3c8f] tracking-widest">${res.data.otp}</h2>
-                    </div>
-                `,
-                confirmButtonText: 'Copy & Close',
+                title: 'No OTP Found',
+                text: 'This candidate does not have an active OTP. Would you like to generate one?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Generate OTP',
                 confirmButtonColor: '#1a3c8f',
-                customClass: {
-                    popup: 'rounded-[2rem]',
-                    confirmButton: 'rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest'
-                }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    navigator.clipboard.writeText(res.data.otp)
-                    toast.success('OTP copied to clipboard!')
+                    regenerateOtp(email)
                 }
             })
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to fetch OTP')
         } finally {
             setFetchingOtp(false)
         }
@@ -122,13 +140,7 @@ const CandidateManagement = () => {
         setPagination(prev => ({ ...prev, itemsPerPage: limit, currentPage: 1 }))
     }
 
-    const filtered = candidates.filter(c =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.role.toLowerCase().includes(search.toLowerCase()) ||
-        c.location.toLowerCase().includes(search.toLowerCase())
-    )
-
-    if (loading) return (
+    if (loading && candidates.length === 0) return (
         <AdminLayout title="Candidate Management">
             <div className="flex h-64 items-center justify-center">
                 <div className="w-8 h-8 border-4 border-[#1a3c8f] border-t-transparent rounded-full animate-spin" />
@@ -148,7 +160,7 @@ const CandidateManagement = () => {
                 <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                     type="text"
-                    placeholder="Search by name, role, or location..."
+                    placeholder="Search by name, email, or phone..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1a3c8f] focus:ring-2 focus:ring-blue-100 transition"
@@ -157,7 +169,7 @@ const CandidateManagement = () => {
 
             {/* Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {filtered.map((c, i) => (
+                {candidates.map((c, i) => (
                     <motion.div
                         key={c.id}
                         initial={{ opacity: 0, y: 16 }}
@@ -202,7 +214,14 @@ const CandidateManagement = () => {
                         </div>
 
                         <div className="mt-4 flex gap-2">
-                            {!c.isVerified && (
+                            {!c.isVerified ? (
+                                <button
+                                    onClick={() => handleVerificationToggle(c.id, c.isVerified)}
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
+                                >
+                                    <CheckCircle size={14} /> Approve
+                                </button>
+                            ) : (
                                 <button
                                     onClick={() => fetchCandidateOtp(c.email)}
                                     className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all duration-200"
@@ -284,7 +303,6 @@ const CandidateManagement = () => {
                                 </div>
                             </div>
 
-
                             <button
                                 onClick={() => setSubscriptionProfile(null)}
                                 className="w-full py-2.5 bg-[#1a3c8f] text-white font-bold rounded-xl hover:bg-[#153275] transition-colors"
@@ -299,56 +317,70 @@ const CandidateManagement = () => {
             {/* OTP Modal */}
             <AnimatePresence>
                 {otpData && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-                        onClick={() => setOtpData(null)}
-                    >
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
+                            initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            onClick={e => e.stopPropagation()}
-                            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden p-10 text-center"
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden"
                         >
-                            <div className="w-20 h-20 bg-amber-50 rounded-[2rem] flex items-center justify-center text-amber-600 mx-auto mb-6 shadow-inner">
-                                <Key size={36} />
-                            </div>
-                            
-                            <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Verification Code</h3>
-                            <p className="text-gray-500 font-bold text-sm mb-8 px-4">Provide this code to <span className="text-[#1a3c8f]">{otpData.email}</span> for account activation.</p>
-
-                            <div className="bg-gray-50 rounded-[2rem] p-8 mb-8 border border-gray-100 shadow-inner group relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-200/20 rounded-full -mr-12 -mt-12 blur-2xl"></div>
-                                <div className="text-5xl font-black text-[#1a3c8f] tracking-[0.2em] relative z-10">
-                                    {otpData.otp}
-                                </div>
-                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mt-4">Expires: {new Date(otpData.expiresAt).toLocaleTimeString()}</p>
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={() => regenerateOtp(otpData.email)}
-                                    disabled={fetchingOtp}
-                                    className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-gray-900/10 hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-                                >
-                                    <RefreshCw size={16} className={fetchingOtp ? 'animate-spin' : ''} />
-                                    {fetchingOtp ? 'Generating...' : 'Regenerate OTP'}
-                                </button>
-                                <button
+                            <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-8 text-center text-white relative">
+                                <button 
                                     onClick={() => setOtpData(null)}
-                                    className="w-full py-4 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:text-gray-600 transition-all"
+                                    className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
                                 >
-                                    Dismiss
+                                    <X size={18} />
                                 </button>
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30">
+                                    <KeyRound size={32} />
+                                </div>
+                                <h3 className="text-xl font-black uppercase tracking-tight">Verification Code</h3>
+                                <p className="text-amber-50 text-[10px] font-bold uppercase tracking-widest mt-1 opacity-80">Candidate Identity</p>
+                            </div>
+
+                            <div className="p-8 space-y-6">
+                                <div className="text-center space-y-2">
+                                    <div className="bg-slate-50 py-4 rounded-2xl border-2 border-dashed border-slate-200">
+                                        <span className="text-4xl font-black text-[#1a3c8f] tracking-[0.3em]">{otpData.otp}</span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                        Expires at: {new Date(otpData.expiresAt).toLocaleTimeString()}
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(otpData.otp)
+                                            toast.success('OTP copied to clipboard')
+                                        }}
+                                        className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                                    >
+                                        <Copy size={16} /> Copy Code
+                                    </button>
+
+                                    <a
+                                        href={`https://wa.me/${candidates.find(c => c.email === otpData.email)?.phone}?text=Hello, your Losodhan verification OTP is: ${otpData.otp}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-green-500/20"
+                                    >
+                                        <MessageSquare size={16} /> Send via WhatsApp
+                                    </a>
+
+                                    <button
+                                        onClick={() => regenerateOtp(otpData.email)}
+                                        disabled={fetchingOtp}
+                                        className="w-full py-4 border-2 border-amber-500 text-amber-600 hover:bg-amber-50 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                                    >
+                                        <RefreshCw size={16} className={fetchingOtp ? 'animate-spin' : ''} /> Regenerate New OTP
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
-                    </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
-
         </AdminLayout>
     )
 }

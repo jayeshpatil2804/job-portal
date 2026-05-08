@@ -6,6 +6,7 @@ import {
     getAllCandidates,
     toggleRecruiterActivation,
     toggleCandidateActivation,
+    toggleCandidateVerification,
     getCandidateProfile,
     getRecruiterProfile,
     getCandidateOtp,
@@ -54,6 +55,7 @@ router.post('/recruiters/:email/otp/regenerate', checkPermission('RECRUITER_APPR
 
 router.get('/candidates', checkPermission('CANDIDATE_MANAGEMENT'), getAllCandidates)
 router.patch('/candidates/:id/activate', checkPermission('CANDIDATE_MANAGEMENT'), toggleCandidateActivation)
+router.patch('/candidates/:id/verify', checkPermission('CANDIDATE_MANAGEMENT'), toggleCandidateVerification)
 router.get('/candidates/:id', checkPermission('CANDIDATE_MANAGEMENT'), getCandidateProfile)
 router.get('/candidates/:email/otp', checkPermission('CANDIDATE_MANAGEMENT'), getCandidateOtp)
 router.post('/candidates/:email/otp/regenerate', checkPermission('CANDIDATE_MANAGEMENT'), regenerateCandidateOtp)

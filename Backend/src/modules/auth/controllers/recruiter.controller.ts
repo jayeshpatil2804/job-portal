@@ -212,7 +212,8 @@ export const verifyOtp = async (req: Request, res: Response) => {
                 email: recruiter.email,
                 role: recruiter.role,
                 isProfileCompleted: (recruiter as any).isProfileCompleted,
-                isActive: (recruiter as any).isActive
+                isActive: (recruiter as any).isActive,
+                verificationStatus: recruiter.verificationStatus
             }
         })
     } catch (error) {
